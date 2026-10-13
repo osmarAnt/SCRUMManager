@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prototipo Scrum - Tablero Kanban</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Herramienta de Seguimiento Scrum</h1>
+        <p>Prototipo Sprint 0 - Equipo: Osmar, Emanuel, Franks</p>
+    </header>
+
+    <section class="metrics-section">
+        <h2>Métricas: Burndown Chart (Simulación)</h2>
+        <!-- Aquí iría la gráfica real, ponemos un placeholder visual -->
+        <div class="burndown-placeholder">
+            <p>📉 Velocidad del equipo: 18 Puntos de Historia totales. Esfuerzo restante en tiempo real.</p>
+        </div>
+    </section>
+
+    <main class="board">
+        <!-- Product Backlog -->
+        <div class="column" id="backlog">
+            <h2>Product Backlog</h2>
+            <div class="card must-have" draggable="true" id="hu1">
+                <span class="badge">HU-01</span> <span class="points">5 pts</span>
+                <h3>Gestión de Backlog</h3>
+                <p>Como PO, quiero priorizar elementos en la lista.</p>
+            </div>
+            <div class="card should-have" draggable="true" id="hu3">
+                <span class="badge">HU-03</span> <span class="points">5 pts</span>
+                <h3>Gráfica Burndown</h3>
+                <p>Como SM, quiero visualizar el esfuerzo restante.</p>
+            </div>
+        </div>
+
+        <!-- Sprint Backlog / Tablero -->
+        <div class="column" id="todo">
+            <h2>Por hacer (To Do)</h2>
+            <!-- Vacío al inicio -->
+        </div>
+
+        <div class="column" id="in-progress">
+            <h2>En progreso</h2>
+            <div class="card must-have" draggable="true" id="hu2">
+                <span class="badge">HU-02</span> <span class="points">8 pts</span>
+                <h3>Tablero Kanban</h3>
+                <p>Como Developer, quiero mover tareas entre columnas.</p>
+            </div>
+        </div>
+
+        <div class="column" id="review">
+            <h2>En revisión</h2>
+            <!-- Vacío al inicio -->
+        </div>
+
+        <div class="column" id="done">
+            <h2>Terminado (Done)</h2>
+            <!-- Vacío al inicio -->
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
