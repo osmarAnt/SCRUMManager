@@ -12,53 +12,44 @@
         <p>Prototipo Sprint 0 - Equipo: Osmar, Emanuel, Franks</p>
     </header>
 
+    <section class="controls-section">
+        <h2>Añadir Nueva Tarea</h2>
+        <form id="add-task-form">
+            <input type="text" id="task-title" placeholder="Título (ej. HU-04: Nueva Función)" required>
+            <input type="text" id="task-desc" placeholder="Descripción de la tarea" required>
+            <input type="number" id="task-points" placeholder="Puntos" required min="1">
+            <select id="task-priority" required>
+                <option value="must-have">Must Have (Rojo)</option>
+                <option value="should-have">Should Have (Amarillo)</option>
+                <option value="could-have">Could Have (Azul)</option>
+                <option value="wont-have">Won't Have (Gris)</option>
+            </select>
+            <button type="submit">Agregar Tarea</button>
+        </form>
+    </section>
+
     <section class="metrics-section">
         <h2>Métricas: Burndown Chart (Simulación)</h2>
-        <!-- Aquí iría la gráfica real, ponemos un placeholder visual -->
         <div class="burndown-placeholder">
-            <p>Velocidad del equipo: 18 Puntos de Historia totales. Esfuerzo restante en tiempo real.</p>
+            <p>Puntos Totales: <span id="total-points">0</span> | Puntos Terminados: <span id="done-points">0</span></p>
         </div>
     </section>
 
     <main class="board">
-        <!-- Product Backlog -->
-        <div class="column" id="backlog">
+        <div class="column" id="backlog" data-status="backlog">
             <h2>Product Backlog</h2>
-            <div class="card must-have" draggable="true" id="hu1">
-                <span class="badge">HU-01</span> <span class="points">5 pts</span>
-                <h3>Gestión de Backlog</h3>
-                <p>Como PO, quiero priorizar elementos en la lista.</p>
-            </div>
-            <div class="card should-have" draggable="true" id="hu3">
-                <span class="badge">HU-03</span> <span class="points">5 pts</span>
-                <h3>Gráfica Burndown</h3>
-                <p>Como SM, quiero visualizar el esfuerzo restante.</p>
-            </div>
         </div>
-
-        <!-- Sprint Backlog / Tablero -->
-        <div class="column" id="todo">
+        <div class="column" id="todo" data-status="todo">
             <h2>Por hacer (To Do)</h2>
-            <!-- Vacío al inicio -->
         </div>
-
-        <div class="column" id="in-progress">
+        <div class="column" id="in-progress" data-status="in-progress">
             <h2>En progreso</h2>
-            <div class="card must-have" draggable="true" id="hu2">
-                <span class="badge">HU-02</span> <span class="points">8 pts</span>
-                <h3>Tablero Kanban</h3>
-                <p>Como Developer, quiero mover tareas entre columnas.</p>
-            </div>
         </div>
-
-        <div class="column" id="review">
+        <div class="column" id="review" data-status="review">
             <h2>En revisión</h2>
-            <!-- Vacío al inicio -->
         </div>
-
-        <div class="column" id="done">
+        <div class="column" id="done" data-status="done">
             <h2>Terminado (Done)</h2>
-            <!-- Vacío al inicio -->
         </div>
     </main>
 
