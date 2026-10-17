@@ -1,9 +1,22 @@
 const formulario = document.getElementById('form-login');
 const mensajeError = document.getElementById('mensaje-error');
+const mensajeConfirmacion = document.getElementById('mensaje-confirmacion');
+const boton = formulario.querySelector('button');
+const parametros = new URLSearchParams(window.location.search);
+
+if (parametros.get('registro') === 'correcto') {
+    mensajeConfirmacion.textContent = 'Cuenta creada correctamente. Ya puedes iniciar sesión.';
+    mensajeConfirmacion.hidden = false;
+} else if (parametros.get('sesion') === 'cerrada') {
+    mensajeConfirmacion.textContent = 'Cerraste sesión correctamente.';
+    mensajeConfirmacion.hidden = false;
+}
 
 formulario.addEventListener('submit', (evento) => {
     evento.preventDefault();
     mensajeError.textContent = '';
+    boton.disabled = true;
+    boton.textContent = 'Entrando...';
     const datos = new URLSearchParams();
     datos.append(
         'username',
@@ -26,10 +39,14 @@ formulario.addEventListener('submit', (evento) => {
                 mensajeError.textContent = resultado.mensaje;
                 return;
             }
-            window.location.href = resultado.redireccion;
+            window.location.replace(resultado.redireccion);
         })
         .catch(error => {
             console.error(error);
             mensajeError.textContent = 'No se pudo iniciar sesión';
+        })
+        .finally(() => {
+            boton.disabled = false;
+            boton.textContent = 'Iniciar sesión';
         });
 });

@@ -13,7 +13,7 @@ const buscarPorCredenciales = (username, password, callback) => {
         if (error) {
             return callback(error, null);
         }
-        if (resultados.length === 0) {
+        if (resultados.length === 0 || resultados[0].password !== password) {
             return callback(null, null);
         }
         const datos = resultados[0];
@@ -29,6 +29,20 @@ const buscarPorCredenciales = (username, password, callback) => {
     });
 };
 
+const crearUsuario = (nombre, username, password, callback) => {
+    const consulta = `
+        INSERT INTO usuarios (nombre, username, password, rol)
+        VALUES (?, ?, ?, 'Desarrollador')
+    `;
+    conexion.query(consulta, [nombre, username, password], (error, resultado) => {
+        if (error) {
+            return callback(error, null);
+        }
+        callback(null, resultado.insertId);
+    });
+};
+
 module.exports = {
-    buscarPorCredenciales
+    buscarPorCredenciales,
+    crearUsuario
 };
