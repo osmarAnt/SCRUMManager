@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrument | Mis proyectos</title>
+    <link rel="stylesheet" href="/css/estilos.css">
+    <link rel="stylesheet" href="/css/panel.css">
+    <link rel="stylesheet" href="/css/proyectos.css">
+    <script src="/js/proyectos.js" defer></script>
+</head>
+<body>
+    <div class="aplicacion">
+        <aside class="barra-lateral" aria-label="Menú principal">
+            <div class="marca marca-lateral">Scrument</div>
+            <p class="descripcion-marca">Sistema de gestión de trabajo</p>
+            <nav class="navegacion">
+                <a href="/proyectos" class="activo" aria-current="page">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="6" width="18" height="15" rx="2"/><path d="M8 6V3h8v3M3 12h18M10 12v3h4v-3"/></svg>
+                    Mis proyectos
+                </a>
+            </nav>
+            <div class="pie-menu">
+                <a href="/login/cerrar" class="boton-salir">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M9 4H4v16h5M9 12h12m-4-4 4 4-4 4"/></svg>
+                    Cerrar sesión
+                </a>
+            </div>
+        </aside>
+        <main class="principal-proyectos">
+            <header class="barra-cuenta">
+                <p class="ruta-actual">Tu espacio de trabajo</p>
+                <div class="perfil">
+                    <span id="avatar-usuario" class="avatar" aria-hidden="true">S</span>
+                    <div>
+                        <span id="nombre-usuario" class="nombre-cuenta"></span>
+                        <span class="estado-cuenta">Sesión iniciada</span>
+                    </div>
+                </div>
+            </header>
+            <div class="cabecera-proyectos">
+                <div>
+                    <h1>Mis proyectos</h1>
+                    <p class="subtitulo">Consulta los proyectos a los que perteneces.</p>
+                </div>
+                <button id="actualizar-proyectos" type="button" class="boton-secundario">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M5.2 7.8A7.5 7.5 0 0 1 18 6l2 2M4 16l2 2a7.5 7.5 0 0 0 12.8-1.8"/></svg>
+                    Actualizar
+                </button>
+            </div>
+            <p class="resumen-lista">Disponibles para ti <span id="conteo-proyectos" class="conteo-proyectos">—</span></p>
+            <section id="estado-lista" class="estado-lista" role="status" aria-live="polite">
+                <div class="simbolo-estado">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="6" width="18" height="15" rx="2"/><path d="M8 6V3h8v3M3 12h18M10 12v3h4v-3"/></svg>
+                </div>
+                <h2 id="titulo-estado">Cargando tus proyectos</h2>
+                <p id="descripcion-estado">Espera un momento.</p>
+            </section>
+            <section id="lista-proyectos" class="lista-proyectos" aria-label="Proyectos disponibles" hidden></section>
+        </main>
+    </div>
+    <template id="plantilla-proyecto">
+        <article class="tarjeta-proyecto">
+            <div class="icono-proyecto">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="6" width="18" height="15" rx="2"/><path d="M8 6V3h8v3M3 12h18M10 12v3h4v-3"/></svg>
+            </div>
+            <h2 class="nombre-proyecto"></h2>
+            <p class="objetivo-proyecto"></p>
+            <div class="pie-proyecto">Tu rol <span class="rol-proyecto"></span></div>
+        </article>
+    </template>
+</body>
+</html>

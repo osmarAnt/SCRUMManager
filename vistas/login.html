@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scrument | Iniciar sesión</title>
     <link rel="stylesheet" href="/css/estilos.css">
+    <link rel="stylesheet" href="/css/login.css">
     <script src="/js/login.js" defer></script>
 </head>
 <body class="pagina-login">
@@ -12,14 +13,16 @@
         <div class="marca">Scrument</div>
         <p class="subtitulo">Sistema de gestión de trabajo</p>
         <h1>Iniciar sesión</h1>
+        <p id="mensaje-confirmacion" class="mensaje-confirmacion" role="status" hidden></p>
         <form id="form-login" action="/login" method="post">
             <label for="username">Usuario</label>
-            <input type="text" id="username" name="username" autocomplete="username" maxlength="50" required>
+            <input type="text" id="username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="50" required>
             <label for="password">Contraseña</label>
             <input type="password" id="password" name="password" autocomplete="current-password" maxlength="50" required>
             <p id="mensaje-error" class="mensaje-error" role="alert" aria-live="polite"></p>
             <button type="submit">Iniciar sesión</button>
         </form>
+        <p class="pie-formulario">¿Aún no tienes cuenta? <a href="/registro">Crear cuenta</a></p>
     </main>
 </body>
 </html>
