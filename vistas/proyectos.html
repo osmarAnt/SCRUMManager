@@ -41,12 +41,18 @@
             <div class="cabecera-proyectos">
                 <div>
                     <h1>Mis proyectos</h1>
-                    <p class="subtitulo">Consulta los proyectos a los que perteneces.</p>
+                    <p class="subtitulo">Consulta tus proyectos o registra uno nuevo como Scrum Master.</p>
                 </div>
+                <div class="acciones-cabecera">
+                <button id="nuevo-proyecto" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    Nuevo proyecto
+                </button>
                 <button id="actualizar-proyectos" type="button" class="boton-secundario">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M5.2 7.8A7.5 7.5 0 0 1 18 6l2 2M4 16l2 2a7.5 7.5 0 0 0 12.8-1.8"/></svg>
                     Actualizar
                 </button>
+                </div>
             </div>
             <p class="resumen-lista">Disponibles para ti <span id="conteo-proyectos" class="conteo-proyectos">—</span></p>
             <section id="estado-lista" class="estado-lista" role="status" aria-live="polite">
@@ -59,15 +65,30 @@
             <section id="lista-proyectos" class="lista-proyectos" aria-label="Proyectos disponibles" hidden></section>
         </main>
     </div>
+    <dialog id="dialogo-proyecto" class="dialogo" aria-labelledby="titulo-dialogo">
+        <form id="form-proyecto" class="formulario" method="post" action="/proyectos" novalidate>
+            <h2 id="titulo-dialogo">Nuevo proyecto</h2>
+            <p class="ayuda-campo">Serás el Scrum Master de este proyecto.</p>
+            <label for="nombre-nuevo">Nombre</label>
+            <input type="text" id="nombre-nuevo" name="nombre" minlength="3" maxlength="120" autocomplete="off" aria-describedby="mensaje-error-proyecto" required>
+            <label for="objetivo-nuevo">Objetivo</label>
+            <textarea id="objetivo-nuevo" name="objetivo" rows="4" maxlength="1000" aria-describedby="mensaje-error-proyecto"></textarea>
+            <p id="mensaje-error-proyecto" class="mensaje-error" role="alert" aria-live="polite"></p>
+            <div class="acciones-formulario">
+                <button type="button" id="cancelar-proyecto" class="boton-secundario">Cancelar</button>
+                <button type="submit">Guardar proyecto</button>
+            </div>
+        </form>
+    </dialog>
     <template id="plantilla-proyecto">
-        <article class="tarjeta-proyecto">
+        <a class="tarjeta-proyecto" href="#">
             <div class="icono-proyecto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="6" width="18" height="15" rx="2"/><path d="M8 6V3h8v3M3 12h18M10 12v3h4v-3"/></svg>
             </div>
             <h2 class="nombre-proyecto"></h2>
             <p class="objetivo-proyecto"></p>
             <div class="pie-proyecto">Tu rol <span class="rol-proyecto"></span></div>
-        </article>
+        </a>
     </template>
 </body>
 </html>

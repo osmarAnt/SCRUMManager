@@ -152,6 +152,220 @@
     border-color: #efc7c4;
 }
 
+.acciones-cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+a.tarjeta-proyecto {
+    color: inherit;
+    text-decoration: none;
+}
+
+a.tarjeta-proyecto:hover {
+    border-color: #b3c7ee;
+    box-shadow: 0 4px 14px rgba(23, 43, 77, 0.08);
+}
+
+.ruta-actual a {
+    font-weight: 700;
+    text-decoration: none;
+}
+
+/* ---- Formularios (crear / editar proyecto, configurar Sprint) ---- */
+.formulario label {
+    display: block;
+    margin: 18px 0 8px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.formulario input,
+.formulario textarea {
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 12px;
+    border: 1px solid #b3bac5;
+    border-radius: 6px;
+    background: var(--blanco);
+    color: var(--texto);
+    font: inherit;
+}
+
+.formulario textarea {
+    resize: vertical;
+}
+
+.formulario input:focus-visible,
+.formulario textarea:focus-visible {
+    outline: 3px solid #b3d4ff;
+    outline-offset: 2px;
+}
+
+.ayuda-campo {
+    margin: 8px 0 0;
+    color: var(--texto-secundario);
+    font-size: 12px;
+}
+
+.mensaje-error {
+    min-height: 22px;
+    margin: 12px 0 0;
+    color: #b42318;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.mensaje-confirmacion {
+    margin: 16px 0 0;
+    padding: 12px 14px;
+    border: 1px solid #abddc5;
+    border-radius: 6px;
+    background: #eefaf4;
+    color: #176745;
+    font-size: 13px;
+}
+
+.acciones-formulario {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.fila-fechas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 16px;
+}
+
+.dialogo {
+    width: min(520px, calc(100% - 32px));
+    padding: 28px;
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    background: var(--blanco);
+    color: var(--texto);
+    box-shadow: 0 16px 48px rgba(23, 43, 77, 0.25);
+}
+
+.dialogo::backdrop {
+    background: rgba(9, 30, 66, 0.45);
+}
+
+.dialogo h2 {
+    margin: 0;
+    font-size: 21px;
+}
+
+/* ---- Detalle de proyecto ---- */
+.bloque {
+    margin-bottom: 24px;
+    padding: 28px;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    background: var(--blanco);
+}
+
+.cabecera-bloque {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 18px;
+}
+
+.cabecera-bloque h1,
+.cabecera-bloque h2 {
+    overflow-wrap: anywhere;
+}
+
+.cabecera-bloque h2 {
+    margin: 0;
+    font-size: 21px;
+}
+
+.cabecera-bloque .subtitulo {
+    margin: 8px 0 0;
+}
+
+.etiqueta-dato {
+    margin: 0 0 6px;
+    color: var(--texto-secundario);
+    font-size: 12px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.texto-dato {
+    margin: 0;
+    color: var(--texto);
+    font-size: 14px;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+#form-editar,
+#form-sprint {
+    margin: 0 0 20px;
+    padding-top: 4px;
+}
+
+#form-editar {
+    margin-top: 20px;
+    padding-top: 6px;
+    border-top: 1px solid var(--borde);
+}
+
+.lista-sprints {
+    display: grid;
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.tarjeta-sprint {
+    padding: 18px 20px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+}
+
+.cabecera-sprint {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.nombre-sprint {
+    margin: 0;
+    font-size: 16px;
+}
+
+.estado-sprint {
+    padding: 4px 9px;
+    border-radius: 5px;
+    background: var(--azul-claro);
+    color: var(--azul);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.objetivo-sprint {
+    margin: 10px 0 8px;
+    font-size: 14px;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.fechas-sprint {
+    margin: 0;
+    color: var(--texto-secundario);
+    font-size: 13px;
+}
+
 @media (max-width: 1000px) {
     .principal-proyectos {
         padding: 30px 28px;
@@ -169,5 +383,17 @@
 
     .lista-proyectos {
         grid-template-columns: 1fr;
+    }
+
+    .cabecera-bloque {
+        flex-wrap: wrap;
+    }
+
+    .fila-fechas {
+        grid-template-columns: 1fr;
+    }
+
+    .bloque {
+        padding: 22px 18px;
     }
 }

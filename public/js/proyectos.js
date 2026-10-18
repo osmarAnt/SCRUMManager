@@ -7,6 +7,11 @@ const conteo = document.getElementById('conteo-proyectos');
 const nombreUsuario = document.getElementById('nombre-usuario');
 const avatar = document.getElementById('avatar-usuario');
 const botonActualizar = document.getElementById('actualizar-proyectos');
+const botonNuevo = document.getElementById('nuevo-proyecto');
+const dialogo = document.getElementById('dialogo-proyecto');
+const formulario = document.getElementById('form-proyecto');
+const mensajeError = document.getElementById('mensaje-error-proyecto');
+const botonGuardar = formulario.querySelector('button[type="submit"]');
 
 const mostrarEstado = (titulo, descripcion, tipo = '') => {
     lista.replaceChildren();
@@ -26,6 +31,7 @@ const mostrarProyectos = (proyectos) => {
     }
     proyectos.forEach((proyecto) => {
         const tarjeta = plantilla.content.cloneNode(true);
+        tarjeta.querySelector('.tarjeta-proyecto').href = `/proyectos/${proyecto.id_proyecto}`;
         tarjeta.querySelector('.nombre-proyecto').textContent = proyecto.nombre;
         tarjeta.querySelector('.objetivo-proyecto').textContent = proyecto.objetivo || 'Este proyecto todavía no tiene un objetivo registrado.';
         tarjeta.querySelector('.rol-proyecto').textContent = proyecto.rol;
@@ -68,6 +74,57 @@ const cargarProyectos = async () => {
 };
 
 botonActualizar.addEventListener('click', cargarProyectos);
+
+botonNuevo.addEventListener('click', () => {
+    formulario.reset();
+    mensajeError.textContent = '';
+    dialogo.showModal();
+    document.getElementById('nombre-nuevo').focus();
+});
+
+document.getElementById('cancelar-proyecto').addEventListener('click', () => dialogo.close());
+
+formulario.addEventListener('submit', async (evento) => {
+    evento.preventDefault();
+    mensajeError.textContent = '';
+    const nombre = document.getElementById('nombre-nuevo').value.trim();
+    if (nombre.length < 3) {
+        mensajeError.textContent = 'El nombre del proyecto debe tener al menos 3 caracteres.';
+        return;
+    }
+    botonGuardar.disabled = true;
+    botonGuardar.textContent = 'Guardando...';
+    try {
+        const respuesta = await fetch('/proyectos', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                nombre,
+                objetivo: document.getElementById('objetivo-nuevo').value
+            })
+        });
+        if (respuesta.status === 401) {
+            window.location.replace('/login');
+            return;
+        }
+        const resultado = await respuesta.json();
+        if (!respuesta.ok) {
+            mensajeError.textContent = resultado.mensaje;
+            return;
+        }
+        dialogo.close();
+        await cargarProyectos();
+    } catch (error) {
+        console.error(error);
+        mensajeError.textContent = 'No se pudo conectar con el servidor. Inténtalo de nuevo.';
+    } finally {
+        botonGuardar.disabled = false;
+        botonGuardar.textContent = 'Guardar proyecto';
+    }
+});
 
 window.addEventListener('pageshow', cargarProyectos);
 
