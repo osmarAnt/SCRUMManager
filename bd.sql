@@ -46,3 +46,22 @@ CREATE TABLE IF NOT EXISTS proyecto_usuarios (
         FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
         ON DELETE CASCADE
 );
+
+#---Semana 1: PB-13-César: Configuración del Sprint---
+
+CREATE TABLE IF NOT EXISTS sprints (
+    id_sprint INT AUTO_INCREMENT PRIMARY KEY,
+    id_proyecto INT NOT NULL,
+    numero INT NOT NULL,
+    objetivo TEXT NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE NOT NULL,
+    duracion_dias INT NOT NULL,
+    estado ENUM('Planificado', 'En curso', 'Finalizado') NOT NULL DEFAULT 'Planificado',
+    fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_sprint_numero (id_proyecto, numero),
+    CONSTRAINT chk_sprint_fechas CHECK (fecha_fin >= fecha_inicio),
+    CONSTRAINT fk_sprints_proyecto
+        FOREIGN KEY (id_proyecto) REFERENCES proyectos(id_proyecto)
+        ON DELETE CASCADE
+);
