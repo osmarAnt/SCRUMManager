@@ -8,6 +8,7 @@ const invitacionRutas = require('./src/rutas/invitacionRutas');
 const scrumMasterRutas = require('./src/rutas/scrumMasterRutas');
 const productOwnerRutas = require('./src/rutas/productOwnerRutas');
 const desarrolladorRutas = require('./src/rutas/desarrolladorRutas');
+const backlogRutas = require('./src/rutas/backlogRutas');
 const app = express();
 const puerto = 3000;
 
@@ -78,9 +79,15 @@ app.use(
     desarrolladorRutas
 );
 
+app.use(
+    '/',
+    backlogRutas
+);
+
 app.listen(
     puerto,
     () => {
         console.log('Ya jaló');
     }
 );
+

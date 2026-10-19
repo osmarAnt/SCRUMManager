@@ -1,4 +1,4 @@
-#Creacion base de datos Downzon
+#Creacion base de datos
 CREATE DATABASE scrument;
 USE scrument;
 CREATE USER 'userScrument'@'localhost' IDENTIFIED BY 'scrument123';
@@ -105,3 +105,35 @@ CREATE TABLE IF NOT EXISTS invitaciones_proyecto (
         ON DELETE CASCADE
 );
 SELECT * FROM invitaciones_proyecto;
+
+#---Semana 1: PB-09 a PB-12 (Osmar): Product Backlog e Historias---
+
+CREATE TABLE IF NOT EXISTS product_backlog (
+    id_historia INT AUTO_INCREMENT PRIMARY KEY,
+    id_proyecto INT NOT NULL,
+    id_sprint INT NULL,
+    titulo VARCHAR(150) NOT NULL,
+    descripcion TEXT NOT NULL,
+    prioridad ENUM('Alta', 'Media', 'Baja') DEFAULT 'Media',
+    orden INT NOT NULL DEFAULT 0,
+    fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_pb_proyecto
+        FOREIGN KEY (id_proyecto) REFERENCES proyectos(id_proyecto)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_pb_sprint
+        FOREIGN KEY (id_sprint) REFERENCES sprints(id_sprint)
+        ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS criterios_aceptacion (
+    id_criterio INT AUTO_INCREMENT PRIMARY KEY,
+    id_historia INT NOT NULL,
+    descripcion TEXT NOT NULL,
+    completado BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT fk_criterios_historia
+        FOREIGN KEY (id_historia) REFERENCES product_backlog(id_historia)
+        ON DELETE CASCADE
+);
+
+ALTER TABLE product_backlog 
+ADD COLUMN puntos INT NULL AFTER descripcion;
