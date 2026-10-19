@@ -4,6 +4,7 @@ const session = require('express-session');
 const loginRutas = require('./src/rutas/loginRutas');
 const registroRutas = require('./src/rutas/registroRutas');
 const proyectoRutas = require('./src/rutas/proyectoRutas');
+const invitacionRutas = require('./src/rutas/invitacionRutas');
 const scrumMasterRutas = require('./src/rutas/scrumMasterRutas');
 const productOwnerRutas = require('./src/rutas/productOwnerRutas');
 const desarrolladorRutas = require('./src/rutas/desarrolladorRutas');
@@ -55,6 +56,11 @@ app.use(
 app.use(
     '/proyectos',
     proyectoRutas
+);
+
+app.use(
+    '/invitaciones',
+    invitacionRutas
 );
 
 app.use(

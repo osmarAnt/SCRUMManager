@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const proyectoControlador = require('../controladores/proyectoControlador');
 const { verificarSesion } = require('../middlewares/autenticacion');
+const invitacionControlador = require('../controladores/invitacionControlador');
 
 router.get(
     '/',
@@ -47,6 +48,18 @@ router.post(
     '/:id/sprints',
     verificarSesion,
     proyectoControlador.crearSprint
+);
+
+router.get(
+    '/:id/integrantes',
+    verificarSesion,
+    invitacionControlador.integrantes
+);
+
+router.post(
+    '/:id/invitaciones',
+    verificarSesion,
+    invitacionControlador.invitar
 );
 
 module.exports = router;

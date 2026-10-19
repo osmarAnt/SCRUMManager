@@ -108,12 +108,15 @@ const cargarProyecto = async () => {
         rolProyecto.textContent = datos.rol;
         botonEditar.hidden = !datos.puedeAdministrar;
         botonNuevoSprint.hidden = !datos.puedeAdministrar;
+        botonInvitar.hidden = !datos.puedeInvitar;
+        formInvitacion.hidden = true;
         formEditar.hidden = true;
         formSprint.hidden = true;
         pintarProyecto(datos.proyecto);
         pintarSprints(datos.sprints);
         estadoDetalle.hidden = true;
         contenido.hidden = false;
+        await cargarIntegrantes();
     } catch (error) {
         console.error(error);
         mostrarEstado('No pudimos cargar el proyecto', 'Recarga la página para intentarlo de nuevo.', 'error');
@@ -244,8 +247,190 @@ formSprint.addEventListener('submit', async (evento) => {
     }
 });
 
-window.addEventListener('pageshow', cargarProyecto);
+const botonInvitar = document.getElementById(
+    'invitar-integrante'
+);
+const formInvitacion = document.getElementById(
+    'form-invitacion'
+);
+const mensajeInvitacion = document.getElementById(
+    'mensaje-invitacion'
+);
+const confirmacionInvitacion = document.getElementById(
+    'confirmacion-invitacion'
+);
+const listaIntegrantes = document.getElementById(
+    'lista-integrantes'
+);
+const estadoIntegrantes = document.getElementById(
+    'estado-integrantes'
+);
+const seccionPendientes = document.getElementById(
+    'seccion-invitaciones-enviadas'
+);
+const listaPendientes = document.getElementById(
+    'lista-invitaciones-enviadas'
+);
 
+const crearFilaPersona = (
+    nombre,
+    username,
+    rol,
+    subtitulo
+) => {
+    const fila = document.createElement('li');
+    fila.className = 'persona-item';
+    const datos = document.createElement('div');
+    datos.className = 'persona-datos';
+    const nombreTexto = document.createElement('strong');
+    nombreTexto.textContent = nombre;
+    const identificador = document.createElement('small');
+    identificador.textContent =
+        `@${username}${subtitulo ? ` · ${subtitulo}` : ''}`;
+    datos.append(
+        nombreTexto,
+        identificador
+    );
+    const distintivo = document.createElement('span');
+    distintivo.className = 'persona-rol';
+    distintivo.textContent = rol;
+    fila.append(
+        datos,
+        distintivo
+    );
+    return fila;
+};
+
+const cargarIntegrantes = async () => {
+    estadoIntegrantes.hidden = false;
+    estadoIntegrantes.textContent =
+        'Cargando integrantes...';
+    listaIntegrantes.replaceChildren();
+    listaPendientes.replaceChildren();
+    seccionPendientes.hidden = true;
+    try {
+        const respuesta = await peticionJson(
+            `/proyectos/${idProyecto}/integrantes`,
+            'GET'
+        );
+        if (!respuesta) {
+            return;
+        }
+        if (!respuesta.ok) {
+            throw new Error(
+                respuesta.resultado.mensaje ||
+                'No se pudo cargar la lista.'
+            );
+        }
+        const {
+            integrantes,
+            invitaciones
+        } = respuesta.resultado;
+        estadoIntegrantes.hidden =
+            integrantes.length > 0;
+        estadoIntegrantes.textContent =
+            integrantes.length
+                ? ''
+                : 'Este proyecto todavía no tiene integrantes.';
+        integrantes.forEach((persona) => {
+            listaIntegrantes.appendChild(
+                crearFilaPersona(
+                    persona.nombre,
+                    persona.username,
+                    persona.rol
+                )
+            );
+        });
+        seccionPendientes.hidden =
+            invitaciones.length === 0;
+        invitaciones.forEach((persona) => {
+            listaPendientes.appendChild(
+                crearFilaPersona(
+                    persona.nombre,
+                    persona.username,
+                    persona.rol,
+                    'Pendiente'
+                )
+            );
+        });
+    } catch (error) {
+        console.error(error);
+        estadoIntegrantes.hidden = false;
+        estadoIntegrantes.textContent =
+            'No se pudieron consultar los integrantes.';
+    }
+};
+
+botonInvitar.addEventListener('click', () => {
+    formInvitacion.reset();
+    mensajeInvitacion.textContent = '';
+    confirmacionInvitacion.hidden = true;
+    formInvitacion.hidden = false;
+    document.getElementById(
+        'username-invitado'
+    ).focus();
+});
+
+document.getElementById(
+    'cancelar-invitacion'
+).addEventListener('click', () => {
+    formInvitacion.hidden = true;
+});
+
+formInvitacion.addEventListener(
+    'submit',
+    async (evento) => {
+        evento.preventDefault();
+        mensajeInvitacion.textContent = '';
+        const username = document.getElementById(
+            'username-invitado'
+        ).value.trim();
+        const rol = document.getElementById(
+            'rol-invitado'
+        ).value;
+        if (!username || username.length > 50) {
+            mensajeInvitacion.textContent =
+                'Escribe un nombre de usuario válido.';
+            return;
+        }
+        const boton = formInvitacion.querySelector(
+            'button[type="submit"]'
+        );
+        boton.disabled = true;
+        try {
+            const respuesta = await peticionJson(
+                `/proyectos/${idProyecto}/invitaciones`,
+                'POST',
+                {
+                    username,
+                    rol
+                }
+            );
+            if (!respuesta) {
+                return;
+            }
+            if (!respuesta.ok) {
+                mensajeInvitacion.textContent =
+                    respuesta.resultado.mensaje ||
+                    'No se pudo enviar la invitación.';
+                return;
+            }
+            formInvitacion.hidden = true;
+            avisar(
+                confirmacionInvitacion,
+                respuesta.resultado.mensaje
+            );
+            await cargarIntegrantes();
+        } catch (error) {
+            console.error(error);
+            mensajeInvitacion.textContent =
+                'No se pudo conectar con el servidor.';
+        } finally {
+            boton.disabled = false;
+        }
+    }
+);
+window.addEventListener('pageshow', cargarProyecto);
 window.addEventListener('pagehide', () => {
     nombreUsuario.textContent = '';
     avatar.textContent = 'S';
