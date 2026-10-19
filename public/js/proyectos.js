@@ -59,8 +59,12 @@ const cargarProyectos = async () => {
         }
         const resultado = await respuesta.json();
         if (!respuesta.ok) {
-            throw new Error(resultado.mensaje || 'No se pudieron cargar tus proyectos.');
+            throw new Error(
+                resultado.mensaje ||
+                'No se pudieron cargar tus proyectos.'
+            );
         }
+        botonNuevo.hidden = resultado.usuario.rol !== 'Scrum Master';
         const nombre = resultado.usuario.nombre;
         nombreUsuario.textContent = nombre;
         avatar.textContent = Array.from(nombre.trim())[0]?.toUpperCase() || 'S';
@@ -125,9 +129,164 @@ formulario.addEventListener('submit', async (evento) => {
         botonGuardar.textContent = 'Guardar proyecto';
     }
 });
+const conteoInvitaciones = document.getElementById(
+    'conteo-invitaciones'
+);
+const estadoInvitaciones = document.getElementById(
+    'estado-invitaciones'
+);
+const listaInvitaciones = document.getElementById(
+    'lista-invitaciones'
+);
+const mensajeAceptacion = document.getElementById(
+    'mensaje-aceptacion'
+);
+
+const cargarInvitaciones = async () => {
+    estadoInvitaciones.hidden = false;
+    estadoInvitaciones.textContent =
+        'Cargando invitaciones...';
+    conteoInvitaciones.textContent = '—';
+    listaInvitaciones.replaceChildren();
+    try {
+        const respuesta = await fetch(
+            '/invitaciones',
+            {
+                headers: {
+                    Accept: 'application/json'
+                },
+                cache: 'no-store'
+            }
+        );
+
+        if (respuesta.status === 401) {
+
+            window.location.replace('/login');
+
+            return;
+
+        }
+        const datos = await respuesta.json();
+        if (!respuesta.ok) {
+
+            throw new Error(
+                datos.mensaje ||
+                'Error al cargar invitaciones.'
+            );
+        }
+        const invitaciones = datos.invitaciones;
+        conteoInvitaciones.textContent =
+            `${invitaciones.length} ${invitaciones.length === 1
+                ? 'pendiente'
+                : 'pendientes'
+            }`;
+        if (invitaciones.length === 0) {
+            estadoInvitaciones.textContent =
+                'No tienes invitaciones pendientes.';
+            return;
+        }
+        estadoInvitaciones.hidden = true;
+        invitaciones.forEach((invitacion) => {
+            const fila = document.createElement('li');
+            fila.className = 'persona-item';
+            const datosFila = document.createElement('div');
+            datosFila.className = 'persona-datos';
+            const nombreProyecto =
+                document.createElement('strong');
+            nombreProyecto.textContent =
+                invitacion.proyecto;
+            const detalle =
+                document.createElement('small');
+            detalle.textContent =
+                `Invitado por ${invitacion.invitador} ` +
+                `(@${invitacion.usuario_invitador}) · ` +
+                `Rol: ${invitacion.rol}`;
+            datosFila.append(
+                nombreProyecto,
+                detalle
+            );
+            const botonAceptar =
+                document.createElement('button');
+            botonAceptar.type = 'button';
+            botonAceptar.textContent =
+                'Aceptar invitación';
+            botonAceptar.dataset.idInvitacion =
+                String(invitacion.id_invitacion);
+            fila.append(
+                datosFila,
+                botonAceptar
+            );
+            listaInvitaciones.appendChild(fila);
+        });
+    } catch (error) {
+        console.error(error);
+        estadoInvitaciones.hidden = false;
+        estadoInvitaciones.textContent =
+            'No se pudieron consultar las invitaciones.';
+    }
+};
+listaInvitaciones.addEventListener(
+    'click',
+    async (evento) => {
+        const boton = evento.target.closest(
+            'button[data-id-invitacion]'
+        );
+        if (!boton || boton.disabled) {
+            return;
+        }
+        boton.disabled = true;
+        mensajeAceptacion.hidden = true;
+        try {
+            const respuesta = await fetch(
+                `/invitaciones/${boton.dataset.idInvitacion}/aceptar`,
+                {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json'
+                    }
+                }
+            );
+            if (respuesta.status === 401) {
+                window.location.replace('/login');
+                return;
+            }
+            const datos = await respuesta.json();
+            if (!respuesta.ok) {
+                estadoInvitaciones.hidden = false;
+                estadoInvitaciones.textContent =
+                    datos.mensaje ||
+                    'No se pudo aceptar la invitación.';
+                return;
+            }
+            mensajeAceptacion.textContent =
+                datos.mensaje;
+            mensajeAceptacion.hidden = false;
+            await Promise.all([
+                cargarProyectos(),
+                cargarInvitaciones()
+            ]);
+        } catch (error) {
+            console.error(error);
+            estadoInvitaciones.hidden = false;
+            estadoInvitaciones.textContent =
+                'No se pudo conectar con el servidor.';
+        } finally {
+            boton.disabled = false;
+        }
+    }
+);
+
+botonActualizar.addEventListener(
+    'click',
+    cargarInvitaciones
+);
+
+window.addEventListener(
+    'pageshow',
+    cargarInvitaciones
+);
 
 window.addEventListener('pageshow', cargarProyectos);
-
 window.addEventListener('pagehide', () => {
     nombreUsuario.textContent = '';
     avatar.textContent = 'S';

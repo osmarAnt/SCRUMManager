@@ -99,7 +99,8 @@ const listarProyectos = (req, res) => {
         res.json({
             usuario: {
                 nombre: req.session.nombre,
-                username: req.session.usuario
+                username: req.session.usuario,
+                rol: req.session.rol
             },
             proyectos
         });
@@ -108,6 +109,12 @@ const listarProyectos = (req, res) => {
 
 // PB-04
 const crearProyecto = async (req, res) => {
+    if (req.session.rol !== 'Scrum Master') {
+        return res.status(403).json({
+            mensaje: 'Solo el Scrum Master puede crear proyectos.'
+        });
+
+    }
     const datos = validarDatosProyecto(req.body);
     if (datos.error) {
         return res.status(400).json({ mensaje: datos.error });
@@ -151,10 +158,17 @@ const consultarProyecto = async (req, res) => {
             return res.status(404).json({ mensaje: 'No encontramos ese proyecto.' });
         }
         res.json({
-            usuario: { nombre: req.session.nombre, username: req.session.usuario },
+            usuario: {
+                nombre: req.session.nombre,
+                username: req.session.usuario,
+                rol: req.session.rol
+            },
             proyecto,
             rol,
             puedeAdministrar: rol === 'Scrum Master',
+            puedeInvitar:
+                req.session.rol === 'Scrum Master' &&
+                rol === 'Scrum Master',
             sprints
         });
     } catch (error) {

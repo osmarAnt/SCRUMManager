@@ -397,3 +397,97 @@ a.tarjeta-proyecto:hover {
         padding: 22px 18px;
     }
 }
+.formulario select {
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 12px;
+    border: 1px solid #b3bac5;
+    border-radius: 6px;
+    background: var(--blanco);
+    color: var(--texto);
+    font: inherit;
+}
+.formulario select:focus-visible {
+    outline: 3px solid #b3d4ff;
+    outline-offset: 2px;
+}
+
+#form-invitacion {
+    margin-bottom: 20px;
+    padding: 6px 0 20px;
+    border-bottom: 1px solid var(--borde);
+}
+
+.bandeja-invitaciones {
+    margin-bottom: 28px;
+}
+
+.bandeja-invitaciones .cabecera-bloque {
+    align-items: center;
+}
+
+.bandeja-invitaciones .subtitulo {
+    margin-bottom: 0;
+}
+
+.lista-personas {
+    display: grid;
+    gap: 10px;
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.persona-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.persona-datos {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.persona-datos strong {
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.persona-datos small {
+    color: var(--texto-secundario);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.persona-rol {
+    display: inline-block;
+    padding: 4px 9px;
+    border-radius: 5px;
+    background: var(--azul-claro);
+    color: var(--azul);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.seccion-pendientes {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--borde);
+}
+
+.seccion-pendientes h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.seccion-pendientes .ayuda-campo {
+    margin-top: 6px;
+}

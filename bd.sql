@@ -65,3 +65,43 @@ CREATE TABLE IF NOT EXISTS sprints (
         FOREIGN KEY (id_proyecto) REFERENCES proyectos(id_proyecto)
         ON DELETE CASCADE
 );
+
+#---Semana 2: PB- 06 Y 07: Invitaciones a proyectos---
+
+CREATE TABLE IF NOT EXISTS invitaciones_proyecto (
+    id_invitacion INT AUTO_INCREMENT PRIMARY KEY,
+    id_proyecto INT NOT NULL,
+    id_invitado INT NOT NULL,
+    id_invitador INT NOT NULL,
+    rol ENUM('Product Owner', 'Desarrollador') NOT NULL,
+    estado ENUM('Pendiente', 'Aceptada')
+        NOT NULL DEFAULT 'Pendiente',
+    fecha_creacion TIMESTAMP
+        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_respuesta TIMESTAMP NULL DEFAULT NULL,
+    UNIQUE KEY uq_invitacion_por_proyecto (
+        id_proyecto,
+        id_invitado
+    ),
+
+    INDEX idx_invitaciones_bandeja (
+        id_invitado,
+        estado
+    ),
+
+    CONSTRAINT fk_invitaciones_proyecto
+        FOREIGN KEY (id_proyecto)
+        REFERENCES proyectos(id_proyecto)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_invitaciones_invitado
+        FOREIGN KEY (id_invitado)
+        REFERENCES usuarios(id_usuario)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_invitaciones_invitador
+        FOREIGN KEY (id_invitador)
+        REFERENCES usuarios(id_usuario)
+        ON DELETE CASCADE
+);
+SELECT * FROM invitaciones_proyecto;

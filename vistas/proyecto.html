@@ -75,7 +75,69 @@
                     </form>
                     <p id="confirmacion-proyecto" class="mensaje-confirmacion" role="status" hidden></p>
                 </section>
+                
+                <section class="bloque" aria-labelledby="titulo-integrantes">
+                    <div class="cabecera-bloque">
+                        <div>
+                            <h2 id="titulo-integrantes">
+                                Integrantes
+                            </h2>
+                            <p class="subtitulo">
+                                Personas que forman parte de este proyecto.
+                            </p>
+                        </div>
+                        <button id="invitar-integrante" type="button" hidden>
+                            + Invitar integrante
+                        </button>
+                    </div>
 
+                    <form id="form-invitacion" class="formulario" method="post" novalidate hidden>
+                        <label for="username-invitado">
+                            Usuario registrado
+                        </label>
+                        <input id="username-invitado" name="username" type="text" maxlength="50" autocomplete="off"
+                            placeholder="Ej. productowner" required>
+                        <label for="rol-invitado">
+                            Rol en este proyecto
+                        </label>
+                        <select id="rol-invitado" name="rol" required>
+                            <option value="Product Owner">
+                                Product Owner
+                            </option>
+                            <option value="Desarrollador">
+                                Desarrollador
+                            </option>
+                        </select>
+                        <p class="ayuda-campo">
+                            El usuario tendrá acceso al proyecto
+                            cuando acepte la invitación.
+                        </p>
+                        <p id="mensaje-invitacion" class="mensaje-error" role="alert" aria-live="polite"></p>
+                        <div class="acciones-formulario">
+                            <button id="cancelar-invitacion" type="button" class="boton-secundario">
+                                Cancelar
+                            </button>
+                            <button type="submit">
+                                Enviar invitación
+                            </button>
+                        </div>
+                    </form>
+                    <p id="confirmacion-invitacion" class="mensaje-confirmacion" role="status" hidden></p>
+                    <p id="estado-integrantes" class="ayuda-campo" role="status">
+                        Cargando integrantes...
+                    </p>
+                    <ul id="lista-integrantes" class="lista-personas"></ul>
+                    <div id="seccion-invitaciones-enviadas" class="seccion-pendientes" hidden>
+                        <h3>
+                            Invitaciones pendientes
+                        </h3>
+                        <p class="ayuda-campo">
+                            Estos usuarios todavía no tienen
+                            acceso al proyecto.
+                        </p>
+                        <ul id="lista-invitaciones-enviadas" class="lista-personas"></ul>
+                    </div>
+                </section>
                 <section class="bloque" aria-labelledby="titulo-sprints">
                     <div class="cabecera-bloque">
                         <div>
