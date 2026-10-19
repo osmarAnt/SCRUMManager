@@ -36,7 +36,31 @@ const BacklogDAO = {
         
         const [result] = await pool.promise().query('DELETE FROM product_backlog WHERE id_historia = ?', [id_historia]);
         return result.affectedRows;
+    },
+
+    actualizar: async (id_historia, datos) => {
+    const { titulo, descripcion, puntos, prioridad } = datos;
+    const [resultado] = await pool.promise().query(
+        'UPDATE product_backlog SET titulo = ?, descripcion = ?, puntos = ?, prioridad = ? WHERE id_historia = ?',
+        [titulo, descripcion, puntos, prioridad, id_historia]
+    );
+    return resultado.affectedRows; // Retorna cuántas filas se modificaron
+    },
+
+// Agregar un criterio de aceptación
+    crearCriterio: async (id_historia, descripcion) => {
+        const query = `INSERT INTO criterios_aceptacion (id_historia, descripcion) VALUES (?, ?)`;
+        const [result] = await pool.promise().query(query, [id_historia, descripcion]);
+        return result.insertId;
+    },
+
+    // Obtener los criterios de una historia
+    obtenerCriteriosPorHistoria: async (id_historia) => {
+        const query = `SELECT * FROM criterios_aceptacion WHERE id_historia = ?`;
+        const [rows] = await pool.promise().query(query, [id_historia]);
+        return rows;
     }
+
 };
 
 module.exports = BacklogDAO;

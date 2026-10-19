@@ -84,6 +84,14 @@ app.use(
     backlogRutas
 );
 
+app.get('/api/usuario-actual', (req, res) => {
+    if (req.session && req.session.rol) {
+        res.json({ rol: req.session.rol });
+    } else {
+        res.status(401).json({ error: 'No hay sesión activa' });
+    }
+});
+
 app.listen(
     puerto,
     () => {
