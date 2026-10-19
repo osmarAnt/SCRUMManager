@@ -140,40 +140,44 @@
                 </section>
 
                 <!-- NUEVA SECCIÓN: Product Backlog integrada con el estilo del sistema -->
-                <section class="bloque" aria-labelledby="titulo-backlog">
+                <section class="bloque" aria-labelledby="titulo-backlog" >
                     <div class="cabecera-bloque">
                         <div>
                             <h2 id="titulo-backlog">Creacion de Historias</h2>
                             <p class="subtitulo">Gestión de historias de usuario y requerimientos del proyecto.</p>
                         </div>
                     </div>
-
-                    <form id="form-backlog" class="formulario" method="post" novalidate>
-                        <label for="titulo-historia">Título de la Historia</label>
-                        <input type="text" id="titulo-historia" name="titulo" placeholder="Ej. Autenticación de usuarios" autocomplete="off" required>
-                        
-                        <label for="desc-historia">Descripción</label>
-                        <textarea id="desc-historia" name="descripcion" rows="3" maxlength="1000" placeholder="Detalles de la funcionalidad..." required></textarea>
-                        
-                        <div class="fila-fechas">
-                            <div>
-                                <label for="puntos-historia">Puntos de Historia</label>
-                                <input type="number" id="puntos-historia" name="puntos" min="1" placeholder="Ej. 3, 5, 8">
+                    
+                    <!-- CORRECCIÓN: Comillas en el ID añadidas -->
+                    <div id="contenedor-formulario">
+                        <!-- CORRECCIÓN: ID ajustado al JS -->
+                        <form id="formulario-crear-historia" class="formulario" method="post" novalidate>
+                            <label for="titulo">Título de la Historia</label>
+                            <input type="text" id="titulo" name="titulo" placeholder="Ej. Autenticación de usuarios" autocomplete="off" required>
+                            
+                            <label for="descripcion">Descripción</label>
+                            <textarea id="descripcion" name="descripcion" rows="3" maxlength="1000" placeholder="Detalles de la funcionalidad..." required></textarea>
+                            
+                            <div class="fila-fechas">
+                                <div>
+                                    <label for="puntos">Puntos de Historia</label>
+                                    <input type="number" id="puntos" name="puntos" min="1" placeholder="Ej. 3, 5, 8">
+                                </div>
+                                <div>
+                                    <label for="prioridad">Prioridad</label>
+                                    <select id="prioridad" name="prioridad">
+                                        <option value="Alta">Alta</option>
+                                        <option value="Media" selected>Media</option>
+                                        <option value="Baja">Baja</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div>
-                                <label for="prioridad-historia">Prioridad</label>
-                                <select id="prioridad-historia" name="prioridad">
-                                    <option value="Alta">Alta</option>
-                                    <option value="Media" selected>Media</option>
-                                    <option value="Baja">Baja</option>
-                                </select>
-                            </div>
-                        </div>
 
-                        <div class="acciones-formulario" style="margin-top: 15px;">
-                            <button type="submit">Guardar en Backlog</button>
-                        </div>
-                    </form>
+                            <div class="acciones-formulario" style="margin-top: 15px;">
+                                <button type="submit">Guardar en Backlog</button>
+                            </div>
+                        </form>
+                    </div>
 
                     <h3 style="margin-top: 30px; margin-bottom: 15px;">Historias Actuales</h3>
                     <div style="overflow-x: auto;">
@@ -187,7 +191,8 @@
                                     <th style="padding: 10px;">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id="cuerpo-tabla-backlog">
+                            <!-- CORRECCIÓN: ID ajustado al JS -->
+                            <tbody id="tabla-backlog-body">
                                 <!-- Los datos se inyectarán dinámicamente mediante JavaScript -->
                             </tbody>
                         </table>
