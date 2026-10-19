@@ -71,7 +71,6 @@ exports.actualizarHistoria = async (req, res) => {
     }
 };
 
-// Obtener criterios de aceptación de una historia
 exports.obtenerCriterios = async (req, res) => {
     const { id_historia } = req.params;
     try {
@@ -83,7 +82,6 @@ exports.obtenerCriterios = async (req, res) => {
     }
 };
 
-// Crear criterio de aceptación
 exports.crearCriterio = async (req, res) => {
     if (!req.session || req.session.rol !== 'Product Owner') {
         return res.status(403).json({ error: 'Acceso denegado: Solo el Product Owner puede gestionar criterios.' });

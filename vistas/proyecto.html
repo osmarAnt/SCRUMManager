@@ -139,7 +139,7 @@
                     </div>
                 </section>
 
-                <!-- NUEVA SECCIÓN: Product Backlog integrada con el estilo del sistema -->
+                <!-- SECCIÓN: Product Backlog -->
                 <section class="bloque" aria-labelledby="titulo-backlog" >
                     <div class="cabecera-bloque">
                         <div>
@@ -148,9 +148,7 @@
                         </div>
                     </div>
                     
-                    <!-- CORRECCIÓN: Comillas en el ID añadidas -->
                     <div id="contenedor-formulario">
-                        <!-- CORRECCIÓN: ID ajustado al JS -->
                         <form id="formulario-crear-historia" class="formulario" method="post" novalidate>
                             <label for="titulo">Título de la Historia</label>
                             <input type="text" id="titulo" name="titulo" placeholder="Ej. Autenticación de usuarios" autocomplete="off" required>
@@ -191,13 +189,35 @@
                                     <th style="padding: 10px;">Acciones</th>
                                 </tr>
                             </thead>
-                            <!-- CORRECCIÓN: ID ajustado al JS -->
                             <tbody id="tabla-backlog-body">
                                 <!-- Los datos se inyectarán dinámicamente mediante JavaScript -->
                             </tbody>
                         </table>
                     </div>
                 </section>
+
+                <!-- NUEVA SECCIÓN: PANEL DE CRITERIOS DE ACEPTACIÓN (PB-12) -->
+                <div id="panel-criterios" class="bloque" style="margin-top: 20px; display: none;">
+                    <div class="cabecera-bloque">
+                        <div>
+                            <h3 id="titulo-criterios-historia">Criterios de Aceptación</h3>
+                            <p class="subtitulo">Gestiona los criterios de aceptación para esta historia.</p>
+                        </div>
+                        <button type="button" onclick="cerrarPanelCriterios()" class="boton-secundario">Cerrar</button>
+                    </div>
+
+                    <form id="form-crear-criterio" class="formulario" style="margin-bottom: 20px;">
+                        <label for="desc-criterio">Nuevo Criterio (Dado / Cuando / Entonces)</label>
+                        <textarea id="desc-criterio" name="descripcion" rows="2" placeholder="Ej. Dada una cuenta activa, cuando..." required></textarea>
+                        <div class="acciones-formulario" style="margin-top: 10px;">
+                            <button type="submit">Agregar Criterio</button>
+                        </div>
+                    </form>
+
+                    <ul id="lista-criterios" style="list-style-type: none; padding: 0;">
+                        <!-- Se inyectarán dinámicamente -->
+                    </ul>
+                </div>
 
                 <section class="bloque" aria-labelledby="titulo-sprints">
                     <div class="cabecera-bloque">
@@ -250,7 +270,7 @@
         </article>
     </template>
 
-    <!-- Script del Backlog (asegúrate de que apunte correctamente a tu archivo JS) -->
+    <!-- Script del Backlog -->
     <script src="/js/backlog.js" defer></script>
 </body>
 </html>
