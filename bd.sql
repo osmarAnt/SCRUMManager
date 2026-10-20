@@ -21,7 +21,8 @@ CREATE TABLE usuarios (
 INSERT INTO usuarios (nombre, username, password, rol) VALUES
 ('Scrum Master', 'scrummaster', '1234', 'Scrum Master'),
 ('Product Owner', 'productowner', '1234', 'Product Owner'),
-('Desarrollador', 'desarrollador', '1234', 'Desarrollador');
+('Desarrollador', 'desarrollador', '1234', 'Desarrollador'),
+('Desarrollador2', 'desarrollador', '1234', 'Desarrollador2');
 
 SELECT * FROM usuarios;
 
@@ -137,3 +138,28 @@ CREATE TABLE IF NOT EXISTS criterios_aceptacion (
 
 ALTER TABLE product_backlog 
 ADD COLUMN puntos INT NULL AFTER descripcion;
+
+
+
+#--yisus--
+ALTER TABLE product_backlog
+    ADD COLUMN estado_historia
+        ENUM('Pendiente', 'En curso', 'Terminada')
+        NOT NULL DEFAULT 'Pendiente',
+
+    ADD COLUMN id_responsable INT NULL,
+
+    ADD CONSTRAINT fk_pb_responsable
+        FOREIGN KEY (id_responsable)
+        REFERENCES usuarios(id_usuario)
+        ON DELETE SET NULL;
+        
+        
+        
+        
+        
+	
+        
+        
+        
+        

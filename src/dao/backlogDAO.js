@@ -2,6 +2,120 @@
 const pool = require('../base_de_datos/conexion');
 
 const BacklogDAO = {
+
+        // ===== JESÚS: PB-14 - AGREGAR HISTORIA AL SPRINT =====
+
+        agregarAlSprint: async (idProyecto, idSprint, idHistoria) => {
+
+
+
+                
+
+            const query = `
+                UPDATE product_backlog AS historia
+
+                INNER JOIN sprints AS sprint
+                    ON sprint.id_sprint = ?
+                    AND sprint.id_proyecto = historia.id_proyecto
+
+                SET historia.id_sprint = sprint.id_sprint
+
+                WHERE historia.id_historia = ?
+                    AND historia.id_proyecto = ?
+                    AND historia.id_sprint IS NULL
+                    AND sprint.estado = 'Planificado'
+            `;
+
+            const [resultado] = await pool.promise().query(query, [
+                idSprint,
+                idHistoria,
+                idProyecto
+            ]);
+
+            return resultado.affectedRows > 0;
+        },
+
+        // ===== FIN PB-14 =====
+
+
+        // ===== JESÚS: PB-15 =====
+
+// Quitar una historia pendiente de un Sprint
+quitarDelSprint: async (idProyecto, idSprint, idHistoria) => {
+
+    const query = `
+        UPDATE product_backlog
+
+        SET
+            id_sprint = NULL,
+            id_responsable = NULL
+
+        WHERE id_proyecto = ?
+        AND id_sprint = ?
+        AND id_historia = ?
+        AND estado_historia = 'Pendiente'
+    `;
+
+    const [resultado] = await pool.promise().query(query, [
+        idProyecto,
+        idSprint,
+        idHistoria
+    ]);
+
+    return resultado.affectedRows > 0;
+},
+
+// ===== JESÚS: PB-16 =====
+
+// Asignar una historia a un desarrollador del proyecto
+asignarResponsable: async (
+    idProyecto,
+    idSprint,
+    idHistoria,
+    idResponsable
+) => {
+
+    const query = `
+        UPDATE product_backlog AS historia
+
+        INNER JOIN proyecto_usuarios AS integrante
+            ON integrante.id_proyecto = historia.id_proyecto
+            AND integrante.id_usuario = ?
+            AND integrante.rol = 'Desarrollador'
+            AND integrante.activo = TRUE
+
+        INNER JOIN usuarios AS usuario
+            ON usuario.id_usuario = integrante.id_usuario
+            AND usuario.activo = TRUE
+
+        SET historia.id_responsable = integrante.id_usuario
+
+        WHERE historia.id_proyecto = ?
+        AND historia.id_sprint = ?
+        AND historia.id_historia = ?
+    `;
+
+    const [resultado] = await pool.promise().query(query, [
+        idResponsable,
+        idProyecto,
+        idSprint,
+        idHistoria
+    ]);
+
+    return resultado.affectedRows > 0;
+},
+
+// ===== FIN FUNCIONES DE JESÚS =====
+
+
+
+
+
+
+
+
+
+
     crear: async (datos) => {
         const { id_proyecto, titulo, descripcion, puntos, prioridad } = datos;
         

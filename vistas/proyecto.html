@@ -255,6 +255,57 @@
 
                     <p id="sin-sprints" class="texto-dato" hidden>Todavía no hay Sprints configurados.</p>
                     <div id="lista-sprints" class="lista-sprints"></div>
+                                    <!-- PB-14, PB-15 y PB-16: Gestión del Sprint Backlog -->
+                <div id="seccion-sprint-backlog" class="seccion-pendientes" hidden>
+
+                    <h3>Sprint Backlog</h3>
+
+                    <p class="ayuda-campo">
+                        Administra las historias de usuario asignadas a cada Sprint.
+                    </p>
+
+                    <!-- PB-14: Agregar historias al Sprint -->
+                    <form id="form-agregar-historia" class="formulario" hidden>
+
+                        <label for="seleccionar-sprint">
+                            Seleccionar Sprint
+                        </label>
+
+                        <select id="seleccionar-sprint" required>
+                            <option value="">Selecciona un Sprint</option>
+                        </select>
+
+                        <label for="seleccionar-historia">
+                            Seleccionar historia del Product Backlog
+                        </label>
+
+                        <select id="seleccionar-historia" required>
+                            <option value="">Selecciona una historia</option>
+                        </select>
+
+                        <p id="mensaje-agregar-historia"
+                        class="mensaje-error"
+                        role="alert">
+                        </p>
+
+                        <div class="acciones-formulario">
+                            <button type="submit">
+                                Agregar historia al Sprint
+                            </button>
+                        </div>
+
+                    </form>
+
+                    <!-- Historias asignadas al Sprint -->
+                    <div id="historias-sprint" class="lista-sprints"></div>
+
+                    <p id="confirmacion-backlog"
+                    class="mensaje-confirmacion"
+                    hidden>
+                    </p>
+
+                </div>
+
                 </section>
             </div>
         </main>
