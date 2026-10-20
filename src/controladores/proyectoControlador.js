@@ -1,6 +1,8 @@
 const path = require('path');
 const proyectoDAO = require('../dao/proyectoDAO');
 const sprintDAO = require('../dao/sprintDAO');
+// JESÚS: PB-14
+const backlogDAO = require('../dao/backlogDAO');
 
 const DURACION_MAXIMA_SPRINT = 31;
 const CARACTERES_DE_CONTROL = /[\u0000-\u001f\u007f]/;
@@ -236,6 +238,199 @@ const crearSprint = async (req, res) => {
     }
 };
 
+
+
+// ===== JESÚS: PB-14 - AGREGAR HISTORIAS AL SPRINT =====
+
+const agregarHistoriaAlSprint = async (req, res) => {
+
+    const idProyecto = leerIdProyecto(req);
+    const { id_sprint, id_historia } = req.body || {};
+
+    // Validar los identificadores
+    if (
+        idProyecto === null ||
+        !Number.isSafeInteger(Number(id_sprint)) ||
+        !Number.isSafeInteger(Number(id_historia)) ||
+        Number(id_sprint) <= 0 ||
+        Number(id_historia) <= 0
+    ) {
+        return res.status(400).json({
+            mensaje: 'Selecciona un Sprint y una historia válidos.'
+        });
+    }
+
+    try {
+
+        // Comprobar que sea Scrum Master del proyecto
+        const rol = await autorizarAcceso(
+            req,
+            res,
+            idProyecto,
+            true
+        );
+
+        if (!rol) return;
+
+        // Agregar la historia utilizando el DAO de Osmar
+        const agregado = await backlogDAO.agregarAlSprint(
+            idProyecto,
+            Number(id_sprint),
+            Number(id_historia)
+        );
+
+        if (!agregado) {
+            return res.status(409).json({
+                mensaje: 'No se pudo agregar la historia. Verifica que esté disponible y que el Sprint esté planificado.'
+            });
+        }
+
+        // Respuesta exitosa
+        return res.json({
+            mensaje: 'Historia agregada al Sprint correctamente.'
+        });
+
+    } catch (error) {
+
+        console.error('Error al agregar historia:', error);
+
+        return res.status(500).json({
+            mensaje: 'Error al agregar la historia al Sprint.'
+        });
+
+    }
+};
+
+// ===== FIN PB-14 =====
+
+
+
+
+// ===== JESÚS: PB-15 Y PB-16 =====
+
+const idPositivo = (valor) =>
+    /^\d{1,10}$/.test(String(valor)) &&
+    Number.isSafeInteger(Number(valor)) &&
+    Number(valor) > 0;
+
+
+// PB-15: Quitar historias pendientes
+const quitarHistoriaDelSprint = async (req, res) => {
+
+    const idProyecto = leerIdProyecto(req);
+    const { idSprint, idHistoria } = req.params;
+
+    if (
+        idProyecto === null ||
+        !idPositivo(idSprint) ||
+        !idPositivo(idHistoria)
+    ) {
+        return res.status(400).json({
+            mensaje: 'Identificadores no válidos.'
+        });
+    }
+
+    try {
+
+        // Solo el Scrum Master puede quitar historias
+        const rol = await autorizarAcceso(
+            req,
+            res,
+            idProyecto,
+            true
+        );
+
+        if (!rol) return;
+
+        const eliminado = await backlogDAO.quitarDelSprint(
+            idProyecto,
+            Number(idSprint),
+            Number(idHistoria)
+        );
+
+        if (!eliminado) {
+            return res.status(409).json({
+                mensaje:
+                    'No se puede quitar la historia porque no está pendiente o no pertenece a este Sprint.'
+            });
+        }
+
+        return res.json({
+            mensaje: 'Historia devuelta al Product Backlog.'
+        });
+
+    } catch (error) {
+
+        return errorServidor(
+            res,
+            'Error al quitar historia del Sprint',
+            error
+        );
+    }
+};
+
+
+// PB-16: Asignar desarrollador
+const asignarResponsableHistoria = async (req, res) => {
+
+    const idProyecto = leerIdProyecto(req);
+    const { idSprint, idHistoria } = req.params;
+    const { id_responsable } = req.body || {};
+
+    if (
+        idProyecto === null ||
+        !idPositivo(idSprint) ||
+        !idPositivo(idHistoria) ||
+        !idPositivo(id_responsable)
+    ) {
+        return res.status(400).json({
+            mensaje: 'Selecciona un desarrollador válido.'
+        });
+    }
+
+    try {
+
+        // Solo el Scrum Master puede asignar responsables
+        const rol = await autorizarAcceso(
+            req,
+            res,
+            idProyecto,
+            true
+        );
+
+        if (!rol) return;
+
+        const asignado = await backlogDAO.asignarResponsable(
+            idProyecto,
+            Number(idSprint),
+            Number(idHistoria),
+            Number(id_responsable)
+        );
+
+        if (!asignado) {
+            return res.status(409).json({
+                mensaje:
+                    'No se pudo asignar. Verifica que la historia pertenezca al Sprint y que el usuario sea desarrollador del proyecto.'
+            });
+        }
+
+        return res.json({
+            mensaje: 'Desarrollador asignado correctamente.'
+        });
+
+    } catch (error) {
+
+        return errorServidor(
+            res,
+            'Error al asignar desarrollador',
+            error
+        );
+    }
+};
+
+// ===== FIN FUNCIONES DE JESÚS =====
+
+
 module.exports = {
     mostrarProyectos,
     listarProyectos,
@@ -243,5 +438,8 @@ module.exports = {
     mostrarProyecto,
     consultarProyecto,
     actualizarProyecto,
-    crearSprint
+    crearSprint,
+    agregarHistoriaAlSprint,
+    quitarHistoriaDelSprint,
+    asignarResponsableHistoria
 };

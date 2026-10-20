@@ -50,6 +50,20 @@ router.post(
     proyectoControlador.crearSprint
 );
 
+
+// ===== JESÚS: PB-14 - AGREGAR HISTORIAS AL SPRINT =====
+
+router.post(
+    '/:id/sprints/historias',
+    verificarSesion,
+    proyectoControlador.agregarHistoriaAlSprint
+);
+
+// ===== FIN PB-14 =====
+
+
+
+
 router.get(
     '/:id/integrantes',
     verificarSesion,
@@ -61,5 +75,28 @@ router.post(
     verificarSesion,
     invitacionControlador.invitar
 );
+
+
+
+// ===== JESÚS: PB-15 =====
+
+// Quitar una historia pendiente del Sprint
+router.delete(
+    '/:id/sprints/:idSprint/historias/:idHistoria',
+    verificarSesion,
+    proyectoControlador.quitarHistoriaDelSprint
+);
+
+
+// ===== JESÚS: PB-16 =====
+
+// Asignar desarrollador a una historia
+router.put(
+    '/:id/sprints/:idSprint/historias/:idHistoria/responsable',
+    verificarSesion,
+    proyectoControlador.asignarResponsableHistoria
+);
+
+// ===== FIN RUTAS DE JESÚS =====   
 
 module.exports = router;
