@@ -121,11 +121,19 @@
                     </div>
 
                     <form id="form-invitacion" class="formulario" method="post" novalidate hidden>
-                        <label for="username-invitado">
-                            Usuario registrado
+                        <label for="buscar-usuario">
+                            Buscar usuario registrado
                         </label>
-                        <input id="username-invitado" name="username" type="text" maxlength="50" autocomplete="off"
-                            placeholder="Ej. productowner" required>
+                        <input id="buscar-usuario" type="search" placeholder="Buscar por nombre o usuario" autocomplete="off">
+                        <label for="username-invitado">
+                            Selecciona un usuario de la lista
+                        </label>
+                        <select id="username-invitado" name="username" size="3" required></select>
+                        <p class="ayuda-campo">
+                            Se muestran las cuentas registradas que
+                            todavía no pertenecen al proyecto ni
+                            tienen invitaciones pendientes.
+                        </p>
                         <label for="rol-invitado">
                             Rol en este proyecto
                         </label>
@@ -156,6 +164,7 @@
                         Cargando integrantes...
                     </p>
                     <ul id="lista-integrantes" class="lista-personas"></ul>
+                    <p id="mensaje-integrantes" class="mensaje-error" role="alert" aria-live="polite"></p>
                     <div id="seccion-invitaciones-enviadas" class="seccion-pendientes" hidden>
                         <h3>
                             Invitaciones pendientes

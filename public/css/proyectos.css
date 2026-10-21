@@ -491,3 +491,56 @@ a.tarjeta-proyecto:hover {
 .seccion-pendientes .ayuda-campo {
     margin-top: 6px;
 }
+#username-invitado[size] {
+    height: 120px;
+    min-height: 120px;
+    padding: 5px;
+    overflow-y: auto;
+}
+
+#username-invitado option {
+    padding: 10px;
+    cursor: pointer;
+}
+
+#username-invitado option:checked {
+    background: var(--azul-claro);
+    color: var(--texto);
+}
+
+.acciones-integrante {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.acciones-integrante button {
+    padding: 9px 13px;
+}
+
+.acciones-integrante select {
+    min-height: 40px;
+    padding: 8px;
+    border: 1px solid var(--borde);
+    border-radius: 7px;
+    color: var(--texto);
+}
+
+.boton-peligro {
+    color: #b42318;
+    background: #ffffff;
+    border: 1px solid #f0b1ab;
+}
+
+.boton-peligro:hover {
+    background: #fff1f0;
+}
+
+@media (max-width: 700px) {
+
+    .acciones-integrante {
+        width: 100%;
+    }
+
+}
