@@ -152,7 +152,7 @@ ALTER TABLE product_backlog
         FOREIGN KEY (id_responsable)
         REFERENCES usuarios(id_usuario)
         ON DELETE SET NULL;
-
+#--Franks spring 2--
 CREATE TABLE IF NOT EXISTS mensajes_product_owner (
     id_mensaje INT AUTO_INCREMENT PRIMARY KEY,
     id_proyecto INT NOT NULL,
