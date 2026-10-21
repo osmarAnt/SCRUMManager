@@ -29,6 +29,7 @@ const plantillaSprint = document.getElementById('plantilla-sprint');
 
 const SIN_OBJETIVO = 'Este proyecto todavía no tiene un objetivo registrado.';
 let proyectoActual = null;
+let puedeGestionarIntegrantes = false;
 
 const mostrarEstado = (titulo, descripcion, tipo = '') => {
     contenido.hidden = true;
@@ -108,7 +109,8 @@ const cargarProyecto = async () => {
         rolProyecto.textContent = datos.rol;
         botonEditar.hidden = !datos.puedeAdministrar;
         botonNuevoSprint.hidden = !datos.puedeAdministrar;
-        botonInvitar.hidden = !datos.puedeInvitar;
+        puedeGestionarIntegrantes = datos.puedeInvitar === true;
+        botonInvitar.hidden = !puedeGestionarIntegrantes;
         formInvitacion.hidden = true;
         formEditar.hidden = true;
         formSprint.hidden = true;
@@ -279,6 +281,16 @@ const seccionPendientes = document.getElementById(
 const listaPendientes = document.getElementById(
     'lista-invitaciones-enviadas'
 );
+const mensajeIntegrantes = document.getElementById(
+    'mensaje-integrantes'
+);
+const buscarUsuario = document.getElementById(
+    'buscar-usuario'
+);
+const selectorUsuarios = document.getElementById(
+    'username-invitado'
+);
+let usuariosDisponibles = [];
 
 const crearFilaPersona = (
     nombre,
@@ -308,6 +320,196 @@ const crearFilaPersona = (
     );
     return fila;
 };
+const pintarUsuariosDisponibles = () => {
+    const busqueda = buscarUsuario.value
+        .trim()
+        .toLocaleLowerCase('es-MX');
+    const filtrados = usuariosDisponibles.filter(
+        (usuario) => {
+            const texto =
+                `${usuario.nombre} ${usuario.username}`
+                    .toLocaleLowerCase('es-MX');
+            return texto.includes(busqueda);
+        }
+    );
+
+    selectorUsuarios.replaceChildren();
+    filtrados.forEach((usuario) => {
+        const opcion = document.createElement('option');
+        opcion.value = usuario.username;
+        opcion.textContent =
+            `${usuario.nombre} (@${usuario.username})`;
+        selectorUsuarios.appendChild(opcion);
+    });
+
+    selectorUsuarios.selectedIndex = -1;
+    if (filtrados.length === 0) {
+        mensajeInvitacion.textContent =
+            'No hay usuarios disponibles con esa búsqueda.';
+    } else {
+        mensajeInvitacion.textContent = '';
+    }
+};
+
+const cargarUsuariosDisponibles = async () => {
+    const respuesta = await peticionJson(
+        `/proyectos/${idProyecto}/usuarios-disponibles`,
+        'GET'
+    );
+
+    if (!respuesta) {
+        return;
+    }
+    if (!respuesta.ok) {
+        throw new Error(
+            respuesta.resultado.mensaje ||
+            'No se pudieron cargar los usuarios.'
+        );
+    }
+    usuariosDisponibles = respuesta.resultado.usuarios;
+    pintarUsuariosDisponibles();
+};
+
+buscarUsuario.addEventListener(
+    'input',
+    pintarUsuariosDisponibles
+);
+const crearControlesIntegrante = (persona) => {
+    const contenedor = document.createElement('div');
+    contenedor.className = 'acciones-integrante';
+    const editar = document.createElement('button');
+    editar.type = 'button';
+    editar.textContent = 'Editar rol';
+    editar.className = 'boton-secundario';
+    
+    const eliminar = document.createElement('button');
+    eliminar.type = 'button';
+    eliminar.textContent = 'Eliminar';
+    eliminar.className = 'boton-peligro';
+    
+    const mostrarControles = () => {
+        contenedor.replaceChildren(
+            editar,
+            eliminar
+        );
+    };
+    mostrarControles();
+    editar.addEventListener('click', () => {
+        const seleccion = document.createElement('select');
+        seleccion.setAttribute(
+            'aria-label',
+            `Nuevo rol de ${persona.nombre}`
+        );
+        const roles = [
+            'Product Owner',
+            'Desarrollador'
+        ];
+        roles.forEach((rol) => {
+            const opcion = document.createElement('option');
+            opcion.value = rol;
+            opcion.textContent = rol;
+            seleccion.appendChild(opcion);
+        });
+        seleccion.value = persona.rol;
+
+        const guardar = document.createElement('button');
+        guardar.type = 'button';
+        guardar.textContent = 'Guardar';
+        
+        const cancelar = document.createElement('button');
+        cancelar.type = 'button';
+        cancelar.textContent = 'Cancelar';
+        cancelar.className = 'boton-secundario';
+        cancelar.addEventListener(
+            'click',
+            mostrarControles
+        );
+       
+        contenedor.replaceChildren(
+            seleccion,
+            guardar,
+            cancelar
+        );
+        
+        guardar.addEventListener('click', async () => {
+            guardar.disabled = true;
+            mensajeIntegrantes.textContent = '';
+            try {
+                const respuesta = await peticionJson(
+                    `/proyectos/${idProyecto}/integrantes/${persona.id_usuario}`,
+                    'PUT',
+                    {
+                        rol: seleccion.value
+                    }
+                );
+                if (!respuesta) {
+                    return;
+                }
+                if (!respuesta.ok) {
+                    mensajeIntegrantes.textContent =
+                        respuesta.resultado.mensaje ||
+                        'No se pudo editar el rol.';
+                    return;
+                }
+                avisar(
+                    confirmacionInvitacion,
+                    respuesta.resultado.mensaje
+                );
+                await cargarIntegrantes();
+            } catch (error) {
+                console.error(error);
+                mensajeIntegrantes.textContent =
+                    'Error de conexión al editar el rol.';
+            } finally {
+                guardar.disabled = false;
+            }
+        });
+    });
+
+    eliminar.addEventListener('click', async () => {
+        const confirmar = window.confirm(
+            `¿Eliminar a ${persona.nombre} ` +
+            `(@${persona.username}) del proyecto? ` +
+            `Perderá el acceso.`
+        );
+
+        if (!confirmar) {
+            return;
+        }
+
+        eliminar.disabled = true;
+        mensajeIntegrantes.textContent = '';
+        try {
+            const respuesta = await peticionJson(
+                `/proyectos/${idProyecto}/integrantes/${persona.id_usuario}`,
+                'DELETE'
+            );
+            if (!respuesta) {
+                return;
+            }
+            if (!respuesta.ok) {
+                mensajeIntegrantes.textContent =
+                    respuesta.resultado.mensaje ||
+                    'No se pudo eliminar al integrante.';
+                return;
+            }
+            avisar(
+                confirmacionInvitacion,
+                respuesta.resultado.mensaje
+            );
+
+            await cargarIntegrantes();
+        } catch (error) {
+            console.error(error);
+            mensajeIntegrantes.textContent =
+                'Error de conexión al eliminar al integrante.';
+        } finally {
+            eliminar.disabled = false;
+        }
+    });
+    return contenedor;
+
+};
 
 const cargarIntegrantes = async () => {
     estadoIntegrantes.hidden = false;
@@ -330,37 +532,58 @@ const cargarIntegrantes = async () => {
                 'No se pudo cargar la lista.'
             );
         }
+
         const {
             integrantes,
             invitaciones
         } = respuesta.resultado;
+
         estadoIntegrantes.hidden =
             integrantes.length > 0;
         estadoIntegrantes.textContent =
             integrantes.length
                 ? ''
                 : 'Este proyecto todavía no tiene integrantes.';
+        const usuariosMostrados = new Set();
         integrantes.forEach((persona) => {
-            listaIntegrantes.appendChild(
-                crearFilaPersona(
-                    persona.nombre,
-                    persona.username,
-                    persona.rol
-                )
+            if (usuariosMostrados.has(persona.id_usuario)) {
+                return;
+            }
+
+            usuariosMostrados.add(persona.id_usuario);
+            const fila = crearFilaPersona(
+                persona.nombre,
+                persona.username,
+                persona.rol
             );
+
+            if (
+                puedeGestionarIntegrantes &&
+                persona.rol !== 'Scrum Master'
+            ) {
+                fila.appendChild(
+                    crearControlesIntegrante(persona)
+                );
+            }
+
+            listaIntegrantes.appendChild(fila);
         });
+
         seccionPendientes.hidden =
+            !puedeGestionarIntegrantes ||
             invitaciones.length === 0;
-        invitaciones.forEach((persona) => {
-            listaPendientes.appendChild(
-                crearFilaPersona(
+        if (puedeGestionarIntegrantes) {
+            invitaciones.forEach((persona) => {
+                const fila = crearFilaPersona(
                     persona.nombre,
                     persona.username,
                     persona.rol,
                     'Pendiente'
-                )
-            );
-        });
+                );
+                listaPendientes.appendChild(fila);
+            });
+        }
+
     } catch (error) {
         console.error(error);
         estadoIntegrantes.hidden = false;
@@ -369,37 +592,44 @@ const cargarIntegrantes = async () => {
     }
 };
 
-botonInvitar.addEventListener('click', () => {
+botonInvitar.addEventListener('click', async () => {
     formInvitacion.reset();
     mensajeInvitacion.textContent = '';
     confirmacionInvitacion.hidden = true;
     formInvitacion.hidden = false;
-    document.getElementById(
-        'username-invitado'
-    ).focus();
-});
+    buscarUsuario.value = '';
+    usuariosDisponibles = [];
+    selectorUsuarios.replaceChildren();
+    buscarUsuario.focus();
+    try {
+        await cargarUsuariosDisponibles();
+    } catch (error) {
+        console.error(error);
+        mensajeInvitacion.textContent = error.message;
+    }
 
+});
 document.getElementById(
     'cancelar-invitacion'
 ).addEventListener('click', () => {
     formInvitacion.hidden = true;
 });
-
 formInvitacion.addEventListener(
     'submit',
     async (evento) => {
         evento.preventDefault();
         mensajeInvitacion.textContent = '';
-        const username = document.getElementById(
-            'username-invitado'
-        ).value.trim();
+        const username = selectorUsuarios.value;
         const rol = document.getElementById(
             'rol-invitado'
         ).value;
         if (!username || username.length > 50) {
+
             mensajeInvitacion.textContent =
-                'Escribe un nombre de usuario válido.';
+                'Selecciona un usuario de la lista.';
+
             return;
+
         }
         const boton = formInvitacion.querySelector(
             'button[type="submit"]'
@@ -467,26 +697,18 @@ let sprintsBacklog = [];
 let desarrolladoresBacklog = [];
 
 
-// Preparar la sección de Sprint Backlog
 async function prepararSprintBacklog(sprints, puedeAdministrar) {
-
     seccionSprintBacklog.hidden =
         !puedeAdministrar || sprints.length === 0;
 
     if (seccionSprintBacklog.hidden) return;
-
     formAgregarHistoria.hidden = false;
-
     sprintsBacklog = sprints;
-
     const anterior = seleccionarSprint.value;
-
     seleccionarSprint.replaceChildren(
         new Option('Selecciona un Sprint', '')
     );
-
     sprints.forEach(sprint => {
-
         seleccionarSprint.add(
             new Option(
                 `Sprint ${sprint.numero}`,
@@ -500,42 +722,27 @@ async function prepararSprintBacklog(sprints, puedeAdministrar) {
     )
         ? anterior
         : String(sprints[0].id_sprint);
-
     await cargarSprintBacklog();
 }
 
-
-// Consultar las historias y los desarrolladores
 async function cargarSprintBacklog() {
-
     const idSprint = Number(seleccionarSprint.value);
-
     listaHistoriasSprint.replaceChildren();
-
     seleccionarHistoria.replaceChildren(
         new Option('Selecciona una historia', '')
     );
-
     mensajeAgregarHistoria.textContent = '';
-
     if (!idSprint) {
-
         listaHistoriasSprint.textContent =
             'Selecciona un Sprint.';
-
         return;
     }
-
     try {
-
-        // Historias creadas por Osmar
         const [resHistorias, resIntegrantes] = await Promise.all([
-
             peticionJson(
                 `/backlog/${idProyecto}`,
                 'GET'
             ),
-
             peticionJson(
                 `/proyectos/${idProyecto}/integrantes`,
                 'GET'
@@ -543,7 +750,6 @@ async function cargarSprintBacklog() {
         ]);
 
         if (!resHistorias || !resIntegrantes) return;
-
         if (
             !resHistorias.ok ||
             !Array.isArray(resHistorias.resultado) ||
@@ -554,13 +760,10 @@ async function cargarSprintBacklog() {
         }
 
         const historias = resHistorias.resultado;
-
-        // Desarrolladores que pertenecen al proyecto
         desarrolladoresBacklog =
             resIntegrantes.resultado.integrantes.filter(
                 persona => persona.rol === 'Desarrollador'
             );
-
         const sprint = sprintsBacklog.find(
             sprint => Number(sprint.id_sprint) === idSprint
         );

@@ -141,7 +141,8 @@ const integrantes = async (req, res) => {
         }
         const datos = await invitacionDAO.listarIntegrantes(
             idProyecto,
-            rol === 'Scrum Master'
+            rol === 'Scrum Master' &&
+            req.session.rol === 'Scrum Master'
         );
         return res.json(datos);
     } catch (error) {

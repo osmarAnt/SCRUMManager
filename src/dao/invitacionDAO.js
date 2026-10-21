@@ -64,15 +64,50 @@ const crearInvitacion = async (
             return await fallar('ya_integrante');
         }
         const [previas] = await tx.query(
-            `SELECT estado
-             FROM invitaciones_proyecto
-             WHERE id_proyecto = ?
-             AND id_invitado = ?
-             LIMIT 1`,
+
+            `SELECT id_invitacion, estado
+
+     FROM invitaciones_proyecto
+
+     WHERE id_proyecto = ?
+     AND id_invitado = ?
+
+     LIMIT 1`,
+
             [idProyecto, invitado.id_usuario]
+
         );
         if (previas.length) {
-            return await fallar('ya_invitado');
+            if (previas[0].estado === 'Pendiente') {
+                return await fallar('ya_invitado');
+            }
+            await tx.query(
+                `UPDATE invitaciones_proyecto
+         SET
+            rol = ?,
+            id_invitador = ?,
+            estado = 'Pendiente',
+            fecha_creacion = CURRENT_TIMESTAMP,
+            fecha_respuesta = NULL
+         WHERE id_invitacion = ?`,
+                [
+                    rol,
+                    idInvitador,
+                    previas[0].id_invitacion
+                ]
+            );
+            await tx.commit();
+            return {
+                invitacion: {
+                    id_invitacion: previas[0].id_invitacion,
+                    id_proyecto: idProyecto,
+                    id_invitado: invitado.id_usuario,
+                    nombre: invitado.nombre,
+                    username: invitado.username,
+                    rol,
+                    estado: 'Pendiente'
+                }
+            };
         }
         const [resultado] = await tx.query(
             `INSERT INTO invitaciones_proyecto
