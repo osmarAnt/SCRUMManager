@@ -1,4 +1,4 @@
-#Creacion base de datos
+#Creacion base de datos Downzon
 CREATE DATABASE scrument;
 USE scrument;
 CREATE USER 'userScrument'@'localhost' IDENTIFIED BY 'scrument123';
@@ -21,8 +21,7 @@ CREATE TABLE usuarios (
 INSERT INTO usuarios (nombre, username, password, rol) VALUES
 ('Scrum Master', 'scrummaster', '1234', 'Scrum Master'),
 ('Product Owner', 'productowner', '1234', 'Product Owner'),
-('Desarrollador', 'desarrollador', '1234', 'Desarrollador'),
-('Desarrollador2', 'desarrollador', '1234', 'Desarrollador2');
+('Desarrollador', 'desarrollador', '1234', 'Desarrollador');
 
 SELECT * FROM usuarios;
 
@@ -153,13 +152,32 @@ ALTER TABLE product_backlog
         FOREIGN KEY (id_responsable)
         REFERENCES usuarios(id_usuario)
         ON DELETE SET NULL;
-        
-        
-        
-        
-        
-	
-        
-        
-        
-        
+
+CREATE TABLE IF NOT EXISTS mensajes_product_owner (
+    id_mensaje INT AUTO_INCREMENT PRIMARY KEY,
+    id_proyecto INT NOT NULL,
+    id_autor INT NULL,
+    titulo VARCHAR(150) NOT NULL,
+    contenido TEXT NOT NULL,
+    fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_mensajes_po_proyecto_fecha (id_proyecto, fecha_creacion, id_mensaje),
+    CONSTRAINT fk_mensajes_po_proyecto
+        FOREIGN KEY (id_proyecto) REFERENCES proyectos(id_proyecto)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_mensajes_po_autor
+        FOREIGN KEY (id_autor) REFERENCES usuarios(id_usuario)
+        ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS lecturas_mensajes_product_owner (
+    id_mensaje INT NOT NULL,
+    id_usuario INT NOT NULL,
+    fecha_lectura TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_mensaje, id_usuario),
+    CONSTRAINT fk_lecturas_po_mensaje
+        FOREIGN KEY (id_mensaje) REFERENCES mensajes_product_owner(id_mensaje)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_lecturas_po_usuario
+        FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+        ON DELETE CASCADE
+);
