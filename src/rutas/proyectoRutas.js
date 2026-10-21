@@ -3,6 +3,7 @@ const router = express.Router();
 const proyectoControlador = require('../controladores/proyectoControlador');
 const { verificarSesion } = require('../middlewares/autenticacion');
 const invitacionControlador = require('../controladores/invitacionControlador');
+const mensajeControlador = require('../controladores/mensajeControlador');
 
 router.get(
     '/',
@@ -98,5 +99,29 @@ router.put(
 );
 
 // ===== FIN RUTAS DE JESÚS =====   
+
+router.get(
+    '/:id/mensajes',
+    verificarSesion,
+    mensajeControlador.listarMensajes
+);
+
+router.post(
+    '/:id/mensajes',
+    verificarSesion,
+    mensajeControlador.publicarMensaje
+);
+
+router.get(
+    '/:id/mensajes/eventos',
+    verificarSesion,
+    mensajeControlador.conectarMensajes
+);
+
+router.put(
+    '/:id/mensajes/:idMensaje/leido',
+    verificarSesion,
+    mensajeControlador.marcarMensajeLeido
+);
 
 module.exports = router;

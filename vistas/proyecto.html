@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="/css/estilos.css">
     <link rel="stylesheet" href="/css/panel.css">
     <link rel="stylesheet" href="/css/proyectos.css">
+    <link rel="stylesheet" href="/css/mensajes.css">
     <script src="/js/proyecto.js" defer></script>
+    <script src="/js/mensajes.js" defer></script>
 </head>
 <body>
     <div class="aplicacion">
@@ -76,6 +78,33 @@
                     <p id="confirmacion-proyecto" class="mensaje-confirmacion" role="status" hidden></p>
                 </section>
                 
+                <section id="seccion-mensajes-po" class="bloque" aria-labelledby="titulo-mensajes-po">
+                    <div class="cabecera-bloque cabecera-mensajes-po">
+                        <div>
+                            <h2 id="titulo-mensajes-po">Mensajes del Product Owner</h2>
+                            <p class="subtitulo">Avisos, cambios y nuevos requisitos para el equipo.</p>
+                        </div>
+                        <div class="acciones-mensajes-po">
+                            <button id="nuevo-mensaje-po" type="button" hidden>+ Nuevo mensaje</button>
+                        </div>
+                    </div>
+                    <form id="form-mensaje-po" class="formulario" method="post" novalidate hidden>
+                        <label for="titulo-mensaje-po">Título del mensaje</label>
+                        <input id="titulo-mensaje-po" name="titulo" type="text" minlength="3" maxlength="150" autocomplete="off" required>
+                        <label for="contenido-mensaje-po">Contenido del mensaje</label>
+                        <textarea id="contenido-mensaje-po" name="contenido" rows="5" maxlength="5000" aria-describedby="ayuda-mensaje-po" required></textarea>
+                        <p id="ayuda-mensaje-po" class="ayuda-campo">Describe el aviso, cambio o requisito que necesita conocer el equipo. Hasta 5000 caracteres.</p>
+                        <p id="error-mensaje-po" class="mensaje-error" role="alert" aria-live="polite"></p>
+                        <div class="acciones-formulario">
+                            <button id="cancelar-mensaje-po" type="button" class="boton-secundario">Cancelar</button>
+                            <button type="submit">Publicar mensaje</button>
+                        </div>
+                    </form>
+                    <p id="confirmacion-mensaje-po" class="mensaje-confirmacion" role="status" hidden></p>
+                    <p id="estado-mensajes-po" class="estado-mensajes-po" role="status" aria-live="polite">Cargando mensajes...</p>
+                    <div id="lista-mensajes-po" class="lista-mensajes-po" aria-label="Mensajes del Product Owner"></div>
+                </section>
+
                 <section class="bloque" aria-labelledby="titulo-integrantes">
                     <div class="cabecera-bloque">
                         <div>
@@ -318,6 +347,24 @@
             </div>
             <p class="objetivo-sprint"></p>
             <p class="fechas-sprint"></p>
+        </article>
+    </template>
+
+    <template id="plantilla-mensaje-po">
+        <article class="mensaje-po">
+            <div class="cabecera-mensaje-po">
+                <h3 class="titulo-mensaje-po"></h3>
+                <button type="button" class="marcar-leido-po" title="Marcar como leído">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
+                    <span>Marcar como leído</span>
+                </button>
+            </div>
+            <div class="datos-mensaje-po">
+                <span class="autor-mensaje-po"></span>
+                <span class="estado-lectura-po"></span>
+                <time class="fecha-mensaje-po"></time>
+            </div>
+            <p class="contenido-mensaje-po"></p>
         </article>
     </template>
 
