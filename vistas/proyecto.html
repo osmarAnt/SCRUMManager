@@ -303,15 +303,21 @@
                     </p>
 
                     <!-- PB-14: Agregar historias al Sprint -->
-                    <form id="form-agregar-historia" class="formulario" hidden>
+                    <!-- Selector de Sprint -->
+                        <div class="formulario">
+                            <label for="seleccionar-sprint">
+                                Seleccionar Sprint
+                            </label>
 
-                        <label for="seleccionar-sprint">
-                            Seleccionar Sprint
-                        </label>
+                            <select id="seleccionar-sprint" required>
+                                <option value="">Selecciona un Sprint</option>
+                            </select>
+                        </div>
 
-                        <select id="seleccionar-sprint" required>
-                            <option value="">Selecciona un Sprint</option>
-                        </select>
+                        <!-- Administración exclusiva del Scrum Master -->
+                        <form id="form-agregar-historia" class="formulario" hidden>
+
+
 
                         <label for="seleccionar-historia">
                             Seleccionar historia del Product Backlog
@@ -333,6 +339,15 @@
                         </div>
 
                     </form>
+
+
+
+                        <!-- JESÚS: PB-17 -->
+                    <p id="mensaje-estado-historia"
+                    class="mensaje-error"
+                    role="alert"
+                    aria-live="polite">
+                    </p>
 
                     <!-- Historias asignadas al Sprint -->
                     <div id="historias-sprint" class="lista-sprints"></div>

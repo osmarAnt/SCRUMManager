@@ -431,6 +431,84 @@ const asignarResponsableHistoria = async (req, res) => {
 // ===== FIN FUNCIONES DE JESÚS =====
 
 
+// ===== JESÚS: PB-17 =====
+
+const cambiarEstadoHistoria = async (req, res) => {
+
+    const idProyecto = leerIdProyecto(req);
+    const { idSprint, idHistoria } = req.params;
+    const { estado_historia } = req.body || {};
+
+    if (
+        idProyecto === null ||
+        !idPositivo(idSprint) ||
+        !idPositivo(idHistoria)
+    ) {
+        return res.status(400).json({
+            mensaje: 'Identificadores no válidos.'
+        });
+    }
+
+    const estadosValidos = [
+        'Pendiente',
+        'En curso',
+        'Terminada'
+    ];
+
+    if (!estadosValidos.includes(estado_historia)) {
+        return res.status(400).json({
+            mensaje: 'Estado de historia no válido.'
+        });
+    }
+
+    try {
+
+        // Verificar que el usuario pertenezca al proyecto
+        const rol = await autorizarAcceso(
+            req,
+            res,
+            idProyecto,
+            false
+        );
+
+        if (!rol) return;
+
+        const actualizado = await backlogDAO.actualizarEstadoSprint(
+            idProyecto,
+            Number(idSprint),
+            Number(idHistoria),
+            estado_historia
+        );
+
+        if (!actualizado) {
+            return res.status(404).json({
+                mensaje: 'No se encontró la historia en este Sprint.'
+            });
+        }
+
+        return res.json({
+            mensaje: 'Estado actualizado correctamente.',
+            estado_historia
+        });
+
+    } catch (error) {
+
+        return errorServidor(
+            res,
+            'Error al actualizar el estado',
+            error
+        );
+    }
+};
+
+// ===== FIN PB-17 =====
+
+
+
+
+
+
+
 module.exports = {
     mostrarProyectos,
     listarProyectos,
@@ -439,7 +517,8 @@ module.exports = {
     consultarProyecto,
     actualizarProyecto,
     crearSprint,
-    agregarHistoriaAlSprint,
+        agregarHistoriaAlSprint,
     quitarHistoriaDelSprint,
-    asignarResponsableHistoria
-};
+    asignarResponsableHistoria,
+    cambiarEstadoHistoria
+}

@@ -107,6 +107,34 @@ asignarResponsable: async (
 
 // ===== FIN FUNCIONES DE JESÚS =====
 
+// ===== JESÚS: PB-17 - ESTADOS DE HISTORIAS =====
+
+actualizarEstadoSprint: async (idProyecto, idSprint, idHistoria, estado) => {
+
+    const [resultado] = await pool.promise().query(
+        `UPDATE product_backlog
+         SET estado_historia = ?
+         WHERE id_proyecto = ?
+         AND id_sprint = ?
+         AND id_historia = ?`,
+        [estado, idProyecto, idSprint, idHistoria]
+    );
+
+    if (resultado.affectedRows > 0) return true;
+
+    const [historias] = await pool.promise().query(
+        `SELECT estado_historia FROM product_backlog
+         WHERE id_proyecto = ?
+         AND id_sprint = ?
+         AND id_historia = ?`,
+        [idProyecto, idSprint, idHistoria]
+    );
+
+    return historias.length > 0 &&
+        historias[0].estado_historia === estado;
+},
+
+// ===== FIN PB-17 =====
 
 
 

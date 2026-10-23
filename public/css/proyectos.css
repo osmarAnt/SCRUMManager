@@ -544,3 +544,60 @@ a.tarjeta-proyecto:hover {
     }
 
 }
+
+/* ===== JESÚS: PB-17 - COLORES DE ESTADOS ===== */
+
+.estado-historia {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid transparent;
+}
+
+/* Pendiente */
+.estado-historia--pendiente {
+    background: #eff2f5;
+    color: #44546a;
+    border-color: #d6dde5;
+}
+
+/* En curso */
+.estado-historia--curso {
+    background: #fff3d6;
+    color: #805600;
+    border-color: #f3d68c;
+}
+
+/* Terminado */
+.estado-historia--terminada {
+    background: #e4f5e9;
+    color: #176534;
+    border-color: #b7ddc5;
+}
+
+/* Selector */
+.control-estado-historia {
+    display: grid;
+    gap: 7px;
+    margin: 12px 0;
+    max-width: 270px;
+}
+
+.control-estado-historia label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--texto);
+}
+
+.control-estado-historia select {
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    background: var(--blanco);
+    color: var(--texto);
+}
+
+/* ===== FIN PB-17 ===== */
