@@ -693,16 +693,31 @@ const listaHistoriasSprint =
 const confirmacionBacklog =
     document.getElementById('confirmacion-backlog');
 
+
+    // ===== JESÚS: PB-17 =====
+
+let puedeAdministrarBacklog = false;
+
+const mensajeEstadoHistoria =
+    document.getElementById('mensaje-estado-historia');
+
+// ===== FIN VARIABLES PB-17 =====
+
+
+
+
 let sprintsBacklog = [];
 let desarrolladoresBacklog = [];
 
 
 async function prepararSprintBacklog(sprints, puedeAdministrar) {
-    seccionSprintBacklog.hidden =
-        !puedeAdministrar || sprints.length === 0;
+    puedeAdministrarBacklog = puedeAdministrar === true;
+
+    seccionSprintBacklog.hidden = sprints.length === 0;
 
     if (seccionSprintBacklog.hidden) return;
-    formAgregarHistoria.hidden = false;
+
+    formAgregarHistoria.hidden = !puedeAdministrarBacklog;
     sprintsBacklog = sprints;
     const anterior = seleccionarSprint.value;
     seleccionarSprint.replaceChildren(
@@ -776,7 +791,8 @@ async function cargarSprintBacklog() {
                 'button[type="submit"]'
             );
 
-        botonAgregar.disabled = !planificado;
+        botonAgregar.disabled =
+        !planificado || !puedeAdministrarBacklog;
 
 
         // ===== PB-14 =====
@@ -847,13 +863,27 @@ async function cargarSprintBacklog() {
             titulo.textContent = historia.titulo;
 
 
-            // Estado
+           // ===== JESÚS: PB-17 - MOSTRAR ESTADO =====
+
+            const valorEstado = historia.estado_historia || 'Pendiente';
+
+            const etiquetaEstado =
+                valorEstado === 'Terminada' ? 'Terminado' : valorEstado;
+
+            const claseEstado = {
+                'Pendiente': 'pendiente',
+                'En curso': 'curso',
+                'Terminada': 'terminada'
+            }[valorEstado] || 'pendiente';
+
             const estado = document.createElement('span');
 
-            estado.className = 'estado-sprint';
+            estado.className =
+                `estado-historia estado-historia--${claseEstado}`;
 
-            estado.textContent =
-                historia.estado_historia || 'Pendiente';
+            estado.textContent = etiquetaEstado;
+
+            // ===== FIN MOSTRAR ESTADO =====
 
 
             // Información de la historia
@@ -891,6 +921,80 @@ async function cargarSprintBacklog() {
             const acciones = document.createElement('div');
 
             acciones.className = 'acciones-formulario';
+
+
+            // ===== JESÚS: PB-17 - CAMBIAR ESTADO =====
+
+            const controlEstado = document.createElement('div');
+            controlEstado.className = 'control-estado-historia';
+
+            const etiquetaEstadoControl = document.createElement('label');
+            etiquetaEstadoControl.textContent = 'Estado de la historia';
+            etiquetaEstadoControl.htmlFor =
+                `estado-historia-${historia.id_historia}`;
+
+            const selectorEstado = document.createElement('select');
+            selectorEstado.id = etiquetaEstadoControl.htmlFor;
+
+            selectorEstado.add(new Option('Pendiente', 'Pendiente'));
+            selectorEstado.add(new Option('En curso', 'En curso'));
+            selectorEstado.add(new Option('Terminado', 'Terminada'));
+
+            selectorEstado.value = valorEstado;
+
+            // Guardar el estado en MySQL
+            selectorEstado.addEventListener('change', async () => {
+
+                const nuevoEstado = selectorEstado.value;
+
+                selectorEstado.disabled = true;
+                mensajeEstadoHistoria.textContent = '';
+                confirmacionBacklog.hidden = true;
+
+                try {
+
+                    const respuesta = await peticionJson(
+                        `/proyectos/${idProyecto}/sprints/${idSprint}/historias/${historia.id_historia}/estado`,
+                        'PUT',
+                        { estado_historia: nuevoEstado }
+                    );
+
+                    if (!respuesta) return;
+
+                    if (!respuesta.ok) {
+                        throw new Error(
+                            respuesta.resultado.mensaje ||
+                            'No se pudo actualizar el estado.'
+                        );
+                    }
+
+                    avisar(
+                        confirmacionBacklog,
+                        respuesta.resultado.mensaje
+                    );
+
+                    await cargarSprintBacklog();
+
+                } catch (error) {
+
+                    selectorEstado.value = valorEstado;
+
+                    mensajeEstadoHistoria.textContent =
+                        error.message || 'Error al guardar el estado.';
+
+                } finally {
+
+                    selectorEstado.disabled = false;
+                }
+
+            });
+
+            controlEstado.append(
+                etiquetaEstadoControl,
+                selectorEstado
+            );
+
+            // ===== FIN PB-17 =====
 
 
             // ===== PB-16 =====
@@ -1024,14 +1128,17 @@ async function cargarSprintBacklog() {
             }
 
 
-            // Construir tarjeta
             tarjeta.append(
                 titulo,
                 estado,
                 detalle,
                 responsable,
-                acciones
+                controlEstado
             );
+
+            if (puedeAdministrarBacklog) {
+                tarjeta.appendChild(acciones);
+            }
 
             listaHistoriasSprint.appendChild(tarjeta);
         });

@@ -114,6 +114,16 @@ router.put(
     proyectoControlador.asignarResponsableHistoria
 );
 
+// ===== JESÚS: PB-17 =====
+
+router.put(
+    '/:id/sprints/:idSprint/historias/:idHistoria/estado',
+    verificarSesion,
+    proyectoControlador.cambiarEstadoHistoria
+);
+
+// ===== FIN PB-17 =====
+
 
 // =======================================
 // CONSULTAR INTEGRANTES DEL PROYECTO
