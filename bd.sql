@@ -183,3 +183,270 @@ CREATE TABLE IF NOT EXISTS lecturas_mensajes_product_owner (
         FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
         ON DELETE CASCADE
 );
+#--Insercion para tener la misma base todos--
+#--Con este modificas el rol a como estamos en el proyecto con los nombres de los integrantes --
+#--De tu parte crea el usuario Emanuel, Jesus y Osmar--
+
+-- Scrum Master
+UPDATE usuarios
+SET
+    nombre = 'Nino Alessandro',
+    username = 'nino'
+WHERE id_usuario = 1;
+
+-- Product Owner
+UPDATE usuarios
+SET
+    nombre = 'Cesar Rodrigo',
+    username = 'cesar'
+WHERE id_usuario = 2;
+
+-- Desarrollador
+UPDATE usuarios
+SET
+    nombre = 'Francisco',
+    username = 'francisco'
+WHERE id_usuario = 3;
+#--limpias tabla--
+DELETE FROM proyectos
+WHERE id_proyecto > 0;
+
+-- Reiniciar contador de proyectos
+ALTER TABLE proyectos AUTO_INCREMENT = 1;
+-- ==========================================
+-- 1. CREAR USUARIOS NUEVOS
+-- ==========================================
+
+INSERT INTO usuarios (nombre, username, password, rol)
+VALUES
+('Emanuel', 'emanuel', '1234', 'Desarrollador'),
+('Jesús', 'jesus', '1234', 'Desarrollador'),
+('Osmar Antonio', 'osmar', '1234', 'Desarrollador')
+ON DUPLICATE KEY UPDATE
+    nombre = VALUES(nombre);
+-- ==========================================
+-- 2. CREAR PROYECTO
+-- ==========================================
+
+INSERT INTO proyectos (
+    nombre,
+    objetivo,
+    activo
+)
+VALUES (
+    'Proyecto gestion de procesos',
+    'Crear una app de scrum que permita organizar tus tareas',
+    TRUE
+);
+
+SET @idProyecto = LAST_INSERT_ID();
+
+
+-- ==========================================
+-- 3. AGREGAR INTEGRANTES AL PROYECTO
+-- ==========================================
+
+INSERT INTO proyecto_usuarios (
+    id_proyecto,
+    id_usuario,
+    rol,
+    activo
+)
+SELECT
+    @idProyecto,
+    id_usuario,
+
+    CASE
+        WHEN username = 'nino'
+            THEN 'Scrum Master'
+
+        WHEN username = 'cesar'
+            THEN 'Product Owner'
+
+        ELSE 'Desarrollador'
+    END,
+
+    TRUE
+
+FROM usuarios
+
+WHERE username IN (
+    'nino',
+    'cesar',
+    'francisco',
+    'emanuel',
+    'jesus',
+    'osmar'
+);
+
+
+-- ==========================================
+-- 4. CREAR SPRINT 1
+-- ==========================================
+
+INSERT INTO sprints (
+    id_proyecto,
+    numero,
+    objetivo,
+    fecha_inicio,
+    fecha_fin,
+    duracion_dias,
+    estado
+)
+VALUES (
+    @idProyecto,
+    1,
+    'Terminar bien la grafica',
+    '2026-10-23',
+    '2026-10-26',
+    4,
+    'Planificado'
+);
+
+SET @idSprint = LAST_INSERT_ID();
+
+
+-- ==========================================
+-- 5. OBTENER ID DEL DESARROLLADOR
+-- ==========================================
+
+SET @idOsmar = (
+    SELECT id_usuario
+    FROM usuarios
+    WHERE username = 'osmar'
+    LIMIT 1
+);
+
+
+-- ==========================================
+-- 6. CREAR HISTORIA DE USUARIO
+-- ==========================================
+
+INSERT INTO product_backlog (
+    id_proyecto,
+    id_sprint,
+    titulo,
+    descripcion,
+    puntos,
+    prioridad,
+    orden,
+    estado_historia,
+    id_responsable
+)
+VALUES (
+    @idProyecto,
+    @idSprint,
+    'Funcionalidad de grafica',
+    'Hacer una grafica que registre todo el proyecto con su proceso',
+    8,
+    'Alta',
+    1,
+    'Terminada',
+    @idOsmar
+);
+
+SET @idHistoria = LAST_INSERT_ID();
+
+
+-- ==========================================
+-- 7. CREAR CRITERIOS DE ACEPTACIÓN
+-- ==========================================
+
+INSERT INTO criterios_aceptacion (
+    id_historia,
+    descripcion,
+    completado
+)
+VALUES
+(
+    @idHistoria,
+    'La gráfica debe mostrar el avance de las tareas del proyecto.',
+    TRUE
+),
+(
+    @idHistoria,
+    'La gráfica debe actualizarse cuando cambie el estado de las tareas.',
+    TRUE
+),
+(
+    @idHistoria,
+    'La información debe presentarse de forma clara y organizada.',
+    TRUE
+);
+
+
+-- ==========================================
+-- 8. VERIFICAR USUARIOS
+-- ==========================================
+
+SELECT
+    id_usuario,
+    nombre,
+    username,
+    rol
+FROM usuarios;
+
+
+-- ==========================================
+-- 9. VERIFICAR PROYECTO
+-- ==========================================
+
+SELECT *
+FROM proyectos
+WHERE id_proyecto = @idProyecto;
+
+
+-- ==========================================
+-- 10. VERIFICAR INTEGRANTES
+-- ==========================================
+
+SELECT
+    u.nombre,
+    u.username,
+    pu.rol
+
+FROM proyecto_usuarios pu
+
+INNER JOIN usuarios u
+    ON pu.id_usuario = u.id_usuario
+
+WHERE pu.id_proyecto = @idProyecto;
+
+
+-- ==========================================
+-- 11. VERIFICAR SPRINT
+-- ==========================================
+
+SELECT *
+FROM sprints
+WHERE id_proyecto = @idProyecto;
+
+
+-- ==========================================
+-- 12. VERIFICAR HISTORIA
+-- ==========================================
+
+SELECT
+    pb.id_historia,
+    pb.titulo,
+    pb.descripcion,
+    pb.puntos,
+    pb.prioridad,
+    pb.estado_historia,
+    u.nombre AS responsable
+
+FROM product_backlog pb
+
+LEFT JOIN usuarios u
+    ON pb.id_responsable = u.id_usuario
+
+WHERE pb.id_proyecto = @idProyecto;
+
+
+-- ==========================================
+-- 13. VERIFICAR CRITERIOS
+-- ==========================================
+
+SELECT *
+FROM criterios_aceptacion
+WHERE id_historia = @idHistoria;
