@@ -30,7 +30,7 @@ const plantillaSprint = document.getElementById('plantilla-sprint');
 const SIN_OBJETIVO = 'Este proyecto todavía no tiene un objetivo registrado.';
 let proyectoActual = null;
 let puedeGestionarIntegrantes = false;
-// PB-18: el panel de evidencias solo se muestra al desarrollador responsable de cada historia
+// PB-57: el panel de evidencias solo se muestra al desarrollador responsable de cada historia
 let rolEnElProyecto = '';
 let idUsuarioActual = null;
 

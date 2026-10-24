@@ -1,7 +1,7 @@
 const conexion = require('../base_de_datos/conexion');
 const { MAXIMO_ARCHIVOS_POR_HISTORIA } = require('../utilidades/evidencias');
 
-// PB-18: en qué estados de la historia se pueden adjuntar o quitar archivos,
+// PB-57: en qué estados de la historia se pueden adjuntar o quitar archivos,
 // y desde cuáles se puede enviar a revisión.
 const ESTADOS_EDITABLES = ['En curso', 'Terminada', 'Rechazada'];
 const ESTADOS_ENVIABLES = ['Terminada', 'Rechazada'];

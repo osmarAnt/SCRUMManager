@@ -1,4 +1,4 @@
-// PB-18: el desarrollador responsable adjunta evidencias a su historia y la envía a revisión.
+// PB-57: el desarrollador responsable adjunta evidencias a su historia y la envía a revisión.
 // proyecto.js llama a window.crearPanelEvidencias(historia) al pintar cada tarjeta del Sprint Backlog.
 (() => {
     'use strict';
