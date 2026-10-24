@@ -13,6 +13,12 @@ const mensajeControlador = require('../controladores/mensajeControlador');
 // Controlador de integrantes (tus cambios)
 const integrantesControlador = require('../controladores/integrantesControlador');
 
+// PB-19 y PB-20: revisión de entregables por el Product Owner
+const revisionControlador = require('../controladores/revisionControlador');
+
+// PB-18: evidencias y envío a revisión por el desarrollador
+const evidenciaControlador = require('../controladores/evidenciaControlador');
+
 
 // =======================================
 // PROYECTOS
@@ -212,6 +218,70 @@ router.put(
     '/:id/mensajes/:idMensaje/leido',
     verificarSesion,
     mensajeControlador.marcarMensajeLeido
+);
+
+
+// PB-18: ADJUNTAR EVIDENCIAS Y ENVIAR LA HISTORIA A REVISIÓN
+// Solo el desarrollador responsable de la historia.
+// El archivo viaja como cuerpo binario (application/octet-stream).
+
+router.get(
+    '/:id/historias/:idHistoria/evidencias',
+    verificarSesion,
+    evidenciaControlador.autorizarResponsable,
+    evidenciaControlador.listarEvidencias
+);
+
+router.post(
+    '/:id/historias/:idHistoria/evidencias',
+    verificarSesion,
+    evidenciaControlador.autorizarResponsable,
+    evidenciaControlador.validarSubida,
+    evidenciaControlador.leerArchivo,
+    evidenciaControlador.subirEvidencia
+);
+
+router.delete(
+    '/:id/historias/:idHistoria/evidencias/:idEvidencia',
+    verificarSesion,
+    evidenciaControlador.autorizarResponsable,
+    evidenciaControlador.quitarEvidencia
+);
+
+router.post(
+    '/:id/historias/:idHistoria/enviar-revision',
+    verificarSesion,
+    evidenciaControlador.autorizarResponsable,
+    evidenciaControlador.enviarARevision
+);
+
+
+// PB-19: REVISAR ENTREGABLE (CRITERIOS, ARCHIVOS Y RESPONSABLE)
+// PB-20: APROBAR O RECHAZAR CON OBSERVACIONES
+// Solo el Product Owner del proyecto
+
+router.get(
+    '/:id/revisiones',
+    verificarSesion,
+    revisionControlador.listarRevisiones
+);
+
+router.get(
+    '/:id/revisiones/:idHistoria',
+    verificarSesion,
+    revisionControlador.consultarRevision
+);
+
+router.get(
+    '/:id/revisiones/:idHistoria/evidencias/:idEvidencia',
+    verificarSesion,
+    revisionControlador.abrirEvidencia
+);
+
+router.post(
+    '/:id/revisiones/:idHistoria',
+    verificarSesion,
+    revisionControlador.registrarDecision
 );
 
 

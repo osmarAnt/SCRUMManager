@@ -1,0 +1,4 @@
+# Archivos que suben los usuarios como evidencia (PB-18): no van a GitHub.
+# Los de ejemplo "demo-*" sí, para poder probar PB-19 sin subir nada.
+uploads/evidencias/*
+!uploads/evidencias/demo-*

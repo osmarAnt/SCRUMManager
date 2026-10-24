@@ -3,6 +3,8 @@ const proyectoDAO = require('../dao/proyectoDAO');
 const sprintDAO = require('../dao/sprintDAO');
 // JESÚS: PB-14
 const backlogDAO = require('../dao/backlogDAO');
+// PB-19 y PB-20
+const revisionDAO = require('../dao/revisionDAO');
 
 const DURACION_MAXIMA_SPRINT = 31;
 const CARACTERES_DE_CONTROL = /[\u0000-\u001f\u007f]/;
@@ -161,6 +163,7 @@ const consultarProyecto = async (req, res) => {
         }
         res.json({
             usuario: {
+                id_usuario: req.session.idUsuario,
                 nombre: req.session.nombre,
                 username: req.session.usuario,
                 rol: req.session.rol
@@ -481,6 +484,19 @@ const cambiarEstadoHistoria = async (req, res) => {
         );
 
         if (!actualizado) {
+            const estadoActual = await revisionDAO.obtenerEstadoEnSprint(
+                idProyecto,
+                Number(idSprint),
+                Number(idHistoria)
+            );
+
+            // Mientras está en revisión o ya fue aprobada, el estado lo decide el Product Owner.
+            if (estadoActual === 'En revision' || estadoActual === 'Aprobada') {
+                return res.status(409).json({
+                    mensaje: 'La historia está en revisión o ya fue aprobada; su estado lo define el Product Owner.'
+                });
+            }
+
             return res.status(404).json({
                 mensaje: 'No se encontró la historia en este Sprint.'
             });
