@@ -1,6 +1,0 @@
-Evidencia de ejemplo (datos de prueba)
-
-Historia: Funcionalidad de grafica
-- La grafica muestra el avance de las tareas del proyecto: OK
-- Se actualiza al cambiar el estado de una tarea: OK
-- La informacion se presenta de forma clara: OK
