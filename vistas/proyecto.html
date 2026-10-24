@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="/css/panel.css">
     <link rel="stylesheet" href="/css/proyectos.css">
     <link rel="stylesheet" href="/css/mensajes.css">
+    <link rel="stylesheet" href="/css/revision.css">
+    <link rel="stylesheet" href="/css/evidencias.css">
     <script src="/js/proyecto.js" defer></script>
     <script src="/js/mensajes.js" defer></script>
 </head>
@@ -360,6 +362,83 @@
                 </div>
 
                 </section>
+
+                <!-- PB-19 y PB-20: REVISIÓN DE ENTREGABLES (solo Product Owner del proyecto) -->
+                <section id="seccion-revision" class="bloque" aria-labelledby="titulo-revision" hidden>
+                    <div class="cabecera-bloque">
+                        <div>
+                            <h2 id="titulo-revision">Revisión de entregables</h2>
+                            <p class="subtitulo">Historias que el equipo envió a revisión. Consulta sus criterios, archivos y responsable, y registra tu decisión.</p>
+                        </div>
+                        <button id="actualizar-revision" type="button" class="boton-secundario">Actualizar</button>
+                    </div>
+
+                    <p id="confirmacion-revision" class="mensaje-confirmacion" role="status" hidden></p>
+                    <p id="error-revision" class="mensaje-error" role="alert" aria-live="polite"></p>
+                    <p id="estado-revision" class="ayuda-campo" role="status" aria-live="polite">Cargando entregables...</p>
+
+                    <h3 class="titulo-lista-revision" id="titulo-por-revisar" hidden>Por revisar</h3>
+                    <div id="lista-por-revisar" class="lista-sprints"></div>
+
+                    <h3 class="titulo-lista-revision" id="titulo-revisadas" hidden>Ya revisadas</h3>
+                    <div id="lista-revisadas" class="lista-sprints"></div>
+
+                    <!-- Detalle de la revisión (PB-19) y decisión (PB-20) -->
+                    <article id="panel-revision" class="panel-revision" aria-labelledby="titulo-panel-revision" hidden>
+                        <div class="cabecera-panel-revision">
+                            <div>
+                                <h3 id="titulo-panel-revision" tabindex="-1"></h3>
+                                <span id="estado-panel-revision" class="estado-historia"></span>
+                            </div>
+                            <button id="cerrar-revision" type="button" class="boton-secundario">Cerrar</button>
+                        </div>
+
+                        <dl class="datos-revision">
+                            <div><dt>Responsable</dt><dd id="revision-responsable"></dd></div>
+                            <div><dt>Sprint</dt><dd id="revision-sprint"></dd></div>
+                            <div><dt>Puntos</dt><dd id="revision-puntos"></dd></div>
+                            <div><dt>Prioridad</dt><dd id="revision-prioridad"></dd></div>
+                        </dl>
+
+                        <h4 class="etiqueta-dato">Descripción</h4>
+                        <p id="revision-descripcion" class="texto-dato"></p>
+
+                        <h4 class="etiqueta-dato">Criterios de aceptación</h4>
+                        <p id="revision-resumen-criterios" class="ayuda-campo"></p>
+                        <ul id="revision-criterios" class="lista-revision"></ul>
+
+                        <h4 class="etiqueta-dato">Evidencias (archivos)</h4>
+                        <ul id="revision-evidencias" class="lista-revision"></ul>
+
+                        <div id="revision-historial-bloque" hidden>
+                            <h4 class="etiqueta-dato">Decisiones anteriores</h4>
+                            <ul id="revision-historial" class="lista-revision"></ul>
+                        </div>
+
+                        <form id="form-decision" class="formulario-revision" novalidate>
+                            <fieldset>
+                                <legend>Tu decisión</legend>
+                                <label class="opcion-decision">
+                                    <input type="radio" name="decision" value="Aprobada">
+                                    <span>Aprobar entregable</span>
+                                </label>
+                                <label class="opcion-decision">
+                                    <input type="radio" name="decision" value="Rechazada">
+                                    <span>Rechazar entregable</span>
+                                </label>
+                            </fieldset>
+                            <label for="observaciones-revision">Observaciones</label>
+                            <textarea id="observaciones-revision" name="observaciones" rows="4" maxlength="2000" aria-describedby="ayuda-observaciones"></textarea>
+                            <p id="ayuda-observaciones" class="ayuda-campo">Obligatorias al rechazar, para que el equipo sepa qué corregir. <span id="contador-observaciones">0/2000</span></p>
+                            <p id="error-decision" class="mensaje-error" role="alert" aria-live="polite"></p>
+                            <div class="acciones-formulario">
+                                <button type="button" id="cancelar-decision" class="boton-secundario">Cancelar</button>
+                                <button type="submit" id="guardar-decision">Guardar decisión</button>
+                            </div>
+                        </form>
+                        <p id="revision-ya-decidida" class="mensaje-confirmacion" hidden></p>
+                    </article>
+                </section>
             </div>
         </main>
     </div>
@@ -394,5 +473,9 @@
 
     <!-- Script del Backlog -->
     <script src="/js/backlog.js" defer></script>
+    <!-- PB-18: evidencias y envío a revisión (Desarrollador) -->
+    <script src="/js/evidencias.js" defer></script>
+    <!-- PB-19 y PB-20: revisión de entregables (Product Owner) -->
+    <script src="/js/revision.js" defer></script>
 </body>
 </html>

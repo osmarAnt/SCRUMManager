@@ -30,6 +30,9 @@ const plantillaSprint = document.getElementById('plantilla-sprint');
 const SIN_OBJETIVO = 'Este proyecto todavía no tiene un objetivo registrado.';
 let proyectoActual = null;
 let puedeGestionarIntegrantes = false;
+// PB-18: el panel de evidencias solo se muestra al desarrollador responsable de cada historia
+let rolEnElProyecto = '';
+let idUsuarioActual = null;
 
 const mostrarEstado = (titulo, descripcion, tipo = '') => {
     contenido.hidden = true;
@@ -107,6 +110,10 @@ const cargarProyecto = async () => {
         nombreUsuario.textContent = datos.usuario.nombre;
         avatar.textContent = Array.from(datos.usuario.nombre.trim())[0]?.toUpperCase() || 'S';
         rolProyecto.textContent = datos.rol;
+        rolEnElProyecto = datos.rol;
+        idUsuarioActual = Number(datos.usuario.id_usuario) || null;
+        // PB-19/PB-20: avisa el rol en el proyecto (la sección de revisión solo existe para el Product Owner)
+        document.dispatchEvent(new CustomEvent('proyecto-cargado', { detail: { rol: datos.rol } }));
         botonEditar.hidden = !datos.puedeAdministrar;
         botonNuevoSprint.hidden = !datos.puedeAdministrar;
         puedeGestionarIntegrantes = datos.puedeInvitar === true;
@@ -867,13 +874,19 @@ async function cargarSprintBacklog() {
 
             const valorEstado = historia.estado_historia || 'Pendiente';
 
-            const etiquetaEstado =
-                valorEstado === 'Terminada' ? 'Terminado' : valorEstado;
+            // PB-19/PB-20: 'En revision', 'Aprobada' y 'Rechazada' los define la revisión del Product Owner
+            const etiquetaEstado = {
+                'Terminada': 'Terminado',
+                'En revision': 'En revisión'
+            }[valorEstado] || valorEstado;
 
             const claseEstado = {
                 'Pendiente': 'pendiente',
                 'En curso': 'curso',
-                'Terminada': 'terminada'
+                'Terminada': 'terminada',
+                'En revision': 'revision',
+                'Aprobada': 'aprobada',
+                'Rechazada': 'rechazada'
             }[valorEstado] || 'pendiente';
 
             const estado = document.createElement('span');
@@ -917,6 +930,31 @@ async function cargarSprintBacklog() {
                 }`;
 
 
+            // PB-20: última decisión del Product Owner y sus observaciones
+            let revisionPO = null;
+
+            if (historia.ultima_decision) {
+
+                revisionPO = document.createElement('p');
+
+                revisionPO.className = 'revision-historia';
+
+                const decision = document.createElement('strong');
+
+                decision.textContent =
+                    `Última revisión del Product Owner: ${historia.ultima_decision}`;
+
+                revisionPO.append(decision);
+
+                if (historia.ultima_observacion) {
+
+                    revisionPO.append(
+                        document.createElement('br'),
+                        document.createTextNode(historia.ultima_observacion)
+                    );
+                }
+            }
+
             // Contenedor de acciones
             const acciones = document.createElement('div');
 
@@ -940,7 +978,18 @@ async function cargarSprintBacklog() {
             selectorEstado.add(new Option('En curso', 'En curso'));
             selectorEstado.add(new Option('Terminado', 'Terminada'));
 
+            // PB-19/PB-20: estados que no se eligen aquí (se muestran como valor actual)
+            if (!['Pendiente', 'En curso', 'Terminada'].includes(valorEstado)) {
+                selectorEstado.add(new Option(etiquetaEstado, valorEstado));
+            }
+
             selectorEstado.value = valorEstado;
+
+            // En revisión o aprobada, el estado lo define el Product Owner
+            const estadoBloqueado =
+                valorEstado === 'En revision' || valorEstado === 'Aprobada';
+
+            selectorEstado.disabled = estadoBloqueado;
 
             // Guardar el estado en MySQL
             selectorEstado.addEventListener('change', async () => {
@@ -1132,9 +1181,24 @@ async function cargarSprintBacklog() {
                 titulo,
                 estado,
                 detalle,
-                responsable,
-                controlEstado
+                responsable
             );
+
+            if (revisionPO) {
+                tarjeta.appendChild(revisionPO);
+            }
+
+            tarjeta.appendChild(controlEstado);
+
+            // PB-18: evidencias y envío a revisión (solo el desarrollador responsable de esta historia)
+            if (
+                rolEnElProyecto === 'Desarrollador' &&
+                idUsuarioActual !== null &&
+                Number(historia.id_responsable) === idUsuarioActual &&
+                typeof window.crearPanelEvidencias === 'function'
+            ) {
+                tarjeta.appendChild(window.crearPanelEvidencias(historia));
+            }
 
             if (puedeAdministrarBacklog) {
                 tarjeta.appendChild(acciones);

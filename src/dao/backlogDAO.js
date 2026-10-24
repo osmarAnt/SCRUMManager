@@ -116,7 +116,8 @@ actualizarEstadoSprint: async (idProyecto, idSprint, idHistoria, estado) => {
          SET estado_historia = ?
          WHERE id_proyecto = ?
          AND id_sprint = ?
-         AND id_historia = ?`,
+         AND id_historia = ?
+         AND estado_historia NOT IN ('En revision', 'Aprobada')`,
         [estado, idProyecto, idSprint, idHistoria]
     );
 
@@ -163,7 +164,18 @@ actualizarEstadoSprint: async (idProyecto, idSprint, idHistoria, estado) => {
     },
     
     obtenerPorProyecto: async (id_proyecto) => {
-        const query = `SELECT * FROM product_backlog WHERE id_proyecto = ? ORDER BY orden ASC`;
+        // Incluye la última decisión del Product Owner (PB-20) para que el equipo la consulte.
+        const query = `
+            SELECT h.*,
+                   r.decision AS ultima_decision,
+                   r.observaciones AS ultima_observacion,
+                   DATE_FORMAT(r.fecha_revision, '%Y-%m-%d %H:%i') AS ultima_fecha_revision
+            FROM product_backlog h
+            LEFT JOIN revisiones_historia r ON r.id_revision = (
+                SELECT MAX(id_revision) FROM revisiones_historia WHERE id_historia = h.id_historia
+            )
+            WHERE h.id_proyecto = ?
+            ORDER BY h.orden ASC`;
         const [rows] = await pool.promise().query(query, [id_proyecto]);
         return rows;
     },

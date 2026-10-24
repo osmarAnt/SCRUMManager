@@ -1,0 +1,102 @@
+/* PB-18: evidencias de entrega y envío a revisión (panel dentro de la tarjeta de la historia) */
+.panel-evidencias {
+    margin: 14px 0 0;
+    padding: 14px 16px;
+    border: 1px solid #c7d4e8;
+    border-radius: 8px;
+    background: #fbfcff;
+}
+
+.titulo-evidencias {
+    margin: 0 0 6px;
+    font-size: 14px;
+}
+
+.ayuda-evidencias {
+    margin: 0 0 10px;
+    font-size: 13px;
+}
+
+.lista-evidencias {
+    display: grid;
+    gap: 8px;
+    margin: 0 0 12px;
+    padding: 0;
+    list-style: none;
+}
+
+.lista-evidencias li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    background: var(--blanco);
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.lista-evidencias .vacio {
+    justify-content: flex-start;
+    border-style: dashed;
+    background: transparent;
+    color: var(--texto-secundario);
+}
+
+.nombre-evidencia {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.nombre-evidencia .detalle-evidencia {
+    color: var(--texto-secundario);
+    font-size: 12px;
+}
+
+.boton-quitar-evidencia {
+    flex: none;
+    min-height: 34px;
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+.subida-evidencias label {
+    display: block;
+    margin: 4px 0 6px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.subida-evidencias input[type="file"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px dashed #b3bac5;
+    border-radius: 6px;
+    background: var(--blanco);
+    font: inherit;
+    font-size: 13px;
+}
+
+.acciones-evidencias {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.panel-evidencias .mensaje-error {
+    min-height: 0;
+}
+
+.panel-evidencias .acciones-formulario {
+    margin-top: 10px;
+}
+
+@media (max-width: 640px) {
+    .lista-evidencias li {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

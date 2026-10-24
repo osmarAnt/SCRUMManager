@@ -450,3 +450,52 @@ WHERE pb.id_proyecto = @idProyecto;
 SELECT *
 FROM criterios_aceptacion
 WHERE id_historia = @idHistoria;
+
+#--PB-19 y PB-20: Revision de entregables por el Product Owner--
+#--Se puede ejecutar solo esta seccion sobre una base ya existente--
+USE scrument;
+
+-- 1) Nuevos estados de la historia (los valores van sin acento; la pantalla muestra "En revisión"):
+--    'En revision' = enviada a revision | 'Aprobada' / 'Rechazada' = decision del Product Owner
+ALTER TABLE product_backlog
+    MODIFY COLUMN estado_historia
+        ENUM('Pendiente', 'En curso', 'Terminada', 'En revision', 'Aprobada', 'Rechazada')
+        NOT NULL DEFAULT 'Pendiente';
+
+-- 2) Evidencias (archivos) que el equipo adjunta al enviar la historia a revision.
+--    El archivo fisico vive en uploads/evidencias/<nombre_archivo>.
+CREATE TABLE IF NOT EXISTS evidencias_historia (
+    id_evidencia INT AUTO_INCREMENT PRIMARY KEY,
+    id_historia INT NOT NULL,
+    id_usuario INT NULL,
+    nombre_original VARCHAR(255) NOT NULL,
+    nombre_archivo VARCHAR(255) NOT NULL,
+    tipo_mime VARCHAR(100) NULL,
+    tamano_bytes INT UNSIGNED NULL,
+    fecha_subida TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_evidencias_historia (id_historia),
+    CONSTRAINT fk_evidencias_historia
+        FOREIGN KEY (id_historia) REFERENCES product_backlog(id_historia)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_evidencias_usuario
+        FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+        ON DELETE SET NULL
+);
+
+-- 3) Historial de decisiones: una fila por cada vez que el Product Owner aprueba o rechaza.
+--    Si una historia rechazada vuelve a revision, conserva todas sus decisiones anteriores.
+CREATE TABLE IF NOT EXISTS revisiones_historia (
+    id_revision INT AUTO_INCREMENT PRIMARY KEY,
+    id_historia INT NOT NULL,
+    id_revisor INT NULL,
+    decision ENUM('Aprobada', 'Rechazada') NOT NULL,
+    observaciones TEXT NULL,
+    fecha_revision TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_revisiones_historia (id_historia, id_revision),
+    CONSTRAINT fk_revisiones_historia
+        FOREIGN KEY (id_historia) REFERENCES product_backlog(id_historia)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_revisiones_revisor
+        FOREIGN KEY (id_revisor) REFERENCES usuarios(id_usuario)
+        ON DELETE SET NULL
+);
