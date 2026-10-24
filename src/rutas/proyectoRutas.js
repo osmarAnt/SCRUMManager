@@ -16,7 +16,7 @@ const integrantesControlador = require('../controladores/integrantesControlador'
 // PB-19 y PB-20: revisión de entregables por el Product Owner
 const revisionControlador = require('../controladores/revisionControlador');
 
-// PB-18: evidencias y envío a revisión por el desarrollador
+// PB-57: evidencias y envío a revisión por el desarrollador
 const evidenciaControlador = require('../controladores/evidenciaControlador');
 
 
@@ -221,7 +221,7 @@ router.put(
 );
 
 
-// PB-18: ADJUNTAR EVIDENCIAS Y ENVIAR LA HISTORIA A REVISIÓN
+// PB-57: ADJUNTAR EVIDENCIAS Y ENVIAR LA HISTORIA A REVISIÓN
 // Solo el desarrollador responsable de la historia.
 // El archivo viaja como cuerpo binario (application/octet-stream).
 

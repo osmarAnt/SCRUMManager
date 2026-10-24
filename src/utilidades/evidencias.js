@@ -1,4 +1,4 @@
-// Reglas compartidas de los archivos de evidencia (PB-18 los sube, PB-19 los consulta).
+// Reglas compartidas de los archivos de evidencia (PB-57 los sube, PB-19 los consulta).
 const path = require('path');
 
 // Carpeta donde se guardan los archivos (uploads/evidencias en la raíz del proyecto).

@@ -1,4 +1,4 @@
-// PB-18: el desarrollador responsable adjunta evidencias a su historia y la envía a revisión.
+// PB-57: el desarrollador responsable adjunta evidencias a su historia y la envía a revisión.
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
