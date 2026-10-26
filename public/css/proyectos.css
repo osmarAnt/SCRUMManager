@@ -601,3 +601,44 @@ a.tarjeta-proyecto:hover {
 }
 
 /* ===== FIN PB-17 ===== */
+/* Contenedor de valor de negocio */
+
+.acciones-valor-negocio {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+
+/* Campo de valor */
+
+.campo-valor-negocio {
+    width: 85px;
+    min-height: 38px;
+    padding: 7px;
+
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+
+    font: inherit;
+}
+
+
+/* Filas de la tabla */
+
+#tabla-backlog-body td {
+    padding: 12px 10px;
+
+    border-bottom: 1px solid var(--borde);
+
+    vertical-align: middle;
+}
+
+
+/* Botones de las historias */
+
+#tabla-backlog-body td:last-child button {
+    margin-right: 6px;
+    margin-bottom: 6px;
+}
