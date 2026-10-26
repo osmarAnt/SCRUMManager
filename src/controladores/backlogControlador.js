@@ -1,5 +1,6 @@
 // controllers/backlog.controller.js
 const BacklogDAO = require('../dao/backlogDAO');
+const proyectoDAO = require('../dao/proyectoDAO');
 exports.crearHistoria = async (req, res) => {
     // BLOQUEO: Solo Product Owner
     if (!req.session || req.session.rol !== 'Product Owner') {
@@ -99,5 +100,68 @@ exports.crearCriterio = async (req, res) => {
     } catch (error) {
         console.error('Error al guardar criterio:', error);
         res.status(500).json({ error: 'Error interno en el servidor' });
+    }
+};
+exports.actualizarValorNegocio = async (req, res) => {
+    const idProyecto = Number(req.params.id_proyecto);
+    const idHistoria = Number(req.params.id_historia);
+    const valorNegocio = req.body?.valor_negocio;
+    
+    if (
+        !Number.isSafeInteger(idProyecto) ||
+        idProyecto < 1 ||
+        idProyecto > 2147483647 ||
+
+        !Number.isSafeInteger(idHistoria) ||
+        idHistoria < 1 ||
+        idHistoria > 2147483647
+    ) {
+        return res.status(400).json({
+            mensaje: 'Identificadores no válidos.'
+        });
+    }
+    if (
+        !Number.isInteger(valorNegocio) ||
+        valorNegocio < 1 ||
+        valorNegocio > 100
+    ) {
+        return res.status(400).json({
+            mensaje: 'El valor de negocio debe ser un número entero entre 1 y 100.'
+        });
+    }
+    try {
+        const rolProyecto =
+            await proyectoDAO.obtenerRolEnProyecto(
+                idProyecto,
+                req.session.idUsuario
+            );
+        // Solo Product Owner puede asignar valor
+        if (rolProyecto !== 'Product Owner') {
+            return res.status(403).json({
+                mensaje: 'Solo el Product Owner del proyecto puede asignar valor de negocio.'
+            });
+        }
+        const actualizado =
+            await BacklogDAO.actualizarValorNegocio(
+                idProyecto,
+                idHistoria,
+                valorNegocio
+            );
+        if (!actualizado) {
+            return res.status(404).json({
+                mensaje: 'La historia no existe o no pertenece a este proyecto.'
+            });
+        }
+        return res.json({
+            mensaje: 'Valor de negocio guardado correctamente.'
+        });
+    } catch (error) {
+        console.error(
+            'Error al actualizar el valor de negocio:',
+            error
+        );
+        return res.status(500).json({
+            mensaje: 'No se pudo guardar el valor de negocio.'
+        });
     }
 };

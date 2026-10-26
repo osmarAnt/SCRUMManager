@@ -210,11 +210,38 @@ actualizarEstadoSprint: async (idProyecto, idSprint, idHistoria, estado) => {
 
     // Obtener los criterios de una historia
     obtenerCriteriosPorHistoria: async (id_historia) => {
-        const query = `SELECT * FROM criterios_aceptacion WHERE id_historia = ?`;
-        const [rows] = await pool.promise().query(query, [id_historia]);
+        const query = `
+            SELECT *
+            FROM criterios_aceptacion
+            WHERE id_historia = ?
+        `;
+        const [rows] = await pool.promise().query(
+            query,
+            [id_historia]
+        );
         return rows;
+    },
+
+    actualizarValorNegocio: async (
+        idProyecto,
+        idHistoria,
+        valorNegocio
+    ) => {
+        const query = `
+            UPDATE product_backlog
+            SET valor_negocio = ?
+            WHERE id_proyecto = ?
+            AND id_historia = ?
+        `;
+        const [resultado] = await pool.promise().query(
+            query,
+            [
+                valorNegocio,
+                idProyecto,
+                idHistoria
+            ]
+        );
+        return resultado.affectedRows > 0;
     }
-
 };
-
 module.exports = BacklogDAO;

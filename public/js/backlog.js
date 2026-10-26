@@ -1,13 +1,14 @@
 // public/js/backlog.js
-
+const idProyectoBacklog = window.location.pathname
+    .split('/')
+    .filter(Boolean)[1];
 let rolActual = ''; 
 let listaHistorias = []; 
 let idHistoriaEditando = null; 
 let idHistoriaCriteriosActual = null; // Guarda el ID de la historia cuyos criterios estamos viendo
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const idProyecto = urlParams.get('id_proyecto') || 1; 
+    const idProyecto = idProyectoBacklog; 
 
     await obtenerRolUsuario();
     
@@ -33,15 +34,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function obtenerRolUsuario() {
     try {
-        const respuesta = await fetch('/api/usuario-actual');
+        const respuesta = await fetch(
+            `/proyectos/${idProyectoBacklog}/datos`,
+            {
+                headers: {
+                    Accept: 'application/json'
+                },
+                cache: 'no-store'
+            }
+        );
+        if (respuesta.status === 401) {
+            window.location.replace('/login');
+            return;
+        }
         if (respuesta.ok) {
             const datos = await respuesta.json();
             rolActual = datos.rol;
         } else {
-            console.warn('No se pudo obtener el rol.');
+            console.warn(
+                'No se pudo obtener el rol del proyecto.'
+            );
         }
     } catch (error) {
-        console.error('Error de red al intentar obtener el rol:', error);
+        console.error(
+            'Error al consultar el rol:',
+            error
+        );
     }
 }
 
@@ -59,32 +77,156 @@ async function cargarHistorias(idProyecto) {
 }
 
 function mostrarEnTabla(historias) {
-    const tbody = document.getElementById('tabla-backlog-body'); 
+    const tbody = document.getElementById(
+        'tabla-backlog-body'
+    );
     if (!tbody) return;
-    
-    tbody.innerHTML = '';
+    tbody.replaceChildren();
+    const crearCelda = (texto) => {
+        const td = document.createElement('td');
+        td.textContent = String(texto);
+        return td;
+    };
+    historias.forEach((historia) => {
+        const fila = document.createElement('tr');
+        const valor = historia.valor_negocio;
+        const esfuerzo = Number(historia.puntos);
 
-    historias.forEach(historia => {
-        let botonesHTML = `
-            <button onclick="verCriterios(${historia.id_historia}, '${historia.titulo.replace(/'/g, "\\'")}')" class="boton-secundario" style="margin-right: 5px;">Criterios</button>
-        `;
+        fila.appendChild(
+            crearCelda(historia.titulo)
+        );
 
+        fila.appendChild(
+            crearCelda(historia.descripcion)
+        );
+
+        fila.appendChild(
+            crearCelda(
+                historia.puntos ?? 'Sin estimar'
+            )
+        );
+        const celdaValor = document.createElement('td');
         if (rolActual === 'Product Owner') {
-            botonesHTML += `
-                <button onclick="prepararEdicion(${historia.id_historia})" class="boton-secundario" style="margin-right: 5px;">Editar</button>
-                <button onclick="eliminarHistoria(${historia.id_historia})" class="btn-eliminar">Eliminar</button>
-            `;
+            const accionesValor =
+                document.createElement('div');
+            accionesValor.className =
+                'acciones-valor-negocio';
+            const entrada = document.createElement('input');
+            entrada.type = 'number';
+            entrada.min = '1';
+            entrada.max = '100';
+            entrada.step = '1';
+            entrada.value = valor ?? '';
+            entrada.className = 'campo-valor-negocio';
+            entrada.setAttribute(
+                'aria-label',
+                `Valor de negocio de ${historia.titulo}`
+            );
+            const guardar = document.createElement('button');
+            guardar.type = 'button';
+            guardar.textContent = 'Guardar valor';
+            guardar.addEventListener('click', async () => {
+                const numero = Number(entrada.value);
+                if (
+                    !entrada.value.trim() ||
+                    !Number.isInteger(numero) ||
+                    numero < 1 ||
+                    numero > 100
+                ) {
+                    alert(
+                        'El valor de negocio debe ser un número entero entre 1 y 100.'
+                    );
+                    return;
+                }
+                guardar.disabled = true;
+                try {
+                    const respuesta = await fetch(
+                        `/backlog/${idProyectoBacklog}/historias/${historia.id_historia}/valor-negocio`,
+                        {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Accept: 'application/json'
+                            },
+                            body: JSON.stringify({
+                                valor_negocio: numero
+                            })
+                        }
+                    );
+                    const datos = await respuesta.json();
+                    if (!respuesta.ok) {
+                        alert(
+                            datos.mensaje ||
+                            'No se pudo guardar el valor.'
+                        );
+                        return;
+                    }
+                    await cargarHistorias(idProyectoBacklog);
+                } catch (error) {
+                    console.error(error);
+                    alert(
+                        'No se pudo conectar con el servidor.'
+                    );
+                } finally {
+                    guardar.disabled = false;
+                }
+            });
+            accionesValor.append(
+                entrada,
+                guardar
+            );
+            celdaValor.appendChild(accionesValor);
+        } else {
+            celdaValor.textContent =
+                valor ?? 'Sin asignar';
         }
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${historia.titulo}</td>
-            <td>${historia.descripcion}</td>
-            <td>${historia.puntos !== null ? historia.puntos : '-'}</td>
-            <td>${historia.prioridad}</td>
-            <td>${botonesHTML}</td>
-        `;
-        tbody.appendChild(tr);
+        fila.appendChild(celdaValor);
+        const relacion =
+            valor != null &&
+            Number.isFinite(esfuerzo) &&
+            esfuerzo > 0
+                ? (Number(valor) / esfuerzo).toFixed(2)
+                : '—';
+        fila.appendChild(
+            crearCelda(relacion)
+        );
+        fila.appendChild(
+            crearCelda(historia.prioridad)
+        );
+        const acciones = document.createElement('td');
+        const criterios = document.createElement('button');
+        criterios.type = 'button';
+        criterios.textContent = 'Criterios';
+        criterios.className = 'boton-secundario';
+        criterios.addEventListener('click', () => {
+            verCriterios(
+                historia.id_historia,
+                historia.titulo
+            );
+        });
+        acciones.appendChild(criterios);
+        if (rolActual === 'Product Owner') {
+            const editar = document.createElement('button');
+            editar.type = 'button';
+            editar.textContent = 'Editar';
+            editar.className = 'boton-secundario';
+            editar.addEventListener('click', () => {
+                prepararEdicion(historia.id_historia);
+            });
+            const eliminar = document.createElement('button');
+            eliminar.type = 'button';
+            eliminar.textContent = 'Eliminar';
+            eliminar.className = 'btn-eliminar';
+            eliminar.addEventListener('click', () => {
+                eliminarHistoria(historia.id_historia);
+            });
+            acciones.append(
+                editar,
+                eliminar
+            );
+        }
+        fila.appendChild(acciones);
+        tbody.appendChild(fila);
     });
 }
 
@@ -182,9 +324,8 @@ async function eliminarHistoria(idHistoria) {
 
         alert('Historia eliminada');
         
-        const urlParams = new URLSearchParams(window.location.search);
-        const idProyecto = urlParams.get('id_proyecto') || 1; 
-        cargarHistorias(idProyecto); 
+        const idProyecto = idProyectoBacklog;
+        cargarHistorias(idProyecto);
 
     } catch (error) {
         console.error('Error:', error);
