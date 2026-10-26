@@ -499,3 +499,6 @@ CREATE TABLE IF NOT EXISTS revisiones_historia (
         FOREIGN KEY (id_revisor) REFERENCES usuarios(id_usuario)
         ON DELETE SET NULL
 );
+#PB 18 y 56 sprint 2
+ALTER TABLE product_backlog
+ADD COLUMN valor_negocio INT NULL AFTER puntos;
