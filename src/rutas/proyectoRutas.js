@@ -19,6 +19,9 @@ const revisionControlador = require('../controladores/revisionControlador');
 // PB-57: evidencias y envío a revisión por el desarrollador
 const evidenciaControlador = require('../controladores/evidenciaControlador');
 
+// Burndown Chart del Sprint
+const burndownControlador = require('../controladores/burndownControlador');
+
 
 // =======================================
 // PROYECTOS
@@ -282,6 +285,19 @@ router.post(
     '/:id/revisiones/:idHistoria',
     verificarSesion,
     revisionControlador.registrarDecision
+);
+
+
+// =======================================
+// BURNDOWN CHART
+// Cualquier integrante del proyecto puede consultarlo.
+// Los puntos restantes se calculan solos y se guardan por día.
+// =======================================
+
+router.get(
+    '/:id/burndown',
+    verificarSesion,
+    burndownControlador.consultar
 );
 
 

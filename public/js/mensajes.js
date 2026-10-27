@@ -1,7 +1,24 @@
+// Avisos del proyecto.
+// - El Scrum Master publica avisos y consulta los del Product Owner.
+// - El Product Owner publica avisos y consulta los del Scrum Master.
+// - Los desarrolladores consultan los avisos de ambos.
+// El servidor decide el tipo de aviso según el rol del autor en el proyecto.
 (() => {
     const idProyecto = window.location.pathname.split('/').filter(Boolean)[1];
     const direccion = `/proyectos/${idProyecto}/mensajes`;
-    const lista = document.getElementById('lista-mensajes-po');
+    const TIPOS = ['Scrum Master', 'Product Owner'];
+    const listas = {
+        'Scrum Master': document.getElementById('lista-mensajes-sm'),
+        'Product Owner': document.getElementById('lista-mensajes-po')
+    };
+    const vacios = {
+        'Scrum Master': document.getElementById('vacio-avisos-sm'),
+        'Product Owner': document.getElementById('vacio-avisos-po')
+    };
+    const conteos = {
+        'Scrum Master': document.getElementById('conteo-avisos-sm'),
+        'Product Owner': document.getElementById('conteo-avisos-po')
+    };
     const plantilla = document.getElementById('plantilla-mensaje-po');
     const estado = document.getElementById('estado-mensajes-po');
     const formulario = document.getElementById('form-mensaje-po');
@@ -11,10 +28,13 @@
     const confirmacion = document.getElementById('confirmacion-mensaje-po');
     const botonNuevo = document.getElementById('nuevo-mensaje-po');
     const botonCancelar = document.getElementById('cancelar-mensaje-po');
+    const tipoPublicacion = document.getElementById('tipo-publicacion');
+    const insignia = document.getElementById('insignia-avisos');
     const botonEnviar = formulario.querySelector('button[type="submit"]');
     const lecturasConfirmadas = new Set();
     const lecturasPendientes = new Set();
     let mensajes = [];
+    let miRol = '';
     let conexion;
     let reintento;
     let cargando = false;
@@ -30,16 +50,26 @@
         clearTimeout(reintento);
     };
 
+    const vaciarListas = () => {
+        TIPOS.forEach((tipo) => {
+            listas[tipo].replaceChildren();
+            vacios[tipo].hidden = true;
+            conteos[tipo].textContent = '0';
+        });
+        insignia.hidden = true;
+        insignia.textContent = '';
+    };
+
     const denegar = (sesion) => {
         bloqueado = true;
         detener();
-        lista.replaceChildren();
+        vaciarListas();
         formulario.reset();
         formulario.hidden = true;
         botonNuevo.hidden = true;
         confirmacion.hidden = true;
         estado.dataset.tipo = 'error';
-        estado.textContent = 'Ya no tienes acceso a los mensajes de este proyecto.';
+        estado.textContent = 'Ya no tienes acceso a los avisos de este proyecto.';
         if (sesion) {
             window.location.replace('/login');
         }
@@ -74,9 +104,12 @@
         return resultado;
     };
 
-    const mostrarMensajes = () => {
+    const estaLeido = (mensaje) => mensaje.leido || lecturasConfirmadas.has(mensaje.id_mensaje);
+
+    // Pinta una columna reutilizando las tarjetas que ya existen (así no se pierde el foco al actualizar).
+    const pintarLista = (lista, items) => {
         const tarjetas = new Map([...lista.children].map(tarjeta => [Number(tarjeta.dataset.id), tarjeta]));
-        mensajes.forEach((mensaje, posicion) => {
+        items.forEach((mensaje, posicion) => {
             let tarjeta = tarjetas.get(mensaje.id_mensaje);
             if (!tarjeta) {
                 tarjeta = plantilla.content.firstElementChild.cloneNode(true);
@@ -84,7 +117,7 @@
                 tarjeta.querySelector('.marcar-leido-po').addEventListener('click', () => marcarLeido(mensaje.id_mensaje));
             }
             tarjetas.delete(mensaje.id_mensaje);
-            const leido = mensaje.leido || lecturasConfirmadas.has(mensaje.id_mensaje);
+            const leido = estaLeido(mensaje);
             const textos = {
                 '.titulo-mensaje-po': mensaje.titulo,
                 '.contenido-mensaje-po': mensaje.contenido,
@@ -101,7 +134,7 @@
             tarjeta.classList.toggle('mensaje-po-leido', leido);
             const boton = tarjeta.querySelector('.marcar-leido-po');
             boton.disabled = leido || lecturasPendientes.has(mensaje.id_mensaje);
-            boton.title = `${leido ? 'Mensaje leído' : 'Marcar como leído'}: ${mensaje.titulo}`;
+            boton.title = `${leido ? 'Aviso leído' : 'Marcar como leído'}: ${mensaje.titulo}`;
             boton.setAttribute('aria-label', boton.title);
             const fecha = new Date(mensaje.fecha_creacion);
             const etiqueta = tarjeta.querySelector('.fecha-mensaje-po');
@@ -114,9 +147,23 @@
             }
         });
         tarjetas.forEach(tarjeta => tarjeta.remove());
-        const sinLeer = mensajes.filter(mensaje => !mensaje.leido && !lecturasConfirmadas.has(mensaje.id_mensaje)).length;
+    };
+
+    const mostrarMensajes = () => {
+        TIPOS.forEach((tipo) => {
+            const items = mensajes.filter(mensaje => mensaje.tipo === tipo);
+            pintarLista(listas[tipo], items);
+            vacios[tipo].hidden = items.length > 0;
+            conteos[tipo].textContent = String(items.length);
+        });
+        const sinLeer = mensajes.filter(mensaje => !estaLeido(mensaje)).length;
+        insignia.hidden = sinLeer === 0;
+        insignia.textContent = sinLeer > 99 ? '99+' : String(sinLeer);
+        insignia.title = `${sinLeer} ${sinLeer === 1 ? 'aviso sin leer' : 'avisos sin leer'}`;
         estado.dataset.tipo = '';
-        estado.textContent = mensajes.length ? `${mensajes.length} ${mensajes.length === 1 ? 'mensaje publicado' : 'mensajes publicados'} · ${sinLeer} sin leer` : 'Todavía no hay mensajes del Product Owner.';
+        estado.textContent = mensajes.length
+            ? `${mensajes.length} ${mensajes.length === 1 ? 'aviso publicado' : 'avisos publicados'} · ${sinLeer} sin leer`
+            : 'Todavía no hay avisos en este proyecto.';
     };
 
     const cargarMensajes = async () => {
@@ -130,14 +177,18 @@
         const versionActual = version;
         cargando = true;
         clearTimeout(reintento);
-        lista.setAttribute('aria-busy', 'true');
+        TIPOS.forEach(tipo => listas[tipo].setAttribute('aria-busy', 'true'));
         try {
             const resultado = await solicitar('GET');
             if (!resultado || versionActual !== version || bloqueado || !activo) {
                 return;
             }
             mensajes = resultado.mensajes;
+            miRol = resultado.miRol || '';
             botonNuevo.hidden = !resultado.puedePublicar;
+            tipoPublicacion.textContent = resultado.puedePublicar
+                ? `Este aviso se publicará como aviso del ${miRol}.`
+                : '';
             if (!resultado.puedePublicar) {
                 formulario.hidden = true;
             }
@@ -145,12 +196,12 @@
         } catch (error) {
             if (versionActual === version && activo && !bloqueado) {
                 estado.dataset.tipo = 'error';
-                estado.textContent = 'No se pudieron cargar los mensajes. Reintentando automáticamente...';
+                estado.textContent = 'No se pudieron cargar los avisos. Reintentando automáticamente...';
                 reintento = setTimeout(cargarMensajes, 3000);
             }
         } finally {
             cargando = false;
-            lista.setAttribute('aria-busy', 'false');
+            TIPOS.forEach(tipo => listas[tipo].setAttribute('aria-busy', 'false'));
             if (recargarPendiente) {
                 recargarPendiente = false;
                 cargarMensajes();
@@ -172,11 +223,11 @@
             }
         } catch (error) {
             estado.dataset.tipo = 'error';
-            estado.textContent = error.message || 'No se pudo marcar el mensaje como leído. Inténtalo de nuevo.';
+            estado.textContent = error.message || 'No se pudo marcar el aviso como leído. Inténtalo de nuevo.';
         } finally {
             lecturasPendientes.delete(idMensaje);
             if (!bloqueado && activo) {
-                const boton = lista.querySelector(`[data-id="${idMensaje}"] .marcar-leido-po`);
+                const boton = document.querySelector(`.mensaje-po[data-id="${idMensaje}"] .marcar-leido-po`);
                 if (boton) {
                     boton.disabled = lecturasConfirmadas.has(idMensaje) || mensajes.some(mensaje => mensaje.id_mensaje === idMensaje && mensaje.leido);
                 }
@@ -194,7 +245,7 @@
         conexion.addEventListener('acceso', () => denegar(false));
         conexion.onerror = () => {
             if (activo && !bloqueado && !document.hidden) {
-                estado.textContent = 'Reconectando los mensajes...';
+                estado.textContent = 'Reconectando los avisos...';
                 cargarMensajes();
             }
         };
@@ -247,10 +298,10 @@
             confirmacion.hidden = false;
             cargarMensajes();
         } catch (error) {
-            errorFormulario.textContent = error.message || 'No se pudo publicar el mensaje. Inténtalo de nuevo.';
+            errorFormulario.textContent = error.message || 'No se pudo publicar el aviso. Inténtalo de nuevo.';
         } finally {
             enviando = false;
-            botonEnviar.textContent = 'Publicar mensaje';
+            botonEnviar.textContent = 'Publicar aviso';
             actualizarControles();
         }
     });
@@ -276,12 +327,12 @@
         detener();
         mensajes = [];
         lecturasConfirmadas.clear();
-        lista.replaceChildren();
+        vaciarListas();
         formulario.reset();
         formulario.hidden = true;
         botonNuevo.hidden = true;
         confirmacion.hidden = true;
         errorFormulario.textContent = '';
-        estado.textContent = 'Cargando mensajes...';
+        estado.textContent = 'Cargando avisos...';
     });
 })();

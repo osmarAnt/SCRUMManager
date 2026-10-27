@@ -2,7 +2,7 @@ const conexion = require('../base_de_datos/conexion');
 
 const listarPorProyecto = (idProyecto, idUsuario, callback) => {
     const consulta = `
-        SELECT m.id_mensaje, m.titulo, m.contenido, m.fecha_creacion,
+        SELECT m.id_mensaje, m.tipo, m.titulo, m.contenido, m.fecha_creacion,
             COALESCE(u.nombre, 'Usuario eliminado') AS autor,
             u.username AS username_autor,
             (m.id_autor = ? OR l.id_usuario IS NOT NULL) AS leido, l.fecha_lectura
@@ -16,15 +16,17 @@ const listarPorProyecto = (idProyecto, idUsuario, callback) => {
     conexion.query(consulta, [idUsuario, idUsuario, idProyecto], callback);
 };
 
+// El tipo del aviso (Scrum Master o Product Owner) es el rol que el autor tiene en este proyecto.
+// Los desarrolladores no pueden publicar: la consulta no inserta nada si el rol no es uno de los dos.
 const crearMensaje = (idProyecto, idAutor, titulo, contenido, callback) => {
     const consulta = `
-        INSERT INTO mensajes_product_owner (id_proyecto, id_autor, titulo, contenido)
-        SELECT pu.id_proyecto, pu.id_usuario, ?, ?
+        INSERT INTO mensajes_product_owner (id_proyecto, id_autor, tipo, titulo, contenido)
+        SELECT pu.id_proyecto, pu.id_usuario, pu.rol, ?, ?
         FROM proyecto_usuarios pu
         INNER JOIN proyectos p ON p.id_proyecto = pu.id_proyecto
         INNER JOIN usuarios u ON u.id_usuario = pu.id_usuario
         WHERE pu.id_proyecto = ? AND pu.id_usuario = ?
-        AND pu.rol = 'Product Owner' AND pu.activo = TRUE
+        AND pu.rol IN ('Scrum Master', 'Product Owner') AND pu.activo = TRUE
         AND p.activo = TRUE AND u.activo = TRUE
     `;
     conexion.query(consulta, [titulo, contenido, idProyecto, idAutor], callback);

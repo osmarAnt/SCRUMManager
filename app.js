@@ -9,6 +9,7 @@ const scrumMasterRutas = require('./src/rutas/scrumMasterRutas');
 const productOwnerRutas = require('./src/rutas/productOwnerRutas');
 const desarrolladorRutas = require('./src/rutas/desarrolladorRutas');
 const backlogRutas = require('./src/rutas/backlogRutas');
+const burndownDAO = require('./src/dao/burndownDAO');
 const app = express();
 const puerto = 3000;
 
@@ -39,6 +40,22 @@ app.use(
         }
     })
 );
+
+// Burndown Chart: el avance real es un historial. Después de cualquier cambio exitoso en proyectos,
+// historias, estados, puntos o revisiones se guarda la "foto" de hoy de los Sprints vigentes.
+app.use((req, res, next) => {
+    const modifica = ['POST', 'PUT', 'DELETE'].includes(req.method);
+    if (modifica && /^\/(proyectos|backlog)(\/|$)/.test(req.originalUrl)) {
+        res.on('finish', () => {
+            if (res.statusCode < 400) {
+                burndownDAO.registrarSprintsVigentes().catch((error) => {
+                    console.error('No se pudo guardar el historial del Burndown:', error.code || error.message);
+                });
+            }
+        });
+    }
+    next();
+});
 
 app.get('/', (req, res) => {
     res.redirect('/login');
@@ -98,4 +115,3 @@ app.listen(
         console.log('Ya jaló');
     }
 );
-
