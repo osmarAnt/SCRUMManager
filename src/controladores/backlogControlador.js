@@ -165,3 +165,20 @@ exports.actualizarValorNegocio = async (req, res) => {
         });
     }
 };
+
+// ===== OSMAR: PB-24 - KANBAN =====
+exports.obtenerKanban = async (req, res) => {
+    const { id_sprint } = req.params;
+    
+    if (!id_sprint) {
+        return res.status(400).json({ error: 'El id_sprint es obligatorio' });
+    }
+
+    try {
+        const historias = await BacklogDAO.obtenerKanbanPorSprint(id_sprint);
+        res.json(historias);
+    } catch (error) {
+        console.error('Error al obtener el Kanban:', error);
+        res.status(500).json({ error: 'Error interno en el servidor al cargar Kanban' });
+    }
+};

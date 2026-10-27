@@ -242,6 +242,24 @@ actualizarEstadoSprint: async (idProyecto, idSprint, idHistoria, estado) => {
             ]
         );
         return resultado.affectedRows > 0;
+    },
+    // ===== OSMAR: PB-24 - KANBAN =====
+obtenerKanbanPorSprint: async (id_sprint) => {
+        const query = `
+            SELECT 
+                h.id_historia, 
+                h.titulo, 
+                h.puntos, 
+                h.estado_historia, 
+                u.nombre AS nombre_responsable
+            FROM product_backlog h
+            LEFT JOIN usuarios u ON h.id_responsable = u.id_usuario
+            WHERE h.id_sprint = ?
+        `;
+        const [rows] = await pool.promise().query(query, [id_sprint]);
+        return rows;
     }
 };
+
+
 module.exports = BacklogDAO;
