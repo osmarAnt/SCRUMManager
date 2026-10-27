@@ -60,11 +60,12 @@ const notificarProyecto = (idProyecto, idUsuario) => {
 };
 
 const responderError = (res, error) => {
-    console.error('Error en mensajes del Product Owner:', error.code || error.message);
+    console.error('Error en los avisos del proyecto:', error.code || error.message);
     return res.status(500).json({ mensaje: 'No se pudo completar la operación. Inténtalo de nuevo.' });
 };
 
-const autorizarProyecto = async (req, res, exigirProductOwner) => {
+// exigirPublicador: solo el Scrum Master o el Product Owner del proyecto pueden publicar avisos.
+const autorizarProyecto = async (req, res, exigirPublicador) => {
     const valor = req.params.id;
     if (!/^[1-9]\d{0,9}$/.test(valor) || Number(valor) > 2147483647) {
         res.status(404).json({ mensaje: 'No encontramos ese proyecto.' });
@@ -76,8 +77,8 @@ const autorizarProyecto = async (req, res, exigirProductOwner) => {
         res.status(404).json({ mensaje: 'No encontramos ese proyecto.' });
         return null;
     }
-    if (exigirProductOwner && rol !== 'Product Owner') {
-        res.status(403).json({ mensaje: 'Solo el Product Owner de este proyecto puede publicar mensajes.' });
+    if (exigirPublicador && rol !== 'Product Owner' && rol !== 'Scrum Master') {
+        res.status(403).json({ mensaje: 'Solo el Scrum Master o el Product Owner de este proyecto pueden publicar avisos.' });
         return null;
     }
     return { idProyecto, rol };
@@ -109,7 +110,7 @@ const listarMensajes = async (req, res) => {
             if (error) {
                 return responderError(res, error);
             }
-            res.json({ mensajes: mensajes.map(mensaje => ({ ...mensaje, leido: Boolean(mensaje.leido) })), puedePublicar: acceso.rol === 'Product Owner' });
+            res.json({ mensajes: mensajes.map(mensaje => ({ ...mensaje, leido: Boolean(mensaje.leido) })), puedePublicar: acceso.rol === 'Product Owner' || acceso.rol === 'Scrum Master', miRol: acceso.rol });
         });
     } catch (error) {
         responderError(res, error);
@@ -134,7 +135,7 @@ const publicarMensaje = async (req, res) => {
                 return res.status(403).json({ mensaje: 'Ya no tienes permiso para publicar en este proyecto.' });
             }
             notificarProyecto(acceso.idProyecto);
-            res.status(201).json({ mensaje: 'Mensaje publicado. El equipo del proyecto ya puede consultarlo.', id_mensaje: resultado.insertId });
+            res.status(201).json({ mensaje: 'Aviso publicado. El equipo del proyecto ya puede consultarlo.', id_mensaje: resultado.insertId });
         });
     } catch (error) {
         responderError(res, error);

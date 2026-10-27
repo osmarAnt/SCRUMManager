@@ -502,3 +502,69 @@ CREATE TABLE IF NOT EXISTS revisiones_historia (
 #PB 18 y 56 sprint 2
 ALTER TABLE product_backlog
 ADD COLUMN valor_negocio INT NULL AFTER puntos;
+
+
+
+
+#-- Burndown Chart + Avisos del Scrum Master --
+#-- Ejecutar UNA sola vez sobre la base de datos existente (agregar al final de bd.sql) --
+USE scrument;
+
+-- 1) Historial diario del Burndown Chart.
+--    Una fila por Sprint y por día con la "foto" de los puntos de ese día.
+--    El avance real es un historial: aquí queda guardado y no se recalcula con el estado actual.
+CREATE TABLE IF NOT EXISTS burndown_historial (
+    id_sprint INT NOT NULL,
+    fecha DATE NOT NULL,
+    puntos_totales INT NOT NULL DEFAULT 0,
+    puntos_completados INT NOT NULL DEFAULT 0,
+    puntos_restantes INT NOT NULL DEFAULT 0,
+    fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_sprint, fecha),
+    CONSTRAINT fk_burndown_sprint
+        FOREIGN KEY (id_sprint) REFERENCES sprints(id_sprint)
+        ON DELETE CASCADE
+);
+
+
+
+
+CREATE TABLE IF NOT EXISTS mensajes_product_owner (
+    id_mensaje INT AUTO_INCREMENT PRIMARY KEY,
+    id_proyecto INT NOT NULL,
+    id_autor INT NULL,
+    tipo ENUM('Scrum Master', 'Product Owner') NOT NULL DEFAULT 'Product Owner',
+    titulo VARCHAR(150) NOT NULL,
+    contenido TEXT NOT NULL,
+    fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_mensajes_po_proyecto_fecha (id_proyecto, fecha_creacion, id_mensaje),
+    CONSTRAINT fk_mensajes_po_proyecto
+        FOREIGN KEY (id_proyecto) REFERENCES proyectos(id_proyecto)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_mensajes_po_autor
+        FOREIGN KEY (id_autor) REFERENCES usuarios(id_usuario)
+        ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS lecturas_mensajes_product_owner (
+    id_mensaje INT NOT NULL,
+    id_usuario INT NOT NULL,
+    fecha_lectura TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_mensaje, id_usuario),
+    CONSTRAINT fk_lecturas_po_mensaje
+        FOREIGN KEY (id_mensaje) REFERENCES mensajes_product_owner(id_mensaje)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_lecturas_po_usuario
+        FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+        ON DELETE CASCADE
+);
+
+
+
+
+-- 2) Avisos: la tabla de mensajes ahora guarda también los del Scrum Master.
+--    Los mensajes que ya existían quedan como avisos del Product Owner.
+ALTER TABLE mensajes_product_owner
+    ADD COLUMN tipo ENUM('Scrum Master', 'Product Owner')
+        NOT NULL DEFAULT 'Product Owner' AFTER id_autor;
