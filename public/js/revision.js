@@ -383,5 +383,14 @@
         } else {
             seccion.hidden = true;
         }
+    });0
+    document.addEventListener('kanban-ir-a-revision', async (evento) => {
+        const idHistoria = Number(evento.detail?.idHistoria);
+        if (!Number.isSafeInteger(idHistoria) || idHistoria <= 0) return;
+        await cargarLista();
+        if (seccion.hidden) {
+            return;
+        }
+        await abrirRevision(idHistoria);
     });
 })();

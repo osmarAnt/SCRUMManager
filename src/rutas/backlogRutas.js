@@ -15,6 +15,5 @@ router.post('/backlog/criterios', backlogControlador.crearCriterio);
 router.put('/backlog/:id_proyecto/historias/:id_historia/valor-negocio', verificarSesion, backlogControlador.actualizarValorNegocio);
 
 // Ruta para PB-24: Obtener Kanban por Sprint
-router.get('/backlog/kanban/:id_sprint', backlogControlador.obtenerKanban);
-
+router.get('/backlog/kanban/:id_sprint', verificarSesion, backlogControlador.obtenerKanban);
 module.exports = router;
