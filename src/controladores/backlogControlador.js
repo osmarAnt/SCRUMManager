@@ -168,17 +168,41 @@ exports.actualizarValorNegocio = async (req, res) => {
 
 // ===== OSMAR: PB-24 - KANBAN =====
 exports.obtenerKanban = async (req, res) => {
-    const { id_sprint } = req.params;
-    
-    if (!id_sprint) {
-        return res.status(400).json({ error: 'El id_sprint es obligatorio' });
+    const idSprint = Number(req.params.id_sprint);
+
+    if (!Number.isSafeInteger(idSprint) || idSprint <= 0 || idSprint > 2147483647) {
+        return res.status(400).json({ mensaje: 'Sprint no válido.' });
     }
 
     try {
-        const historias = await BacklogDAO.obtenerKanbanPorSprint(id_sprint);
-        res.json(historias);
+        const idProyecto = await BacklogDAO.obtenerProyectoDeSprint(idSprint);
+
+        if (!idProyecto) {
+            return res.status(404).json({ mensaje: 'No se encontró el Sprint.' });
+        }
+
+        const rol = await proyectoDAO.obtenerRolEnProyecto(
+            idProyecto,
+            req.session.idUsuario
+        );
+
+        if (!rol) {
+            return res.status(403).json({
+                mensaje: 'No tienes permiso para consultar este Sprint.'
+            });
+        }
+
+        const historias = await BacklogDAO.obtenerKanbanPorSprint(
+            idSprint,
+            idProyecto
+        );
+
+        return res.json(historias);
+
     } catch (error) {
-        console.error('Error al obtener el Kanban:', error);
-        res.status(500).json({ error: 'Error interno en el servidor al cargar Kanban' });
+        console.error('Error al obtener Kanban:', error);
+        return res.status(500).json({
+            mensaje: 'No se pudo cargar el tablero Kanban.'
+        });
     }
 };

@@ -860,6 +860,7 @@ async function cargarSprintBacklog() {
             const tarjeta = document.createElement('article');
 
             tarjeta.className = 'tarjeta-sprint';
+            tarjeta.dataset.idHistoria = historia.id_historia;
 
 
             // Título
@@ -1016,26 +1017,18 @@ async function cargarSprintBacklog() {
                             'No se pudo actualizar el estado.'
                         );
                     }
-
                     avisar(
                         confirmacionBacklog,
                         respuesta.resultado.mensaje
                     );
-
                     await cargarSprintBacklog();
-
                 } catch (error) {
-
                     selectorEstado.value = valorEstado;
-
                     mensajeEstadoHistoria.textContent =
                         error.message || 'Error al guardar el estado.';
-
                 } finally {
-
                     selectorEstado.disabled = false;
                 }
-
             });
 
             controlEstado.append(
@@ -1050,26 +1043,17 @@ async function cargarSprintBacklog() {
             // Selector de desarrolladores
 
             const campo = document.createElement('div');
-
             campo.className = 'formulario';
-
             const etiqueta = document.createElement('label');
-
             etiqueta.textContent = 'Desarrollador';
-
             etiqueta.htmlFor =
                 `responsable-historia-${historia.id_historia}`;
-
             const selector = document.createElement('select');
-
             selector.id = etiqueta.htmlFor;
-
             selector.add(
                 new Option('Selecciona un desarrollador', '')
             );
-
             desarrolladoresBacklog.forEach(persona => {
-
                 selector.add(
                     new Option(
                         persona.nombre,
@@ -1079,62 +1063,45 @@ async function cargarSprintBacklog() {
             });
 
             if (historia.id_responsable != null && asignado) {
-
                 selector.value =
                     String(historia.id_responsable);
             }
 
             if (!desarrolladoresBacklog.length) {
-
                 selector.replaceChildren(
                     new Option(
                         'No hay desarrolladores aceptados',
                         ''
                     )
                 );
-
                 selector.disabled = true;
             }
-
             campo.append(etiqueta, selector);
 
 
             // Botón para asignar
             const botonAsignar = document.createElement('button');
-
             botonAsignar.type = 'button';
-
             botonAsignar.textContent = 'Guardar responsable';
-
             botonAsignar.disabled =
                 !desarrolladoresBacklog.length;
-
             botonAsignar.addEventListener('click', async () => {
-
                 const id_responsable = Number(selector.value);
 
                 if (!id_responsable) {
-
                     mensajeAgregarHistoria.textContent =
                         'Selecciona un desarrollador.';
-
                     return;
                 }
-
                 await ejecutarAccionBacklog(
-
                     `/proyectos/${idProyecto}/sprints/${idSprint}/historias/${historia.id_historia}/responsable`,
-
                     'PUT',
-
                     { id_responsable },
-
                     botonAsignar
                 );
             });
 
             acciones.append(campo, botonAsignar);
-
 
             // ===== PB-15 =====
             // Quitar una historia pendiente
@@ -1143,13 +1110,9 @@ async function cargarSprintBacklog() {
 
                 const botonQuitar =
                     document.createElement('button');
-
                 botonQuitar.type = 'button';
-
                 botonQuitar.className = 'boton-secundario';
-
                 botonQuitar.textContent = 'Quitar del Sprint';
-
                 botonQuitar.addEventListener(
                     'click',
                     async () => {
@@ -1159,35 +1122,25 @@ async function cargarSprintBacklog() {
                         )) {
                             return;
                         }
-
                         await ejecutarAccionBacklog(
-
                             `/proyectos/${idProyecto}/sprints/${idSprint}/historias/${historia.id_historia}`,
-
                             'DELETE',
-
                             undefined,
-
                             botonQuitar
                         );
                     }
                 );
-
                 acciones.append(botonQuitar);
             }
-
-
             tarjeta.append(
                 titulo,
                 estado,
                 detalle,
                 responsable
             );
-
             if (revisionPO) {
                 tarjeta.appendChild(revisionPO);
             }
-
             tarjeta.appendChild(controlEstado);
 
             // PB-18: evidencias y envío a revisión (solo el desarrollador responsable de esta historia)
@@ -1199,21 +1152,15 @@ async function cargarSprintBacklog() {
             ) {
                 tarjeta.appendChild(window.crearPanelEvidencias(historia));
             }
-
             if (puedeAdministrarBacklog) {
                 tarjeta.appendChild(acciones);
             }
-
             listaHistoriasSprint.appendChild(tarjeta);
         });
-
     } catch (error) {
-
         console.error(error);
-
         mensajeAgregarHistoria.textContent =
             'No fue posible cargar el Sprint Backlog.';
-
         listaHistoriasSprint.textContent =
             'Comprueba que el servidor y MySQL estén funcionando.';
     }
@@ -1227,48 +1174,32 @@ async function ejecutarAccionBacklog(
     cuerpo,
     boton
 ) {
-
     mensajeAgregarHistoria.textContent = '';
-
     confirmacionBacklog.hidden = true;
-
     boton.disabled = true;
-
     try {
-
         const respuesta = await peticionJson(
             url,
             metodo,
             cuerpo
         );
-
         if (!respuesta) return;
-
         if (!respuesta.ok) {
-
             mensajeAgregarHistoria.textContent =
                 respuesta.resultado.mensaje ||
                 'No se pudo guardar el cambio.';
-
             return;
         }
-
         avisar(
             confirmacionBacklog,
             respuesta.resultado.mensaje
         );
-
         await cargarSprintBacklog();
-
     } catch (error) {
-
         console.error(error);
-
         mensajeAgregarHistoria.textContent =
             'No se pudo conectar con el servidor.';
-
     } finally {
-
         boton.disabled = false;
     }
 }
@@ -1280,40 +1211,28 @@ async function ejecutarAccionBacklog(
 formAgregarHistoria.addEventListener(
     'submit',
     async (evento) => {
-
         evento.preventDefault();
-
         const id_sprint = Number(
             seleccionarSprint.value
         );
-
         const id_historia = Number(
             seleccionarHistoria.value
         );
-
         if (!id_sprint || !id_historia) {
-
             mensajeAgregarHistoria.textContent =
                 'Selecciona un Sprint y una historia disponible.';
-
             return;
         }
-
         const boton = formAgregarHistoria.querySelector(
             'button[type="submit"]'
         );
-
         await ejecutarAccionBacklog(
-
             `/proyectos/${idProyecto}/sprints/historias`,
-
             'POST',
-
             {
                 id_sprint,
                 id_historia
             },
-
             boton
         );
     }
@@ -1329,7 +1248,71 @@ seleccionarSprint.addEventListener('change', () => {
 });
 
 // ===== FIN FUNCIONALIDADES DE JESÚS =====
+// ===== ABRIR HISTORIA DESDE KANBAN SEGÚN EL ROL =====
+document.addEventListener('kanban-ir-a-historia', async (evento) => {
+    const { idHistoria, idSprint, rol } = evento.detail || {};
 
+    if (!['Desarrollador', 'Scrum Master'].includes(rol)) return;
+
+    const idHistoriaNumero = Number(idHistoria);
+    const idSprintNumero = Number(idSprint);
+
+    if (!Number.isSafeInteger(idHistoriaNumero) || idHistoriaNumero <= 0 ||
+        !Number.isSafeInteger(idSprintNumero) || idSprintNumero <= 0) {
+        alert('No se pudo identificar la historia o el Sprint.');
+        return;
+    }
+
+    // Abrir la pestaña Menú principal
+    document.getElementById('pestana-menu')?.click();
+
+    // Buscar el Sprint correspondiente
+    const existe = [...seleccionarSprint.options].some(
+        opcion => Number(opcion.value) === idSprintNumero
+    );
+
+    if (!existe) {
+        alert('No se encontró el Sprint de esta historia.');
+        return;
+    }
+
+    // Seleccionar el Sprint y cargar sus historias
+    seleccionarSprint.value = String(idSprintNumero);
+    await cargarSprintBacklog();
+
+    // Localizar la historia seleccionada
+    const tarjeta = [...listaHistoriasSprint.querySelectorAll('.tarjeta-sprint')]
+        .find(elemento =>
+            Number(elemento.dataset.idHistoria) === idHistoriaNumero
+        );
+
+    if (!tarjeta) {
+        alert('No se encontró la historia seleccionada.');
+        return;
+    }
+
+    // Resaltar la historia
+    tarjeta.style.outline = '3px solid #0052cc';
+    tarjeta.style.backgroundColor = '#eaf2ff';
+    tarjeta.style.transition = 'background-color 0.3s';
+
+    // Desarrollador: abrir su área de trabajo y evidencias
+    // Scrum Master: abrir la tarjeta general de la historia
+    const destino = rol === 'Desarrollador'
+        ? tarjeta.querySelector('.panel-evidencias') || tarjeta
+        : tarjeta;
+
+    destino.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+    });
+
+    // Quitar el resaltado después de 5 segundos
+    setTimeout(() => {
+        tarjeta.style.outline = '';
+        tarjeta.style.backgroundColor = '';
+    }, 5000);
+});
 
 
 window.addEventListener('pageshow', cargarProyecto);

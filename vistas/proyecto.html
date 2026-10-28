@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/css/evidencias.css">
     <link rel="stylesheet" href="/css/pestanas.css">
     <link rel="stylesheet" href="/css/burndown.css">
+    <link rel="stylesheet" href="/css/kanban.css">
     <script src="/js/proyecto.js" defer></script>
     <script src="/js/mensajes.js" defer></script>
     <script src="/js/kanban.js" defer></script>
@@ -513,58 +514,83 @@
 
 
                 <!-- TABLERO KANBAN -->
-<div class="panel-pestana" role="tabpanel" id="panel-kanban" aria-labelledby="pestana-kanban" hidden>
-    <section class="bloque" aria-labelledby="titulo-kanban">
-        <div class="cabecera-bloque">
-            <div>
-                <h2 id="titulo-kanban">Tablero Kanban</h2>
-                <p class="subtitulo">Visualiza el estado de las historias en el Sprint actual.</p>
-            </div>
-            <!-- Selector para escoger el Sprint que queremos ver -->
-            <div class="selector-sprint" style="margin-top: 10px;">
-                <label for="select-sprint-kanban">Sprint:</label>
-                <select id="select-sprint-kanban">
-                    <option value="">Cargando sprints...</option>
-                </select>
-            </div>
-        </div>
+                <div class="panel-pestana" role="tabpanel" id="panel-kanban" aria-labelledby="pestana-kanban" hidden>
+                    <section class="bloque">
+                        <!-- ENCABEZADO -->
+                        <div class="cabecera-bloque cabecera-kanban">
+                            <div>
+                                <h2>Tablero Kanban</h2>
+                                <p class="subtitulo">
+                                    Visualiza y administra las historias
+                                    del Sprint seleccionado.
+                                </p>
+                            </div>
+                            <!-- SELECCIONAR SPRINT -->
+                            <div class="controles-kanban">
+                                <label for="select-sprint-kanban">
+                                    Sprint:
+                                </label>
+                                <select id="select-sprint-kanban">
+                                    <option value="">
+                                        Cargando Sprints...
+                                    </option>
+                                </select>
+                                <button id="actualizar-kanban" type="button" class="boton-secundario">
+                                    Actualizar
+                                </button>
+                            </div>
+                        </div>
+                        <!-- MENSAJES -->
+                        <p class="ayuda-campo">
+                            Haz doble clic en una historia para consultar su información en el Product Backlog.
+                            Las historias solo pasan a Terminada cuando
+                            el Product Owner las aprueba.
+                        </p>
+                        <p id="mensaje-kanban" class="mensaje-kanban" role="status" aria-live="polite"></p>
 
-        <!-- Contenedor de las 3 columnas del Kanban -->
-        <div class="tablero-kanban" style="display: flex; gap: 20px; margin-top: 20px; overflow-x: auto; padding-bottom: 10px;">
-            
-            <!-- Columna Pendiente -->
-            <div class="columna-kanban" id="columna-pendiente" style="flex: 1; min-width: 250px; background-color: #f4f5f7; border-radius: 8px;">
-                <div class="cabecera-columna" style="padding: 15px; background-color: #6c757d; color: white; border-radius: 8px 8px 0 0;">
-                    <h3 style="margin: 0; font-size: 1.1rem; display: flex; justify-content: space-between;">Pendiente <span id="contador-pendiente" style="background: rgba(255,255,255,0.3); padding: 2px 8px; border-radius: 12px; font-size: 0.9rem;">0</span></h3>
-                </div>
-                <div class="contenedor-tarjetas" id="tarjetas-pendiente" style="padding: 10px; min-height: 200px; display: flex; flex-direction: column; gap: 10px;">
-                    <!-- Aquí se inyectan las tarjetas con JS -->
-                </div>
-            </div>
+                        <div class="tablero-kanban">
+                            <section class="columna-kanban kanban-pendiente" data-estado="Pendiente">
+                                <div class="cabecera-columna">
+                                    <h3>Pendiente</h3>
+                                    <span id="contador-pendiente" class="contador-kanban">
+                                        0
+                                    </span>
+                                </div>
+                                <div id="tarjetas-pendiente" class="contenedor-tarjetas"></div>
+                            </section>
 
-            <!-- Columna En Curso -->
-            <div class="columna-kanban" id="columna-en-curso" style="flex: 1; min-width: 250px; background-color: #f4f5f7; border-radius: 8px;">
-                <div class="cabecera-columna" style="padding: 15px; background-color: #007bff; color: white; border-radius: 8px 8px 0 0;">
-                    <h3 style="margin: 0; font-size: 1.1rem; display: flex; justify-content: space-between;">En curso <span id="contador-en-curso" style="background: rgba(255,255,255,0.3); padding: 2px 8px; border-radius: 12px; font-size: 0.9rem;">0</span></h3>
-                </div>
-                <div class="contenedor-tarjetas" id="tarjetas-en-curso" style="padding: 10px; min-height: 200px; display: flex; flex-direction: column; gap: 10px;">
-                    <!-- Aquí se inyectan las tarjetas con JS -->
-                </div>
-            </div>
+                            <section class="columna-kanban kanban-en-curso" data-estado="En curso">
+                                <div class="cabecera-columna">
+                                    <h3>En curso</h3>
+                                    <span id="contador-en-curso" class="contador-kanban">
+                                        0
+                                    </span>
+                                </div>
+                                <div id="tarjetas-en-curso" class="contenedor-tarjetas"></div>
+                            </section>
 
-            <!-- Columna Terminada -->
-            <div class="columna-kanban" id="columna-terminada" style="flex: 1; min-width: 250px; background-color: #f4f5f7; border-radius: 8px;">
-                <div class="cabecera-columna" style="padding: 15px; background-color: #28a745; color: white; border-radius: 8px 8px 0 0;">
-                    <h3 style="margin: 0; font-size: 1.1rem; display: flex; justify-content: space-between;">Terminada <span id="contador-terminada" style="background: rgba(255,255,255,0.3); padding: 2px 8px; border-radius: 12px; font-size: 0.9rem;">0</span></h3>
-                </div>
-                <div class="contenedor-tarjetas" id="tarjetas-terminada" style="padding: 10px; min-height: 200px; display: flex; flex-direction: column; gap: 10px;">
-                    <!-- Aquí se inyectan las tarjetas con JS -->
-                </div>
-            </div>
+                            <section class="columna-kanban kanban-en-revision" data-estado="En revision">
+                                <div class="cabecera-columna">
+                                    <h3>En revisión</h3>
+                                    <span id="contador-en-revision" class="contador-kanban">
+                                        0
+                                    </span>
+                                </div>
+                                <div id="tarjetas-en-revision" class="contenedor-tarjetas"></div>
+                            </section>
 
-        </div>
-    </section>
-</div>
+                            <section class="columna-kanban kanban-terminada" data-estado="Aprobada">
+                                <div class="cabecera-columna">
+                                    <h3>Terminada</h3>
+                                    <span id="contador-terminada" class="contador-kanban">
+                                        0
+                                    </span>
+                                </div>
+                                <div id="tarjetas-terminada" class="contenedor-tarjetas"></div>
+                            </section>
+                        </div>
+                    </section>
+                </div>
 
 
                 <!-- AVISOS: Scrum Master y Product Owner publican; los desarrolladores solo consultan.

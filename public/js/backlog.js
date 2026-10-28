@@ -89,6 +89,7 @@ function mostrarEnTabla(historias) {
     };
     historias.forEach((historia) => {
         const fila = document.createElement('tr');
+        fila.dataset.idHistoria = historia.id_historia;
         const valor = historia.valor_negocio;
         const esfuerzo = Number(historia.puntos);
 

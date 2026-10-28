@@ -1,0 +1,233 @@
+.cabecera-kanban {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.controles-kanban {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.controles-kanban label {
+    font-weight: 600;
+    color: #183357;
+}
+
+.controles-kanban select {
+    min-width: 220px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: white;
+}
+
+.mensaje-kanban {
+    min-height: 24px;
+    margin: 12px 0;
+    font-size: 14px;
+    color: #31557b;
+}
+
+.mensaje-kanban[data-tipo="error"] {
+    color: #b42332;
+}
+
+.mensaje-kanban[data-tipo="exito"] {
+    color: #167344;
+}
+
+.tablero-kanban {
+    display: grid;
+    grid-template-columns:
+        repeat(4, minmax(230px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+}
+
+.columna-kanban {
+    background: var(--fondo-columna);
+    border: 1px solid var(--borde-columna);
+    border-radius: 10px;
+    min-height: 360px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+
+.kanban-pendiente {
+    --color-columna: #dc3545;
+    --fondo-columna: #fff1f2;
+    --fondo-tarjeta: #ffdce1;
+    --borde-columna: #ffc2c9;
+}
+
+.kanban-en-curso {
+    --color-columna: #007bff;
+    --fondo-columna: #eff6ff;
+    --fondo-tarjeta: #dceaff;
+    --borde-columna: #bed8ff;
+}
+
+.kanban-en-revision {
+    --color-columna: #f4c430;
+    --fondo-columna: #fffbea;
+    --fondo-tarjeta: #fff0b3;
+    --borde-columna: #f1d980;
+}
+
+.kanban-terminada {
+    --color-columna: #28a745;
+    --fondo-columna: #effaf1;
+    --fondo-tarjeta: #d6f4de;
+    --borde-columna: #bde4c6;
+}
+
+.cabecera-columna {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--color-columna);
+    color: white;
+    padding: 16px;
+}
+
+.cabecera-columna h3 {
+    margin: 0;
+    color: inherit;
+    font-size: 17px;
+}
+
+.kanban-en-revision .cabecera-columna {
+    color: #493900;
+}
+
+.contador-kanban {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+.contenedor-tarjetas {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 280px;
+    padding: 12px;
+}
+
+.kanban-tarjeta {
+    background: var(--fondo-tarjeta);
+    border: 1px solid var(--borde-columna);
+    border-left: 5px solid var(--color-columna);
+    border-radius: 8px;
+    padding: 14px;
+    color: #183357;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    transition:
+        background 0.2s,
+        border-color 0.2s,
+        transform 0.2s;
+    overflow-wrap: anywhere;
+}
+
+.kanban-tarjeta[draggable="true"] {
+    cursor: grab;
+}
+
+.kanban-tarjeta h4 {
+    margin: 0 0 10px;
+    font-size: 15px;
+    color: #122b49;
+}
+
+.kanban-datos {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #344e6e;
+}
+
+.kanban-etiqueta {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 5px 9px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.75);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.kanban-arrastrando {
+    opacity: 0.45;
+    transform: scale(0.97);
+    cursor: grabbing;
+}
+
+.kanban-arrastre-sobre {
+    outline: 3px dashed var(--color-columna);
+    outline-offset: -5px;
+    box-shadow: inset 0 0 0 2px white;
+}
+
+.kanban-acciones {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.kanban-acciones select {
+    width: 100%;
+    padding: 9px;
+    border: 1px solid #a8b9cc;
+    border-radius: 6px;
+    background: white;
+}
+
+.kanban-acciones button {
+    width: 100%;
+}
+.kanban-vacio {
+    text-align: center;
+    color: #64748b;
+    font-size: 13px;
+    margin-top: 18px;
+}
+
+.kanban-bloqueada {
+    font-size: 12px;
+    color: #445d78;
+    margin: 8px 0 0;
+}
+
+@media (max-width: 1000px) {
+    .tablero-kanban {
+        grid-template-columns:
+            repeat(4, minmax(230px, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .controles-kanban {
+        width: 100%;
+    }
+    .controles-kanban select {
+        min-width: 0;
+        flex: 1;
+    }
+}
