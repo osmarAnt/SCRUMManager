@@ -186,7 +186,7 @@ CREATE TABLE IF NOT EXISTS lecturas_mensajes_product_owner (
 #--Insercion para tener la misma base todos--
 #--Con este modificas el rol a como estamos en el proyecto con los nombres de los integrantes --
 #--De tu parte crea el usuario Emanuel, Jesus y Osmar--
-
+use scrument;
 -- Scrum Master
 UPDATE usuarios
 SET
@@ -568,3 +568,33 @@ CREATE TABLE IF NOT EXISTS lecturas_mensajes_product_owner (
 ALTER TABLE mensajes_product_owner
     ADD COLUMN tipo ENUM('Scrum Master', 'Product Owner')
         NOT NULL DEFAULT 'Product Owner' AFTER id_autor;
+        
+        
+        
+        
+        
+#sprint 3 jesus
+
+-- ===== JESÚS: SPRINT 3 - PB-28 Y PB-29 =====
+
+CREATE TABLE IF NOT EXISTS historial_cambios_historias (
+    id_historial INT AUTO_INCREMENT PRIMARY KEY,
+    id_historia INT NOT NULL,
+    id_usuario INT NULL,
+    fecha_modificacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    cambios TEXT NOT NULL,
+
+    INDEX idx_historial_historia (id_historia, id_historial),
+
+    CONSTRAINT fk_historial_historia
+        FOREIGN KEY (id_historia) REFERENCES product_backlog(id_historia)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_historial_usuario
+        FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+        ON DELETE SET NULL
+);
+
+
+
+

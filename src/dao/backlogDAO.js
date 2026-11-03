@@ -100,9 +100,18 @@ const BacklogDAO = {
     },
 
     // ===== OSMAR: OBTENER HISTORIAS DEL PROYECTO =====
+    
+    // ===== OSMAR: OBTENER HISTORIAS DEL PROYECTO =====
+    // JESÚS PB-28: identificar historias modificadas
+
     obtenerPorProyecto: async (id_proyecto) => {
         const query = `
             SELECT h.*,
+                EXISTS (
+                    SELECT 1
+                    FROM historial_cambios_historias hc
+                    WHERE hc.id_historia = h.id_historia
+                ) AS tiene_historial,
                 r.decision AS ultima_decision,
                 r.observaciones AS ultima_observacion,
                 DATE_FORMAT(r.fecha_revision, '%Y-%m-%d %H:%i') AS ultima_fecha_revision
@@ -115,16 +124,22 @@ const BacklogDAO = {
             WHERE h.id_proyecto = ?
             ORDER BY h.orden ASC
         `;
-        const [rows] = await pool.promise().query(query, [id_proyecto]);
+
+        const [rows] = await pool.promise().query(
+            query,
+            [id_proyecto]
+        );
+
         return rows;
     },
+
 
     // ===== OSMAR: ELIMINAR HISTORIA =====
     eliminar: async (id_historia) => {
         const [rows] = await pool.promise().query(
             'SELECT id_sprint FROM product_backlog WHERE id_historia = ?',
             [id_historia]
-        );
+        )
 
         if (rows.length > 0 && rows[0].id_sprint !== null) {
             throw new Error('La historia ya está en un Sprint y no se puede eliminar.');
@@ -137,17 +152,162 @@ const BacklogDAO = {
         return resultado.affectedRows;
     },
 
-    // ===== OSMAR: ACTUALIZAR HISTORIA =====
-    actualizar: async (id_historia, datos) => {
-        const { titulo, descripcion, puntos, prioridad } = datos;
-        const [resultado] = await pool.promise().query(
-            `UPDATE product_backlog
-             SET titulo = ?, descripcion = ?, puntos = ?, prioridad = ?
-             WHERE id_historia = ?`,
-            [titulo, descripcion, puntos, prioridad, id_historia]
-        );
-        return resultado.affectedRows;
+    
+    // ===== JESÚS: PB-28 - REGISTRAR MODIFICACIONES =====
+
+    actualizar: async (idProyecto, idHistoria, idUsuario, datos) => {
+
+        const conexion = await pool.crearConexion();
+
+        try {
+            await conexion.beginTransaction();
+
+            // Obtener los datos actuales de la historia
+            const [filas] = await conexion.query(
+                `SELECT titulo, descripcion, puntos, prioridad
+                 FROM product_backlog
+                 WHERE id_proyecto = ?
+                 AND id_historia = ?
+                 FOR UPDATE`,
+                [idProyecto, idHistoria]
+            );
+
+            if (filas.length === 0) {
+                await conexion.rollback();
+                return {
+                    encontrada: false,
+                    modificado: false
+                };
+            }
+
+            const anterior = filas[0];
+
+            // Campos que vamos a comparar
+            const campos = {
+                titulo: 'Título',
+                descripcion: 'Descripción',
+                puntos: 'Puntos',
+                prioridad: 'Prioridad'
+            };
+
+            const cambios = [];
+
+            // Comparar datos anteriores con los nuevos
+            for (const [campo, nombre] of Object.entries(campos)) {
+
+                const antes = anterior[campo];
+                const despues = datos[campo];
+
+                if (antes !== despues) {
+                    cambios.push({
+                        campo: nombre,
+                        antes: antes,
+                        despues: despues
+                    });
+                }
+            }
+
+            // Si no hubo cambios, no generar historial
+            if (cambios.length === 0) {
+                await conexion.rollback();
+
+                return {
+                    encontrada: true,
+                    modificado: false
+                };
+            }
+
+            // Actualizar la historia
+            await conexion.query(
+                `UPDATE product_backlog
+                 SET titulo = ?,
+                     descripcion = ?,
+                     puntos = ?,
+                     prioridad = ?
+                 WHERE id_proyecto = ?
+                 AND id_historia = ?`,
+                [
+                    datos.titulo,
+                    datos.descripcion,
+                    datos.puntos,
+                    datos.prioridad,
+                    idProyecto,
+                    idHistoria
+                ]
+            );
+
+            // Guardar el registro de modificaciones
+            await conexion.query(
+                `INSERT INTO historial_cambios_historias
+                 (id_historia, id_usuario, cambios)
+                 VALUES (?, ?, ?)`,
+                [
+                    idHistoria,
+                    idUsuario,
+                    JSON.stringify(cambios)
+                ]
+            );
+
+            // Confirmar ambas operaciones
+            await conexion.commit();
+
+            return {
+                encontrada: true,
+                modificado: true
+            };
+
+        } catch (error) {
+
+            await conexion.rollback().catch(() => {});
+            throw error;
+
+        } finally {
+            await conexion.end();
+        }
     },
+
+
+    // ===== JESÚS: PB-29 - CONSULTAR HISTORIAL =====
+
+    obtenerHistorial: async (idProyecto, idHistoria) => {
+
+        const query = `
+            SELECT
+                hc.id_historial,
+                DATE_FORMAT(
+                    hc.fecha_modificacion,
+                    '%d/%m/%Y %H:%i:%s'
+                ) AS fecha,
+                hc.cambios,
+                COALESCE(
+                    u.username,
+                    'Usuario eliminado'
+                ) AS usuario
+
+            FROM historial_cambios_historias hc
+
+            INNER JOIN product_backlog h
+                ON h.id_historia = hc.id_historia
+
+            LEFT JOIN usuarios u
+                ON u.id_usuario = hc.id_usuario
+
+            WHERE h.id_proyecto = ?
+            AND h.id_historia = ?
+
+            ORDER BY hc.id_historial DESC
+        `;
+
+        const [filas] = await pool.promise().query(
+            query,
+            [idProyecto, idHistoria]
+        );
+
+        return filas;
+    },
+
+    // ===== FIN PB-28 Y PB-29 =====
+
 
     // ===== CRITERIOS DE ACEPTACIÓN =====
     crearCriterio: async (id_historia, descripcion) => {

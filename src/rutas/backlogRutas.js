@@ -6,7 +6,19 @@ const { verificarSesion } = require('../middlewares/autenticacion');
 router.post('/backlog', backlogControlador.crearHistoria);
 router.get('/backlog/:id_proyecto', backlogControlador.obtenerBacklogPorProyecto);
 router.delete('/backlog/:id', backlogControlador.eliminarHistoria);
-router.put('/backlog/:id', backlogControlador.actualizarHistoria);
+// ===== JESÚS: PB-28 - EDITAR HISTORIA =====
+router.put(
+    '/backlog/:id',
+    verificarSesion,
+    backlogControlador.actualizarHistoria
+);
+
+// ===== JESÚS: PB-29 - VER HISTORIAL =====
+router.get(
+    '/backlog/:id_proyecto/historias/:id_historia/historial',
+    verificarSesion,
+    backlogControlador.consultarHistorial
+);
 
 // CORRECCIÓN: Agregamos /backlog al inicio para que coincida con el frontend
 router.get('/backlog/criterios/:id_historia', backlogControlador.obtenerCriterios);

@@ -21,6 +21,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     cargarHistorias(idProyecto);
 
+    // JESÚS: PB-29 - Cerrar historial
+    document.getElementById('cerrar-historial-historias')
+        ?.addEventListener('click', () => {
+            document.getElementById(
+                'panel-historial-historias'
+            ).style.display = 'none';
+        });
+
     const formulario = document.getElementById('formulario-crear-historia');
     if (formulario) {
         formulario.addEventListener('submit', (evento) => guardarHistoria(evento, idProyecto));
@@ -205,8 +213,46 @@ function mostrarEnTabla(historias) {
                 historia.titulo
             );
         });
+       
         acciones.appendChild(criterios);
+
+        // ===== JESÚS: PB-28 Y PB-29 =====
+
+        // Indicar que la historia ya tuvo modificaciones
+        if (historia.tiene_historial) {
+
+            const marca = document.createElement('span');
+
+            marca.className = 'rol-proyecto';
+
+            marca.textContent = 'Modificado';
+
+            acciones.appendChild(marca);
+        }
+
+        // Botón para consultar el historial
+        const botonHistorial = document.createElement('button');
+
+        botonHistorial.type = 'button';
+
+        botonHistorial.className = 'boton-secundario';
+
+        botonHistorial.textContent = 'Historial';
+
+        botonHistorial.addEventListener('click', () => {
+
+            verHistorial(
+                historia.id_historia,
+                historia.titulo
+            );
+        });
+
+        acciones.appendChild(botonHistorial);
+
+        // ===== FIN PB-28 Y PB-29 =====
+
         if (rolActual === 'Product Owner') {
+
             const editar = document.createElement('button');
             editar.type = 'button';
             editar.textContent = 'Editar';
@@ -416,3 +462,136 @@ function cerrarPanelCriterios() {
     if(panel) panel.style.display = 'none';
     idHistoriaCriteriosActual = null;
 }
+
+
+
+
+// ===== JESÚS: PB-29 - MOSTRAR HISTORIAL DE CAMBIOS =====
+
+async function verHistorial(idHistoria, tituloHistoria) {
+
+    const panel = document.getElementById(
+        'panel-historial-historias'
+    );
+
+    const titulo = document.getElementById(
+        'titulo-historial-historias'
+    );
+
+    const lista = document.getElementById(
+        'lista-historial-historias'
+    );
+
+    if (!panel || !titulo || !lista) return;
+
+    titulo.textContent = `Historial: ${tituloHistoria}`;
+
+    panel.style.display = 'block';
+
+    lista.textContent = 'Consultando modificaciones...';
+
+    panel.scrollIntoView({
+        behavior: 'smooth'
+    });
+
+    try {
+
+        // Consultar el historial guardado en MySQL
+        const respuesta = await fetch(
+            `/backlog/${idProyectoBacklog}/historias/${idHistoria}/historial`,
+            {
+                headers: {
+                    Accept: 'application/json'
+                }
+            }
+        );
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(
+                datos.mensaje || 'No se pudo cargar el historial.'
+            );
+        }
+
+        if (!Array.isArray(datos)) {
+            throw new Error('Respuesta no válida.');
+        }
+
+        lista.replaceChildren();
+
+        // Mensaje si la historia nunca se modificó
+        if (!datos.length) {
+
+            lista.textContent =
+                'Esta historia todavía no tiene modificaciones registradas.';
+
+            return;
+        }
+
+        // Mostrar cada modificación registrada
+        datos.forEach(registro => {
+
+            const tarjeta = document.createElement('article');
+
+            tarjeta.className = 'tarjeta-sprint';
+
+            // Encabezado del registro
+            const encabezado = document.createElement('div');
+
+            encabezado.className = 'cabecera-sprint';
+
+            const marca = document.createElement('span');
+
+            marca.className = 'rol-proyecto';
+
+            marca.textContent = 'Modificado';
+
+            const fecha = document.createElement('span');
+
+            fecha.textContent = registro.fecha;
+
+            encabezado.append(marca, fecha);
+
+            // Usuario que realizó la modificación
+            const usuario = document.createElement('p');
+
+            usuario.textContent =
+                `Usuario: ${registro.usuario}`;
+
+            tarjeta.append(encabezado, usuario);
+
+            // Mostrar los valores anteriores y nuevos
+            const cambios = JSON.parse(registro.cambios);
+
+            cambios.forEach(cambio => {
+
+                const detalle = document.createElement('p');
+
+                const antes = cambio.antes == null
+                    ? 'Sin asignar'
+                    : String(cambio.antes);
+
+                const despues = cambio.despues == null
+                    ? 'Sin asignar'
+                    : String(cambio.despues);
+
+                detalle.textContent =
+                    `${cambio.campo}: ${antes} → ${despues}`;
+
+                tarjeta.appendChild(detalle);
+            });
+
+            lista.appendChild(tarjeta);
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        lista.textContent =
+            error.message || 'No se pudo cargar el historial.';
+    }
+}
+
+// ===== FIN PB-29 =====
