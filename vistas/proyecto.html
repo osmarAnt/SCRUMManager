@@ -92,6 +92,7 @@
                     <button type="button" role="tab" id="pestana-backlog" data-panel="backlog" aria-controls="panel-backlog" aria-selected="false" tabindex="-1">Backlog</button>
                     <button type="button" role="tab" id="pestana-planning" data-panel="planning" aria-controls="panel-planning" aria-selected="false" tabindex="-1">Planning Poker</button>
                     <button type="button" role="tab" id="pestana-burndown" data-panel="burndown" aria-controls="panel-burndown" aria-selected="false" tabindex="-1">Burndown Chart</button>
+                    <button type="button" role="tab" id="pestana-burndown-general" data-panel="burndown-general" aria-controls="panel-burndown-general" aria-selected="false" tabindex="-1">Burndown General</button>
                     <button type="button" role="tab" id="pestana-kanban" data-panel="kanban" aria-controls="panel-kanban" aria-selected="false" tabindex="-1">Tablero Kanban</button>
                     <button type="button" role="tab" id="pestana-avisos" data-panel="avisos" aria-controls="panel-avisos" aria-selected="false" tabindex="-1">Avisos<span id="insignia-avisos" class="insignia-pestana" hidden></span></button>
                     <button type="button" role="tab" id="pestana-foro" data-panel="foro" aria-controls="panel-foro" aria-selected="false" tabindex="-1">Foro</button>
@@ -565,6 +566,62 @@
                 </div>
 
 
+                
+
+                <!-- BURNDOWN GENERAL: suma de los puntos de todos los Sprints del proyecto -->
+                <div class="panel-pestana" role="tabpanel" id="panel-burndown-general" aria-labelledby="pestana-burndown-general" hidden>
+                    <section class="bloque" aria-labelledby="titulo-burndown-general">
+                        <div class="cabecera-bloque">
+                            <div>
+                                <h2 id="titulo-burndown-general">Burndown General</h2>
+                                <p class="subtitulo">Avance de todo el proyecto, Sprint por Sprint. Suma los puntos de cada Sprint y se actualiza solo cuando se crean Sprints o cambian sus historias.</p>
+                            </div>
+                        </div>
+
+                        <p id="estado-general" class="ayuda-campo" role="status" aria-live="polite">Cargando el Burndown General...</p>
+                        <p id="error-general" class="mensaje-error" role="alert" aria-live="polite"></p>
+
+                        <div id="contenido-general" hidden>
+                            <dl class="resumen-burndown">
+                                <div><dt>Puntos del proyecto</dt><dd id="general-totales">0</dd></div>
+                                <div><dt>Completados</dt><dd id="general-completados">0</dd></div>
+                                <div><dt>Pendientes</dt><dd id="general-pendientes">0</dd></div>
+                                <div><dt>Avance</dt><dd id="general-ritmo" class="valor-ritmo">—</dd></div>
+                            </dl>
+
+                            <div class="barra-avance" role="progressbar" aria-label="Porcentaje de puntos completados" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="barra-general">
+                                <span id="relleno-general"></span>
+                            </div>
+                            <p id="texto-porcentaje-general" class="ayuda-campo"></p>
+
+                            <ul class="leyenda-burndown" aria-label="Leyenda de la gráfica">
+                                <li><span class="muestra-linea muestra-ideal"></span> Línea ideal</li>
+                                <li><span class="muestra-linea muestra-real"></span> Línea real</li>
+                            </ul>
+                            <div class="grafica-burndown" id="grafica-general" role="img" aria-labelledby="titulo-burndown-general" aria-describedby="tabla-general-descripcion"></div>
+
+                            <h3 class="titulo-tabla-burndown">Detalle por Sprint</h3>
+                            <p id="tabla-general-descripcion" class="ayuda-campo">Puntos que cada Sprint tiene planeados, los que se completaron y los que quedan pendientes en el proyecto después de cada Sprint (ideal y real).</p>
+                            <div class="contenedor-tabla-burndown">
+                                <table class="tabla-burndown">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Sprint</th>
+                                            <th scope="col">Estado</th>
+                                            <th scope="col">Planeados</th>
+                                            <th scope="col">Completados</th>
+                                            <th scope="col">Ideal</th>
+                                            <th scope="col">Real</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabla-general-cuerpo"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+
                 <!-- TABLERO KANBAN -->
                 <div class="panel-pestana" role="tabpanel" id="panel-kanban" aria-labelledby="pestana-kanban" hidden>
                     <section class="bloque">
@@ -755,5 +812,6 @@
     <!-- Pestañas del proyecto y Burndown Chart -->
     <script src="/js/pestanas.js" defer></script>
     <script src="/js/burndown.js" defer></script>
+    <script src="/js/burndownGeneral.js" defer></script>
 </body>
 </html>
