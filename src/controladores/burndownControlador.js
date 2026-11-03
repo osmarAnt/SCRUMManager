@@ -1,7 +1,13 @@
 const proyectoDAO = require('../dao/proyectoDAO');
 const sprintDAO = require('../dao/sprintDAO');
 const burndownDAO = require('../dao/burndownDAO');
-const { construirSerie, resumirAvance } = require('../utilidades/burndown');
+const {
+    construirSerie,
+    resumirAvance,
+    estadoSprint,
+    construirSerieGeneral,
+    resumirGeneral
+} = require('../utilidades/burndown');
 
 // Sprint que se muestra por defecto: el que está en curso hoy; si no hay, el último que ya empezó;
 // y si todos son futuros, el más próximo.
@@ -104,6 +110,71 @@ const consultar = async (req, res) => {
     }
 };
 
+// GET /proyectos/:id/burndown-general
+// Suma los puntos de todos los Sprints del proyecto y los grafica Sprint por Sprint.
+// Los Sprints nuevos aparecen solos: se leen de la base de datos en cada consulta.
+const consultarGeneral = async (req, res) => {
+    if (!/^[1-9]\d{0,9}$/.test(req.params.id) || Number(req.params.id) > 2147483647) {
+        return res.status(404).json({ mensaje: 'No encontramos ese proyecto.' });
+    }
+    const idProyecto = Number(req.params.id);
+
+    try {
+        const rol = await proyectoDAO.obtenerRolEnProyecto(idProyecto, req.session.idUsuario);
+        if (!rol) {
+            return res.status(404).json({ mensaje: 'No encontramos ese proyecto.' });
+        }
+
+        const sprints = await sprintDAO.listarPorProyecto(idProyecto);
+        if (!sprints.length) {
+            return res.json({ sprints: [] });
+        }
+
+        const hoy = await burndownDAO.obtenerHoy();
+        const detalle = [];
+        for (const sprint of sprints) {
+            // Deja al día el historial de cada Sprint y toma el último día registrado dentro del Sprint.
+            const { historial, actuales } = await burndownDAO.sincronizarSprint(sprint, hoy);
+            const dentro = historial.filter(
+                (fila) => fila.fecha >= sprint.fecha_inicio && fila.fecha <= sprint.fecha_fin && fila.fecha <= hoy
+            );
+            const cierre = dentro.length ? dentro[dentro.length - 1] : null;
+            detalle.push({
+                id_sprint: sprint.id_sprint,
+                numero: sprint.numero,
+                objetivo: sprint.objetivo,
+                fecha_inicio: sprint.fecha_inicio,
+                fecha_fin: sprint.fecha_fin,
+                duracion_dias: sprint.duracion_dias,
+                planeados: cierre ? cierre.puntos_totales : actuales.puntos_totales,
+                completados: cierre ? cierre.puntos_completados : 0
+            });
+        }
+
+        const serie = construirSerieGeneral(detalle, hoy);
+        const resumen = resumirGeneral({ sprints: detalle, ...serie, hoy });
+
+        res.json({
+            hoy,
+            sprints: detalle.map((sprint) => ({
+                id_sprint: sprint.id_sprint,
+                numero: sprint.numero,
+                fecha_inicio: sprint.fecha_inicio,
+                fecha_fin: sprint.fecha_fin,
+                estado: estadoSprint(sprint, hoy),
+                planeados: sprint.planeados,
+                completados: sprint.completados
+            })),
+            puntos: serie.puntos,
+            resumen
+        });
+    } catch (error) {
+        console.error('Error al consultar el Burndown General:', error.code || error.message);
+        res.status(500).json({ mensaje: 'No se pudo cargar el Burndown General. Inténtalo de nuevo.' });
+    }
+};
+
 module.exports = {
-    consultar
+    consultar,
+    consultarGeneral
 };

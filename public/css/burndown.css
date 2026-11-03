@@ -208,3 +208,56 @@
         min-width: 0;
     }
 }
+
+/* ---- Burndown General ---- */
+.barra-avance {
+    height: 12px;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #eef0f3;
+}
+
+.barra-avance span {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: 6px;
+    background: var(--azul);
+    transition: width 0.3s ease;
+}
+
+#general-ritmo {
+    font-size: 17px;
+    line-height: 1.6;
+}
+
+#general-ritmo[data-ritmo="En ritmo"],
+#general-ritmo[data-ritmo="Completado"] {
+    color: #176534;
+}
+
+#general-ritmo[data-ritmo="Atrasado"],
+#general-ritmo[data-ritmo="Con puntos pendientes"] {
+    color: #b42318;
+}
+
+.etiqueta-estado-sprint {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 5px;
+    background: var(--azul-claro);
+    color: var(--azul);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.etiqueta-estado-sprint[data-estado="Finalizado"] {
+    background: #e4f5e9;
+    color: #176534;
+}
+
+.etiqueta-estado-sprint[data-estado="Por iniciar"] {
+    background: #eff2f5;
+    color: #44546a;
+}
