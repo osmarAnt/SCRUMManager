@@ -309,6 +309,13 @@ router.get(
     burndownControlador.consultar
 );
 
+// Burndown General: suma de todos los Sprints del proyecto
+router.get(
+    '/:id/burndown-general',
+    verificarSesion,
+    burndownControlador.consultarGeneral
+);
+
 
 // =======================================
 // EXPORTAR RUTAS

@@ -54,7 +54,7 @@
         return (fraccion <= 1 ? 1 : fraccion <= 2 ? 2 : fraccion <= 5 ? 5 : 10) * potencia;
     };
 
-    const dibujarGrafica = (dias) => {
+    const dibujarGrafica = (contenedor, dias) => {
         const ancho = 760;
         const alto = 360;
         const margen = { izquierda: 52, derecha: 28, arriba: 20, abajo: 52 };
@@ -117,8 +117,11 @@
             svg.append(real);
         });
 
-        grafica.replaceChildren(svg);
+        contenedor.replaceChildren(svg);
     };
+
+    // La gráfica del Burndown General usa el mismo dibujo.
+    window.dibujarBurndown = dibujarGrafica;
 
     const llenarTabla = (dias) => {
         cuerpoTabla.replaceChildren();
@@ -164,7 +167,7 @@
         resumen.restantes.textContent = String(datos.resumen.puntos_restantes);
         resumen.ritmo.textContent = datos.resumen.ritmo;
         resumen.ritmo.dataset.ritmo = datos.resumen.ritmo;
-        dibujarGrafica(dias);
+        dibujarGrafica(grafica, dias);
         llenarTabla(dias);
         grafica.setAttribute(
             'aria-label',

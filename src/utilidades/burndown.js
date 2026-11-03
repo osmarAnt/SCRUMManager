@@ -81,11 +81,88 @@ const resumirAvance = ({ dias, hoy, fechaInicio, fechaFin }) => {
     return { restantes, idealHoy: ultimo.ideal, ritmo };
 };
 
+// ---- Burndown General (todo el proyecto, sprint por sprint) ----
+
+// El estado del Sprint se deduce de sus fechas (la columna "estado" de la base de datos no avanza sola).
+const estadoSprint = (sprint, hoy) => {
+    if (hoy < sprint.fecha_inicio) {
+        return 'Por iniciar';
+    }
+    return hoy > sprint.fecha_fin ? 'Finalizado' : 'En curso';
+};
+
+// sprints: [{ numero, fecha_inicio, fecha_fin, duracion_dias, planeados, completados }] ordenados por fecha.
+//  - Total del proyecto: suma de los puntos totales de cada Sprint.
+//  - Ideal: después de cada Sprint baja la cantidad de puntos que ese Sprint tenía planeada.
+//  - Real: total menos los puntos completados acumulados (null mientras el Sprint no empieza).
+const construirSerieGeneral = (sprints, hoy) => {
+    const total = sprints.reduce((suma, sprint) => suma + sprint.planeados, 0);
+    const puntos = [{ indice: 0, etiqueta: 'Inicio', ideal: total, real: total }];
+    let planeadosAcumulados = 0;
+    let completadosAcumulados = 0;
+
+    sprints.forEach((sprint, posicion) => {
+        const iniciado = estadoSprint(sprint, hoy) !== 'Por iniciar';
+        planeadosAcumulados += sprint.planeados;
+        if (iniciado) {
+            completadosAcumulados += sprint.completados;
+        }
+        puntos.push({
+            indice: posicion + 1,
+            etiqueta: `Sprint ${sprint.numero}`,
+            ideal: redondear(total - planeadosAcumulados),
+            real: iniciado ? total - completadosAcumulados : null
+        });
+    });
+
+    return { total, completados: completadosAcumulados, puntos };
+};
+
+// Compara el avance real contra el ideal. Si el último Sprint sigue en curso, el ideal se interpola
+// según los días transcurridos para no exigir que ya esté terminado.
+const resumirGeneral = ({ sprints, puntos, total, completados, hoy }) => {
+    const iniciados = sprints.filter((sprint) => estadoSprint(sprint, hoy) !== 'Por iniciar');
+    const pendientes = total - completados;
+    const porcentaje = total ? Math.round((completados / total) * 100) : 0;
+    const base = { puntos_totales: total, puntos_completados: completados, puntos_pendientes: pendientes, porcentaje };
+
+    if (!iniciados.length) {
+        return { ...base, ritmo: 'Sin iniciar', ideal_actual: total };
+    }
+    if (total === 0) {
+        return { ...base, ritmo: 'Sin puntos asignados', ideal_actual: 0 };
+    }
+
+    const ultimo = sprints[iniciados.length - 1];
+    const idealFinal = puntos[iniciados.length].ideal;
+    const idealPrevio = puntos[iniciados.length - 1].ideal;
+    let idealActual = idealFinal;
+    if (estadoSprint(ultimo, hoy) === 'En curso') {
+        const transcurridos = (fechaAMs(hoy) - fechaAMs(ultimo.fecha_inicio)) / MS_DIA + 1;
+        const fraccion = Math.min(1, transcurridos / ultimo.duracion_dias);
+        idealActual = redondear(idealPrevio - (idealPrevio - idealFinal) * fraccion);
+    }
+
+    const todosFinalizados = sprints.every((sprint) => estadoSprint(sprint, hoy) === 'Finalizado');
+    let ritmo;
+    if (pendientes === 0) {
+        ritmo = 'Completado';
+    } else if (todosFinalizados) {
+        ritmo = 'Con puntos pendientes';
+    } else {
+        ritmo = pendientes <= idealActual ? 'En ritmo' : 'Atrasado';
+    }
+    return { ...base, ritmo, ideal_actual: idealActual };
+};
+
 module.exports = {
     ESTADOS_COMPLETADOS,
     fechaAMs,
     listarFechas,
     etiquetaDia,
     construirSerie,
-    resumirAvance
+    resumirAvance,
+    estadoSprint,
+    construirSerieGeneral,
+    resumirGeneral
 };
