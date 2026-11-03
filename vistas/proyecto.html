@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/css/panel.css">
     <link rel="stylesheet" href="/css/proyectos.css">
     <link rel="stylesheet" href="/css/mensajes.css">
+    <link rel="stylesheet" href="/css/foro.css">
     <link rel="stylesheet" href="/css/revision.css">
     <link rel="stylesheet" href="/css/evidencias.css">
     <link rel="stylesheet" href="/css/pestanas.css">
@@ -15,6 +16,7 @@
     <link rel="stylesheet" href="/css/kanban.css">
     <script src="/js/proyecto.js" defer></script>
     <script src="/js/mensajes.js" defer></script>
+    <script src="/js/foro.js" defer></script>
     <script src="/js/kanban.js" defer></script>
 </head>
 <body>
@@ -92,6 +94,7 @@
                     <button type="button" role="tab" id="pestana-burndown" data-panel="burndown" aria-controls="panel-burndown" aria-selected="false" tabindex="-1">Burndown Chart</button>
                     <button type="button" role="tab" id="pestana-kanban" data-panel="kanban" aria-controls="panel-kanban" aria-selected="false" tabindex="-1">Tablero Kanban</button>
                     <button type="button" role="tab" id="pestana-avisos" data-panel="avisos" aria-controls="panel-avisos" aria-selected="false" tabindex="-1">Avisos<span id="insignia-avisos" class="insignia-pestana" hidden></span></button>
+                    <button type="button" role="tab" id="pestana-foro" data-panel="foro" aria-controls="panel-foro" aria-selected="false" tabindex="-1">Foro</button>
                 </div>
 
 
@@ -641,6 +644,31 @@
                     </section>
                 </div>
 
+
+                <!-- PB-30: foro para dudas y comentarios de todos los integrantes del proyecto. -->
+                <div class="panel-pestana" role="tabpanel" id="panel-foro" aria-labelledby="pestana-foro" hidden>
+                    <section class="bloque" aria-labelledby="titulo-foro">
+                        <div class="cabecera-bloque foro-cabecera">
+                            <div>
+                                <h2 id="titulo-foro">Foro del proyecto</h2>
+                                <p class="subtitulo">Comparte tus dudas y comentarios con el equipo.</p>
+                            </div>
+                        </div>
+                        <p id="foro-estado" class="foro-estado" role="status" aria-live="polite">Cargando conversación…</p>
+                        <div id="foro-conversacion" class="foro-conversacion" role="log" aria-label="Conversación del proyecto" aria-live="polite" aria-relevant="additions text" tabindex="0">
+                            <p id="foro-vacio" class="foro-vacio" hidden>Todavía no hay mensajes. ¡Inicia la conversación!</p>
+                        </div>
+                        <form id="foro-formulario" class="foro-formulario" method="post" novalidate>
+                            <label for="foro-contenido">Tu mensaje</label>
+                            <div class="foro-redaccion">
+                                <textarea id="foro-contenido" name="contenido" rows="2" maxlength="5000" placeholder="Escribe una duda o comentario…" aria-describedby="foro-ayuda foro-error" required></textarea>
+                                <button id="foro-enviar" type="submit" disabled>Enviar</button>
+                            </div>
+                            <p id="foro-ayuda" class="foro-ayuda">Enter para enviar · Shift + Enter para un salto de línea · Máximo 5000 caracteres.</p>
+                            <p id="foro-error" class="mensaje-error" role="alert" aria-live="polite"></p>
+                        </form>
+                    </section>
+                </div>
 
                 <!-- AVISOS: Scrum Master y Product Owner publican; los desarrolladores solo consultan.
                      Los ids y clases "-po" se conservan de los mensajes anteriores para reutilizar mensajes.css. -->
