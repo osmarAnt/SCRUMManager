@@ -596,5 +596,3 @@ CREATE TABLE IF NOT EXISTS historial_cambios_historias (
 );
 
 
-
-

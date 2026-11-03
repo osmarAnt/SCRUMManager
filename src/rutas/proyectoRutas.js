@@ -22,6 +22,9 @@ const evidenciaControlador = require('../controladores/evidenciaControlador');
 // Burndown Chart del Sprint
 const burndownControlador = require('../controladores/burndownControlador');
 
+// PB-30: foro para dudas y comentarios de cualquier integrante.
+const foroControlador = require('../controladores/foroControlador');
+
 
 // =======================================
 // PROYECTOS
@@ -222,6 +225,12 @@ router.put(
     verificarSesion,
     mensajeControlador.marcarMensajeLeido
 );
+
+
+// PB-30: FORO DEL PROYECTO (todos los roles)
+router.get('/:id/foro', verificarSesion, foroControlador.listarMensajes);
+router.post('/:id/foro', verificarSesion, foroControlador.publicarMensaje);
+router.get('/:id/foro/eventos', verificarSesion, foroControlador.conectarMensajes);
 
 
 // PB-57: ADJUNTAR EVIDENCIAS Y ENVIAR LA HISTORIA A REVISIÓN
