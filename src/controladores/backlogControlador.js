@@ -53,24 +53,173 @@ exports.eliminarHistoria = async (req, res) => {
     }
 };
 
+
+// ===== JESÚS: PB-28 - ACTUALIZAR Y REGISTRAR CAMBIOS =====
+
 exports.actualizarHistoria = async (req, res) => {
-    // 1. Verificación del Product Owner
-    if (!req.session || req.session.rol !== 'Product Owner') {
-        return res.status(403).json({ error: 'Solo el Product Owner puede editar historias.' });
+
+    const idHistoria = Number(req.params.id);
+    const idProyecto = Number(req.body?.id_proyecto);
+
+    const {
+        titulo,
+        descripcion,
+        puntos,
+        prioridad
+    } = req.body || {};
+
+    // Comprobar que sea Product Owner
+    if (
+        !req.session?.idUsuario ||
+        req.session.rol !== 'Product Owner'
+    ) {
+        return res.status(403).json({
+            error: 'Solo el Product Owner puede editar historias.'
+        });
     }
 
-    // 2. Extraer los datos (req.params.id debe coincidir con el :id de la ruta)
-    const id_historia = req.params.id; 
-    const { titulo, descripcion, puntos, prioridad } = req.body;
+    // Validar la información
+    if (
+        !Number.isSafeInteger(idHistoria) ||
+        idHistoria < 1 ||
+        !Number.isSafeInteger(idProyecto) ||
+        idProyecto < 1 ||
+        typeof titulo !== 'string' ||
+        !titulo.trim() ||
+        titulo.trim().length > 150 ||
+        typeof descripcion !== 'string' ||
+        !descripcion.trim() ||
+        descripcion.length > 1000 ||
+        !['Alta', 'Media', 'Baja'].includes(prioridad) ||
+        !(
+            puntos === null ||
+            (
+                Number.isSafeInteger(puntos) &&
+                puntos > 0 &&
+                puntos <= 100000
+            )
+        )
+    ) {
+        return res.status(400).json({
+            error: 'Revisa los datos de la historia.'
+        });
+    }
 
     try {
-        await BacklogDAO.actualizar(id_historia, { titulo, descripcion, puntos, prioridad });
-        res.json({ mensaje: 'Historia actualizada con éxito' });
+
+        // Comprobar que sea Product Owner de este proyecto
+        const rol = await proyectoDAO.obtenerRolEnProyecto(
+            idProyecto,
+            req.session.idUsuario
+        );
+
+        if (rol !== 'Product Owner') {
+            return res.status(403).json({
+                error: 'No eres Product Owner de este proyecto.'
+            });
+        }
+
+        // Actualizar y registrar cambios
+        const resultado = await BacklogDAO.actualizar(
+            idProyecto,
+            idHistoria,
+            req.session.idUsuario,
+            {
+                titulo: titulo.trim(),
+                descripcion: descripcion.trim(),
+                puntos,
+                prioridad
+            }
+        );
+
+        if (!resultado.encontrada) {
+            return res.status(404).json({
+                error: 'Historia no encontrada en este proyecto.'
+            });
+        }
+
+        return res.json({
+            mensaje: resultado.modificado
+                ? 'Historia actualizada y registrada en el historial.'
+                : 'No hubo modificaciones que registrar.'
+        });
+
     } catch (error) {
-        console.error('Error al actualizar:', error);
-        res.status(500).json({ error: 'Error interno en el servidor al actualizar' });
+
+        console.error('Error al registrar cambios:', error);
+
+        return res.status(500).json({
+            error: 'No se pudo actualizar la historia.'
+        });
     }
 };
+
+
+// ===== JESÚS: PB-29 - CONSULTAR HISTORIAL =====
+
+exports.consultarHistorial = async (req, res) => {
+
+    const idProyecto = Number(req.params.id_proyecto);
+    const idHistoria = Number(req.params.id_historia);
+
+    if (
+        !Number.isSafeInteger(idProyecto) ||
+        idProyecto < 1 ||
+        !Number.isSafeInteger(idHistoria) ||
+        idHistoria < 1
+    ) {
+        return res.status(400).json({
+            mensaje: 'Identificadores no válidos.'
+        });
+    }
+
+    try {
+
+        // Verificar que el usuario pertenezca al proyecto
+        const rol = await proyectoDAO.obtenerRolEnProyecto(
+            idProyecto,
+            req.session.idUsuario
+        );
+
+        if (!rol) {
+            return res.status(403).json({
+                mensaje: 'No perteneces a este proyecto.'
+            });
+        }
+
+        // Comprobar que la historia exista
+        const historias = await BacklogDAO.obtenerPorProyecto(
+            idProyecto
+        );
+
+        if (!historias.some(
+            h => Number(h.id_historia) === idHistoria
+        )) {
+            return res.status(404).json({
+                mensaje: 'Historia no encontrada.'
+            });
+        }
+
+        // Obtener todas las modificaciones de la historia
+        const historial = await BacklogDAO.obtenerHistorial(
+            idProyecto,
+            idHistoria
+        );
+
+        return res.json(historial);
+
+    } catch (error) {
+
+        console.error('Error al consultar historial:', error);
+
+        return res.status(500).json({
+            mensaje: 'No se pudo consultar el historial.'
+        });
+    }
+};
+
+// ===== FIN PB-28 Y PB-29 =====
+
 
 exports.obtenerCriterios = async (req, res) => {
     const { id_historia } = req.params;
