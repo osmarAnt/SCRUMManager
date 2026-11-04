@@ -614,3 +614,30 @@ CREATE TABLE IF NOT EXISTS mensajes_foro (
         ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+#Sprint 3 notificacines de historias Emnauel
+CREATE TABLE IF NOT EXISTS notificaciones_historias (
+    id_notificacion INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    id_proyecto INT NOT NULL,
+    id_historia INT NOT NULL,
+    titulo_historia VARCHAR(150) NOT NULL,
+    leida BOOLEAN NOT NULL DEFAULT FALSE,
+    fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_notificaciones_usuario (id_usuario, leida),
+
+    CONSTRAINT fk_notificaciones_usuario
+        FOREIGN KEY (id_usuario)
+        REFERENCES usuarios(id_usuario)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_notificaciones_proyecto
+        FOREIGN KEY (id_proyecto)
+        REFERENCES proyectos(id_proyecto)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_notificaciones_historia
+        FOREIGN KEY (id_historia)
+        REFERENCES product_backlog(id_historia)
+        ON DELETE CASCADE
+);

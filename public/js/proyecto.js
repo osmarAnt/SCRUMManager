@@ -126,7 +126,32 @@ const cargarProyecto = async () => {
         await prepararSprintBacklog(datos.sprints, datos.puedeAdministrar);
         estadoDetalle.hidden = true;
         contenido.hidden = false;
+
         await cargarIntegrantes();
+
+        // ABRIR HISTORIA DESDE UNA NOTIFICACIÓN
+        const parametros = new URLSearchParams(window.location.search);
+
+        const idHistoriaEnlace = Number(parametros.get('historia'));
+        const idSprintEnlace = Number(parametros.get('sprint'));
+
+        if (
+            datos.rol === 'Desarrollador' &&
+            Number.isSafeInteger(idHistoriaEnlace) &&
+            idHistoriaEnlace > 0 &&
+            Number.isSafeInteger(idSprintEnlace) &&
+            idSprintEnlace > 0
+        ) {
+            document.dispatchEvent(
+                new CustomEvent('kanban-ir-a-historia', {
+                    detail: {
+                        idHistoria: idHistoriaEnlace,
+                        idSprint: idSprintEnlace,
+                        rol: datos.rol
+                    }
+                })
+            );
+        }
     } catch (error) {
         console.error(error);
         mostrarEstado('No pudimos cargar el proyecto', 'Recarga la página para intentarlo de nuevo.', 'error');
@@ -1298,13 +1323,11 @@ document.addEventListener('kanban-ir-a-historia', async (evento) => {
 
     // Desarrollador: abrir su área de trabajo y evidencias
     // Scrum Master: abrir la tarjeta general de la historia
-    const destino = rol === 'Desarrollador'
-        ? tarjeta.querySelector('.panel-evidencias') || tarjeta
-        : tarjeta;
+    tarjeta.style.scrollMarginTop = '24px';
 
-    destino.scrollIntoView({
+    tarjeta.scrollIntoView({
         behavior: 'smooth',
-        block: 'center'
+        block: 'start'
     });
 
     // Quitar el resaltado después de 5 segundos

@@ -7,7 +7,10 @@
     <link rel="stylesheet" href="/css/estilos.css">
     <link rel="stylesheet" href="/css/panel.css">
     <link rel="stylesheet" href="/css/proyectos.css">
+    <link rel="stylesheet" href="/css/notificaciones.css">
+    
     <script src="/js/proyectos.js" defer></script>
+    <script src="/js/notificaciones.js" defer></script>
 </head>
 <body>
     <div class="aplicacion">
@@ -31,11 +34,53 @@
             <header class="barra-cuenta">
                 <p class="ruta-actual">Tu espacio de trabajo</p>
                 <div class="perfil">
+                
+                    <!-- BUZÓN DE NOTIFICACIONES -->
+                    <div id="buzon-notificaciones" class="buzon-notificaciones" hidden>
+                
+                        <!-- CAMPANA -->
+                        <button type="button" id="boton-notificaciones" class="boton-campana" aria-label="Mis notificaciones"
+                            aria-expanded="false" aria-controls="panel-notificaciones">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+                                <path d="M10 21h4" />
+                            </svg>
+                
+                            <span id="contador-notificaciones" class="numero-notificaciones" hidden>0</span>
+                        </button>
+                
+                        <!-- PANEL DE NOTIFICACIONES -->
+                        <section id="panel-notificaciones" class="panel-notificaciones" aria-label="Buzón de notificaciones" hidden>
+                
+                            <div class="cabecera-notificaciones">
+                                <h2>Mis notificaciones</h2>
+                
+                                <button type="button" id="marcar-todas-notificaciones" disabled>
+                                    Marcar todas como leídas
+                                </button>
+                            </div>
+                
+                            <p id="estado-notificaciones" role="status" aria-live="polite"></p>
+                
+                            <ul id="lista-notificaciones" class="lista-notificaciones"></ul>
+                
+                            <div class="pie-notificaciones">
+                                <button type="button" id="ver-todas-notificaciones" hidden>
+                                    Ver todas las notificaciones
+                                </button>
+                            </div>
+                
+                        </section>
+                    </div>
+                
+                    <!-- PERFIL DEL USUARIO -->
                     <span id="avatar-usuario" class="avatar" aria-hidden="true">S</span>
+                
                     <div>
                         <span id="nombre-usuario" class="nombre-cuenta"></span>
                         <span class="estado-cuenta">Sesión iniciada</span>
                     </div>
+                
                 </div>
             </header>
             <div class="cabecera-proyectos">

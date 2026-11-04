@@ -14,7 +14,15 @@
     <link rel="stylesheet" href="/css/pestanas.css">
     <link rel="stylesheet" href="/css/burndown.css">
     <link rel="stylesheet" href="/css/kanban.css">
+
+    <!-- CSS DEL BUZÓN DE NOTIFICACIONES -->
+    <link rel="stylesheet" href="/css/notificaciones.css">
+
     <script src="/js/proyecto.js" defer></script>
+
+    <!-- JAVASCRIPT DEL BUZÓN DE NOTIFICACIONES -->
+    <script src="/js/notificaciones.js" defer></script>
+
     <script src="/js/mensajes.js" defer></script>
     <script src="/js/foro.js" defer></script>
     <script src="/js/kanban.js" defer></script>
@@ -37,15 +45,104 @@
                 </a>
             </div>
         </aside>
+
         <main class="principal-proyectos">
+
+            <!-- BARRA SUPERIOR CON BUZÓN DE NOTIFICACIONES -->
             <header class="barra-cuenta">
-                <p class="ruta-actual"><a href="/proyectos">Mis proyectos</a> / <span id="ruta-proyecto">Proyecto</span></p>
+                <p class="ruta-actual">
+                    <a href="/proyectos">Mis proyectos</a> /
+                    <span id="ruta-proyecto">Proyecto</span>
+                </p>
+
                 <div class="perfil">
+
+                    <!-- BUZÓN DE NOTIFICACIONES -->
+                    <div id="buzon-notificaciones" class="buzon-notificaciones" hidden>
+
+                        <!-- BOTÓN DE CAMPANA -->
+                        <button
+                            type="button"
+                            id="boton-notificaciones"
+                            class="boton-campana"
+                            aria-label="Mis notificaciones"
+                            aria-expanded="false"
+                            aria-controls="panel-notificaciones"
+                        >
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                aria-hidden="true"
+                            >
+                                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+                                <path d="M10 21h4"/>
+                            </svg>
+
+                            <!-- CONTADOR ROJO -->
+                            <span
+                                id="contador-notificaciones"
+                                class="numero-notificaciones"
+                                hidden
+                            >0</span>
+                        </button>
+
+                        <!-- PANEL DESPLEGABLE -->
+                        <section
+                            id="panel-notificaciones"
+                            class="panel-notificaciones"
+                            aria-label="Buzón de notificaciones"
+                            hidden
+                        >
+
+                            <!-- ENCABEZADO DEL BUZÓN -->
+                            <div class="cabecera-notificaciones">
+                                <h2>Mis notificaciones</h2>
+
+                                <button
+                                    type="button"
+                                    id="marcar-todas-notificaciones"
+                                    disabled
+                                >
+                                    Marcar todas como leídas
+                                </button>
+                            </div>
+
+                            <!-- MENSAJE DE ESTADO -->
+                            <p
+                                id="estado-notificaciones"
+                                role="status"
+                                aria-live="polite"
+                            ></p>
+
+                            <!-- LISTA DE NOTIFICACIONES -->
+                            <ul
+                                id="lista-notificaciones"
+                                class="lista-notificaciones"
+                            ></ul>
+
+                            <!-- PIE DEL BUZÓN -->
+                            <div class="pie-notificaciones">
+                                <button
+                                    type="button"
+                                    id="ver-todas-notificaciones"
+                                    hidden
+                                >
+                                    Ver todas las notificaciones
+                                </button>
+                            </div>
+
+                        </section>
+                    </div>
+
+                    <!-- PERFIL ORIGINAL -->
                     <span id="avatar-usuario" class="avatar" aria-hidden="true">S</span>
                     <div>
                         <span id="nombre-usuario" class="nombre-cuenta"></span>
                         <span class="estado-cuenta">Sesión iniciada</span>
                     </div>
+
                 </div>
             </header>
 
@@ -58,484 +155,714 @@
             </section>
 
             <div id="contenido-proyecto" hidden>
+
                 <section class="bloque" aria-labelledby="titulo-proyecto">
                     <div class="cabecera-bloque">
                         <div>
                             <h1 id="titulo-proyecto"></h1>
-                            <p class="subtitulo">Tu rol <span id="rol-proyecto" class="rol-proyecto"></span></p>
+                            <p class="subtitulo">
+                                Tu rol <span id="rol-proyecto" class="rol-proyecto"></span>
+                            </p>
                         </div>
+
                         <button id="editar-proyecto" type="button" class="boton-secundario" hidden>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4ZM13.5 6.5l4 4"/></svg>
                             Editar proyecto
                         </button>
                     </div>
+
                     <h3 class="etiqueta-dato">Objetivo</h3>
                     <p id="objetivo-proyecto" class="texto-dato"></p>
 
                     <form id="form-editar" class="formulario" method="post" novalidate hidden>
                         <label for="nombre-editar">Nombre</label>
                         <input type="text" id="nombre-editar" name="nombre" minlength="3" maxlength="120" autocomplete="off" required>
+
                         <label for="objetivo-editar">Objetivo</label>
                         <textarea id="objetivo-editar" name="objetivo" rows="4" maxlength="1000"></textarea>
+
                         <p id="mensaje-editar" class="mensaje-error" role="alert" aria-live="polite"></p>
+
                         <div class="acciones-formulario">
                             <button type="button" id="cancelar-editar" class="boton-secundario">Cancelar</button>
                             <button type="submit">Guardar cambios</button>
                         </div>
                     </form>
+
                     <p id="confirmacion-proyecto" class="mensaje-confirmacion" role="status" hidden></p>
                 </section>
 
                 <!-- PESTAÑAS DEL PROYECTO -->
-                <div class="pestanas" role="tablist" id="pestanas-proyecto" aria-label="Apartados del proyecto">
+                <div
+                    class="pestanas"
+                    role="tablist"
+                    id="pestanas-proyecto"
+                    aria-label="Apartados del proyecto"
+                >
                     <button type="button" role="tab" id="pestana-menu" data-panel="menu" aria-controls="panel-menu" aria-selected="true">Menú principal</button>
+
                     <button type="button" role="tab" id="pestana-backlog" data-panel="backlog" aria-controls="panel-backlog" aria-selected="false" tabindex="-1">Backlog</button>
+
                     <button type="button" role="tab" id="pestana-planning" data-panel="planning" aria-controls="panel-planning" aria-selected="false" tabindex="-1">Planning Poker</button>
+
                     <button type="button" role="tab" id="pestana-burndown" data-panel="burndown" aria-controls="panel-burndown" aria-selected="false" tabindex="-1">Burndown Chart</button>
+
                     <button type="button" role="tab" id="pestana-burndown-general" data-panel="burndown-general" aria-controls="panel-burndown-general" aria-selected="false" tabindex="-1">Burndown General</button>
+
                     <button type="button" role="tab" id="pestana-kanban" data-panel="kanban" aria-controls="panel-kanban" aria-selected="false" tabindex="-1">Tablero Kanban</button>
-                    <button type="button" role="tab" id="pestana-avisos" data-panel="avisos" aria-controls="panel-avisos" aria-selected="false" tabindex="-1">Avisos<span id="insignia-avisos" class="insignia-pestana" hidden></span></button>
+
+                    <button type="button" role="tab" id="pestana-avisos" data-panel="avisos" aria-controls="panel-avisos" aria-selected="false" tabindex="-1">
+                        Avisos<span id="insignia-avisos" class="insignia-pestana" hidden></span>
+                    </button>
+
                     <button type="button" role="tab" id="pestana-foro" data-panel="foro" aria-controls="panel-foro" aria-selected="false" tabindex="-1">Foro</button>
                 </div>
 
-
-                <!-- MENÚ PRINCIPAL: integrantes, Sprints, Sprint Backlog y revisión de entregables -->
+                <!-- MENÚ PRINCIPAL -->
                 <div class="panel-pestana" role="tabpanel" id="panel-menu" aria-labelledby="pestana-menu">
-                <section class="bloque" aria-labelledby="titulo-integrantes">
-                    <div class="cabecera-bloque">
-                        <div>
-                            <h2 id="titulo-integrantes">
-                                Integrantes
-                            </h2>
-                            <p class="subtitulo">
-                                Personas que forman parte de este proyecto.
-                            </p>
-                        </div>
-                        <button id="invitar-integrante" type="button" hidden>
-                            + Invitar integrante
-                        </button>
-                    </div>
 
-                    <form id="form-invitacion" class="formulario" method="post" novalidate hidden>
-                        <label for="buscar-usuario">
-                            Buscar usuario registrado
-                        </label>
-                        <input id="buscar-usuario" type="search" placeholder="Buscar por nombre o usuario" autocomplete="off">
-                        <label for="username-invitado">
-                            Selecciona un usuario de la lista
-                        </label>
-                        <select id="username-invitado" name="username" size="3" required></select>
-                        <p class="ayuda-campo">
-                            Se muestran las cuentas registradas que
-                            todavía no pertenecen al proyecto ni
-                            tienen invitaciones pendientes.
-                        </p>
-                        <label for="rol-invitado">
-                            Rol en este proyecto
-                        </label>
-                        <select id="rol-invitado" name="rol" required>
-                            <option value="Product Owner">
-                                Product Owner
-                            </option>
-                            <option value="Desarrollador">
-                                Desarrollador
-                            </option>
-                        </select>
-                        <p class="ayuda-campo">
-                            El usuario tendrá acceso al proyecto
-                            cuando acepte la invitación.
-                        </p>
-                        <p id="mensaje-invitacion" class="mensaje-error" role="alert" aria-live="polite"></p>
-                        <div class="acciones-formulario">
-                            <button id="cancelar-invitacion" type="button" class="boton-secundario">
-                                Cancelar
-                            </button>
-                            <button type="submit">
-                                Enviar invitación
+                    <!-- INTEGRANTES -->
+                    <section class="bloque" aria-labelledby="titulo-integrantes">
+                        <div class="cabecera-bloque">
+                            <div>
+                                <h2 id="titulo-integrantes">Integrantes</h2>
+                                <p class="subtitulo">Personas que forman parte de este proyecto.</p>
+                            </div>
+
+                            <button id="invitar-integrante" type="button" hidden>
+                                + Invitar integrante
                             </button>
                         </div>
-                    </form>
-                    <p id="confirmacion-invitacion" class="mensaje-confirmacion" role="status" hidden></p>
-                    <p id="estado-integrantes" class="ayuda-campo" role="status">
-                        Cargando integrantes...
-                    </p>
-                    <ul id="lista-integrantes" class="lista-personas"></ul>
-                    <p id="mensaje-integrantes" class="mensaje-error" role="alert" aria-live="polite"></p>
-                    <div id="seccion-invitaciones-enviadas" class="seccion-pendientes" hidden>
-                        <h3>
-                            Invitaciones pendientes
-                        </h3>
-                        <p class="ayuda-campo">
-                            Estos usuarios todavía no tienen
-                            acceso al proyecto.
-                        </p>
-                        <ul id="lista-invitaciones-enviadas" class="lista-personas"></ul>
-                    </div>
-                </section>
 
-                <section class="bloque" aria-labelledby="titulo-sprints">
-                    <div class="cabecera-bloque">
-                        <div>
-                            <h2 id="titulo-sprints">Sprints</h2>
-                            <p class="subtitulo">Iteraciones configuradas para este proyecto.</p>
-                        </div>
-                        <button id="nuevo-sprint" type="button" hidden>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-                            Configurar Sprint
-                        </button>
-                    </div>
+                        <form id="form-invitacion" class="formulario" method="post" novalidate hidden>
 
-                    <form id="form-sprint" class="formulario" method="post" novalidate hidden>
-                        <label for="objetivo-sprint">Objetivo del Sprint</label>
-                        <textarea id="objetivo-sprint" name="objetivo" rows="3" maxlength="1000" required></textarea>
-                        <div class="fila-fechas">
-                            <div>
-                                <label for="inicio-sprint">Fecha de inicio</label>
-                                <input type="date" id="inicio-sprint" name="fecha_inicio" required>
-                            </div>
-                            <div>
-                                <label for="fin-sprint">Fecha de fin</label>
-                                <input type="date" id="fin-sprint" name="fecha_fin" required>
-                            </div>
-                        </div>
-                        <p class="ayuda-campo">Duración: <strong id="duracion-sprint">—</strong> (máximo 31 días)</p>
-                        <p id="mensaje-sprint" class="mensaje-error" role="alert" aria-live="polite"></p>
-                        <div class="acciones-formulario">
-                            <button type="button" id="cancelar-sprint" class="boton-secundario">Cancelar</button>
-                            <button type="submit">Guardar Sprint</button>
-                        </div>
-                    </form>
-                    <p id="confirmacion-sprint" class="mensaje-confirmacion" role="status" hidden></p>
+                            <label for="buscar-usuario">Buscar usuario registrado</label>
 
-                    <p id="sin-sprints" class="texto-dato" hidden>Todavía no hay Sprints configurados.</p>
-                    <div id="lista-sprints" class="lista-sprints"></div>
-                                    <!-- PB-14, PB-15 y PB-16: Gestión del Sprint Backlog -->
-                <div id="seccion-sprint-backlog" class="seccion-pendientes" hidden>
+                            <input
+                                id="buscar-usuario"
+                                type="search"
+                                placeholder="Buscar por nombre o usuario"
+                                autocomplete="off"
+                            >
 
-                    <h3>Sprint Backlog</h3>
-
-                    <p class="ayuda-campo">
-                        Administra las historias de usuario asignadas a cada Sprint.
-                    </p>
-
-                    <!-- PB-14: Agregar historias al Sprint -->
-                    <!-- Selector de Sprint -->
-                        <div class="formulario">
-                            <label for="seleccionar-sprint">
-                                Seleccionar Sprint
+                            <label for="username-invitado">
+                                Selecciona un usuario de la lista
                             </label>
 
-                            <select id="seleccionar-sprint" required>
-                                <option value="">Selecciona un Sprint</option>
+                            <select id="username-invitado" name="username" size="3" required></select>
+
+                            <p class="ayuda-campo">
+                                Se muestran las cuentas registradas que todavía no
+                                pertenecen al proyecto ni tienen invitaciones pendientes.
+                            </p>
+
+                            <label for="rol-invitado">Rol en este proyecto</label>
+
+                            <select id="rol-invitado" name="rol" required>
+                                <option value="Product Owner">Product Owner</option>
+                                <option value="Desarrollador">Desarrollador</option>
                             </select>
-                        </div>
 
-                        <!-- Administración exclusiva del Scrum Master -->
-                        <form id="form-agregar-historia" class="formulario" hidden>
+                            <p class="ayuda-campo">
+                                El usuario tendrá acceso al proyecto cuando acepte la invitación.
+                            </p>
 
+                            <p id="mensaje-invitacion" class="mensaje-error" role="alert" aria-live="polite"></p>
 
+                            <div class="acciones-formulario">
+                                <button id="cancelar-invitacion" type="button" class="boton-secundario">
+                                    Cancelar
+                                </button>
 
-                        <label for="seleccionar-historia">
-                            Seleccionar historia del Product Backlog
-                        </label>
+                                <button type="submit">Enviar invitación</button>
+                            </div>
+                        </form>
 
-                        <select id="seleccionar-historia" required>
-                            <option value="">Selecciona una historia</option>
-                        </select>
+                        <p id="confirmacion-invitacion" class="mensaje-confirmacion" role="status" hidden></p>
 
-                        <p id="mensaje-agregar-historia"
-                        class="mensaje-error"
-                        role="alert">
+                        <p id="estado-integrantes" class="ayuda-campo" role="status">
+                            Cargando integrantes...
                         </p>
 
-                        <div class="acciones-formulario">
-                            <button type="submit">
-                                Agregar historia al Sprint
+                        <ul id="lista-integrantes" class="lista-personas"></ul>
+
+                        <p id="mensaje-integrantes" class="mensaje-error" role="alert" aria-live="polite"></p>
+
+                        <div id="seccion-invitaciones-enviadas" class="seccion-pendientes" hidden>
+                            <h3>Invitaciones pendientes</h3>
+
+                            <p class="ayuda-campo">
+                                Estos usuarios todavía no tienen acceso al proyecto.
+                            </p>
+
+                            <ul id="lista-invitaciones-enviadas" class="lista-personas"></ul>
+                        </div>
+                    </section>
+
+                    <!-- SPRINTS -->
+                    <section class="bloque" aria-labelledby="titulo-sprints">
+
+                        <div class="cabecera-bloque">
+                            <div>
+                                <h2 id="titulo-sprints">Sprints</h2>
+                                <p class="subtitulo">Iteraciones configuradas para este proyecto.</p>
+                            </div>
+
+                            <button id="nuevo-sprint" type="button" hidden>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                                Configurar Sprint
                             </button>
                         </div>
 
-                    </form>
+                        <form id="form-sprint" class="formulario" method="post" novalidate hidden>
 
+                            <label for="objetivo-sprint">Objetivo del Sprint</label>
 
+                            <textarea
+                                id="objetivo-sprint"
+                                name="objetivo"
+                                rows="3"
+                                maxlength="1000"
+                                required
+                            ></textarea>
 
-                        <!-- JESÚS: PB-17 -->
-                    <p id="mensaje-estado-historia"
-                    class="mensaje-error"
-                    role="alert"
-                    aria-live="polite">
-                    </p>
-
-                    <!-- Historias asignadas al Sprint -->
-                    <div id="historias-sprint" class="lista-sprints"></div>
-
-                    <p id="confirmacion-backlog"
-                    class="mensaje-confirmacion"
-                    hidden>
-                    </p>
-
-                </div>
-
-                </section>
-
-                <!-- PB-19 y PB-20: REVISIÓN DE ENTREGABLES (solo Product Owner del proyecto) -->
-                <section id="seccion-revision" class="bloque" aria-labelledby="titulo-revision" hidden>
-                    <div class="cabecera-bloque">
-                        <div>
-                            <h2 id="titulo-revision">Revisión de entregables</h2>
-                            <p class="subtitulo">Historias que el equipo envió a revisión. Consulta sus criterios, archivos y responsable, y registra tu decisión.</p>
-                        </div>
-                        <button id="actualizar-revision" type="button" class="boton-secundario">Actualizar</button>
-                    </div>
-
-                    <p id="confirmacion-revision" class="mensaje-confirmacion" role="status" hidden></p>
-                    <p id="error-revision" class="mensaje-error" role="alert" aria-live="polite"></p>
-                    <p id="estado-revision" class="ayuda-campo" role="status" aria-live="polite">Cargando entregables...</p>
-
-                    <h3 class="titulo-lista-revision" id="titulo-por-revisar" hidden>Por revisar</h3>
-                    <div id="lista-por-revisar" class="lista-sprints"></div>
-
-                    <h3 class="titulo-lista-revision" id="titulo-revisadas" hidden>Ya revisadas</h3>
-                    <div id="lista-revisadas" class="lista-sprints"></div>
-
-                    <!-- Detalle de la revisión (PB-19) y decisión (PB-20) -->
-                    <article id="panel-revision" class="panel-revision" aria-labelledby="titulo-panel-revision" hidden>
-                        <div class="cabecera-panel-revision">
-                            <div>
-                                <h3 id="titulo-panel-revision" tabindex="-1"></h3>
-                                <span id="estado-panel-revision" class="estado-historia"></span>
-                            </div>
-                            <button id="cerrar-revision" type="button" class="boton-secundario">Cerrar</button>
-                        </div>
-
-                        <dl class="datos-revision">
-                            <div><dt>Responsable</dt><dd id="revision-responsable"></dd></div>
-                            <div><dt>Sprint</dt><dd id="revision-sprint"></dd></div>
-                            <div><dt>Puntos</dt><dd id="revision-puntos"></dd></div>
-                            <div><dt>Prioridad</dt><dd id="revision-prioridad"></dd></div>
-                        </dl>
-
-                        <h4 class="etiqueta-dato">Descripción</h4>
-                        <p id="revision-descripcion" class="texto-dato"></p>
-
-                        <h4 class="etiqueta-dato">Criterios de aceptación</h4>
-                        <p id="revision-resumen-criterios" class="ayuda-campo"></p>
-                        <ul id="revision-criterios" class="lista-revision"></ul>
-
-                        <h4 class="etiqueta-dato">Evidencias (archivos)</h4>
-                        <ul id="revision-evidencias" class="lista-revision"></ul>
-
-                        <div id="revision-historial-bloque" hidden>
-                            <h4 class="etiqueta-dato">Decisiones anteriores</h4>
-                            <ul id="revision-historial" class="lista-revision"></ul>
-                        </div>
-
-                        <form id="form-decision" class="formulario-revision" novalidate>
-                            <fieldset>
-                                <legend>Tu decisión</legend>
-                                <label class="opcion-decision">
-                                    <input type="radio" name="decision" value="Aprobada">
-                                    <span>Aprobar entregable</span>
-                                </label>
-                                <label class="opcion-decision">
-                                    <input type="radio" name="decision" value="Rechazada">
-                                    <span>Rechazar entregable</span>
-                                </label>
-                            </fieldset>
-                            <label for="observaciones-revision">Observaciones</label>
-                            <textarea id="observaciones-revision" name="observaciones" rows="4" maxlength="2000" aria-describedby="ayuda-observaciones"></textarea>
-                            <p id="ayuda-observaciones" class="ayuda-campo">Obligatorias al rechazar, para que el equipo sepa qué corregir. <span id="contador-observaciones">0/2000</span></p>
-                            <p id="error-decision" class="mensaje-error" role="alert" aria-live="polite"></p>
-                            <div class="acciones-formulario">
-                                <button type="button" id="cancelar-decision" class="boton-secundario">Cancelar</button>
-                                <button type="submit" id="guardar-decision">Guardar decisión</button>
-                            </div>
-                        </form>
-                        <p id="revision-ya-decidida" class="mensaje-confirmacion" hidden></p>
-                    </article>
-                </section>
-                </div>
-
-
-                <!-- BACKLOG -->
-                <div class="panel-pestana" role="tabpanel" id="panel-backlog" aria-labelledby="pestana-backlog" hidden>
-                <!-- SECCIÓN: Product Backlog -->
-                <section class="bloque" aria-labelledby="titulo-backlog" >
-                    <div class="cabecera-bloque">
-                        <div>
-                            <h2 id="titulo-backlog">Creacion de Historias</h2>
-                            <p class="subtitulo">Gestión de historias de usuario y requerimientos del proyecto.</p>
-                        </div>
-                    </div>
-                    
-                    <div id="contenedor-formulario">
-                        <form id="formulario-crear-historia" class="formulario" method="post" novalidate>
-                            <label for="titulo">Título de la Historia</label>
-                            <input type="text" id="titulo" name="titulo" placeholder="Ej. Autenticación de usuarios" autocomplete="off" required>
-                            
-                            <label for="descripcion">Descripción</label>
-                            <textarea id="descripcion" name="descripcion" rows="3" maxlength="1000" placeholder="Detalles de la funcionalidad..." required></textarea>
-                            
                             <div class="fila-fechas">
+
                                 <div>
-                                    <label for="puntos">Puntos de Historia</label>
-                                    <input type="number" id="puntos" name="puntos" min="1" placeholder="Ej. 3, 5, 8">
+                                    <label for="inicio-sprint">Fecha de inicio</label>
+                                    <input type="date" id="inicio-sprint" name="fecha_inicio" required>
                                 </div>
+
                                 <div>
-                                    <label for="prioridad">Prioridad</label>
-                                    <select id="prioridad" name="prioridad">
-                                        <option value="Alta">Alta</option>
-                                        <option value="Media" selected>Media</option>
-                                        <option value="Baja">Baja</option>
-                                    </select>
+                                    <label for="fin-sprint">Fecha de fin</label>
+                                    <input type="date" id="fin-sprint" name="fecha_fin" required>
                                 </div>
+
                             </div>
 
-                            <div class="acciones-formulario" style="margin-top: 15px;">
-                                <button type="submit">Guardar en Backlog</button>
+                            <p class="ayuda-campo">
+                                Duración: <strong id="duracion-sprint">—</strong> (máximo 31 días)
+                            </p>
+
+                            <p id="mensaje-sprint" class="mensaje-error" role="alert" aria-live="polite"></p>
+
+                            <div class="acciones-formulario">
+                                <button type="button" id="cancelar-sprint" class="boton-secundario">Cancelar</button>
+                                <button type="submit">Guardar Sprint</button>
                             </div>
+
                         </form>
-                    </div>
 
-                    <h3 style="margin-top: 30px; margin-bottom: 15px;">Historias Actuales</h3>
-                    <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                            <thead>
-                                <tr style="border-bottom: 2px solid #e1e4e8;">
-                                    <th style="padding: 10px;">
-                                        Título
-                                    </th>
-                                    <th style="padding: 10px;">
-                                        Descripción
-                                    </th>
-                                    <th style="padding: 10px;">
-                                        Esfuerzo (puntos)
-                                    </th>
-                                    <th style="padding: 10px;">
-                                        Valor de negocio
-                                    </th>
-                                    <th style="padding: 10px;">
-                                        Valor / esfuerzo
-                                    </th>
-                                    <th style="padding: 10px;">
-                                        Prioridad
-                                    </th>
-                                    <th style="padding: 10px;">
-                                        Acciones
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-backlog-body">
-                                <!-- Los datos se inyectarán dinámicamente mediante JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
+                        <p id="confirmacion-sprint" class="mensaje-confirmacion" role="status" hidden></p>
 
+                        <p id="sin-sprints" class="texto-dato" hidden>
+                            Todavía no hay Sprints configurados.
+                        </p>
 
+                        <div id="lista-sprints" class="lista-sprints"></div>
 
+                        <!-- SPRINT BACKLOG -->
+                        <div id="seccion-sprint-backlog" class="seccion-pendientes" hidden>
 
+                            <h3>Sprint Backlog</h3>
 
-                        <!-- ===== JESÚS: PB-29 - HISTORIAL DE CAMBIOS ===== -->
+                            <p class="ayuda-campo">
+                                Administra las historias de usuario asignadas a cada Sprint.
+                            </p>
 
-                        <div
-                            id="panel-historial-historias"
-                            class="bloque"
-                            style="margin-top: 20px; display: none;"
+                            <div class="formulario">
+
+                                <label for="seleccionar-sprint">Seleccionar Sprint</label>
+
+                                <select id="seleccionar-sprint" required>
+                                    <option value="">Selecciona un Sprint</option>
+                                </select>
+
+                            </div>
+
+                            <!-- ADMINISTRACIÓN DEL SCRUM MASTER -->
+                            <form id="form-agregar-historia" class="formulario" hidden>
+
+                                <label for="seleccionar-historia">
+                                    Seleccionar historia del Product Backlog
+                                </label>
+
+                                <select id="seleccionar-historia" required>
+                                    <option value="">Selecciona una historia</option>
+                                </select>
+
+                                <p
+                                    id="mensaje-agregar-historia"
+                                    class="mensaje-error"
+                                    role="alert"
+                                ></p>
+
+                                <div class="acciones-formulario">
+                                    <button type="submit">
+                                        Agregar historia al Sprint
+                                    </button>
+                                </div>
+
+                            </form>
+
+                            <p
+                                id="mensaje-estado-historia"
+                                class="mensaje-error"
+                                role="alert"
+                                aria-live="polite"
+                            ></p>
+
+                            <!-- HISTORIAS ASIGNADAS AL SPRINT -->
+                            <div id="historias-sprint" class="lista-sprints"></div>
+
+                            <p
+                                id="confirmacion-backlog"
+                                class="mensaje-confirmacion"
+                                hidden
+                            ></p>
+
+                        </div>
+
+                    </section>
+
+                    <!-- REVISIÓN DE ENTREGABLES -->
+                    <section
+                        id="seccion-revision"
+                        class="bloque"
+                        aria-labelledby="titulo-revision"
+                        hidden
+                    >
+
+                        <div class="cabecera-bloque">
+                            <div>
+                                <h2 id="titulo-revision">Revisión de entregables</h2>
+
+                                <p class="subtitulo">
+                                    Historias que el equipo envió a revisión.
+                                    Consulta sus criterios, archivos y responsable,
+                                    y registra tu decisión.
+                                </p>
+                            </div>
+
+                            <button
+                                id="actualizar-revision"
+                                type="button"
+                                class="boton-secundario"
+                            >
+                                Actualizar
+                            </button>
+                        </div>
+
+                        <p id="confirmacion-revision" class="mensaje-confirmacion" role="status" hidden></p>
+
+                        <p id="error-revision" class="mensaje-error" role="alert" aria-live="polite"></p>
+
+                        <p id="estado-revision" class="ayuda-campo" role="status" aria-live="polite">
+                            Cargando entregables...
+                        </p>
+
+                        <h3 class="titulo-lista-revision" id="titulo-por-revisar" hidden>
+                            Por revisar
+                        </h3>
+
+                        <div id="lista-por-revisar" class="lista-sprints"></div>
+
+                        <h3 class="titulo-lista-revision" id="titulo-revisadas" hidden>
+                            Ya revisadas
+                        </h3>
+
+                        <div id="lista-revisadas" class="lista-sprints"></div>
+
+                        <!-- PANEL DE REVISIÓN -->
+                        <article
+                            id="panel-revision"
+                            class="panel-revision"
+                            aria-labelledby="titulo-panel-revision"
+                            hidden
                         >
 
-                            <div class="cabecera-bloque">
-
+                            <div class="cabecera-panel-revision">
                                 <div>
-                                    <h3 id="titulo-historial-historias">
-                                        Historial de cambios
-                                    </h3>
-
-                                    <p class="subtitulo">
-                                        Modificaciones registradas de esta historia.
-                                    </p>
+                                    <h3 id="titulo-panel-revision" tabindex="-1"></h3>
+                                    <span id="estado-panel-revision" class="estado-historia"></span>
                                 </div>
 
                                 <button
+                                    id="cerrar-revision"
                                     type="button"
-                                    id="cerrar-historial-historias"
                                     class="boton-secundario"
                                 >
                                     Cerrar
                                 </button>
-
                             </div>
 
-                            <div
-                                id="lista-historial-historias"
-                                class="lista-sprints"
-                            ></div>
+                            <dl class="datos-revision">
+                                <div>
+                                    <dt>Responsable</dt>
+                                    <dd id="revision-responsable"></dd>
+                                </div>
+
+                                <div>
+                                    <dt>Sprint</dt>
+                                    <dd id="revision-sprint"></dd>
+                                </div>
+
+                                <div>
+                                    <dt>Puntos</dt>
+                                    <dd id="revision-puntos"></dd>
+                                </div>
+
+                                <div>
+                                    <dt>Prioridad</dt>
+                                    <dd id="revision-prioridad"></dd>
+                                </div>
+                            </dl>
+
+                            <h4 class="etiqueta-dato">Descripción</h4>
+                            <p id="revision-descripcion" class="texto-dato"></p>
+
+                            <h4 class="etiqueta-dato">Criterios de aceptación</h4>
+
+                            <p id="revision-resumen-criterios" class="ayuda-campo"></p>
+
+                            <ul id="revision-criterios" class="lista-revision"></ul>
+
+                            <h4 class="etiqueta-dato">Evidencias (archivos)</h4>
+
+                            <ul id="revision-evidencias" class="lista-revision"></ul>
+
+                            <div id="revision-historial-bloque" hidden>
+                                <h4 class="etiqueta-dato">Decisiones anteriores</h4>
+                                <ul id="revision-historial" class="lista-revision"></ul>
+                            </div>
+
+                            <form id="form-decision" class="formulario-revision" novalidate>
+
+                                <fieldset>
+                                    <legend>Tu decisión</legend>
+
+                                    <label class="opcion-decision">
+                                        <input type="radio" name="decision" value="Aprobada">
+                                        <span>Aprobar entregable</span>
+                                    </label>
+
+                                    <label class="opcion-decision">
+                                        <input type="radio" name="decision" value="Rechazada">
+                                        <span>Rechazar entregable</span>
+                                    </label>
+                                </fieldset>
+
+                                <label for="observaciones-revision">Observaciones</label>
+
+                                <textarea
+                                    id="observaciones-revision"
+                                    name="observaciones"
+                                    rows="4"
+                                    maxlength="2000"
+                                    aria-describedby="ayuda-observaciones"
+                                ></textarea>
+
+                                <p id="ayuda-observaciones" class="ayuda-campo">
+                                    Obligatorias al rechazar, para que el equipo sepa qué corregir.
+                                    <span id="contador-observaciones">0/2000</span>
+                                </p>
+
+                                <p id="error-decision" class="mensaje-error" role="alert" aria-live="polite"></p>
+
+                                <div class="acciones-formulario">
+                                    <button
+                                        type="button"
+                                        id="cancelar-decision"
+                                        class="boton-secundario"
+                                    >
+                                        Cancelar
+                                    </button>
+
+                                    <button type="submit" id="guardar-decision">
+                                        Guardar decisión
+                                    </button>
+                                </div>
+
+                            </form>
+
+                            <p id="revision-ya-decidida" class="mensaje-confirmacion" hidden></p>
+
+                        </article>
+                    </section>
+
+                </div>
+
+                <!-- BACKLOG -->
+                <div
+                    class="panel-pestana"
+                    role="tabpanel"
+                    id="panel-backlog"
+                    aria-labelledby="pestana-backlog"
+                    hidden
+                >
+
+                    <section class="bloque" aria-labelledby="titulo-backlog">
+
+                        <div class="cabecera-bloque">
+                            <div>
+                                <h2 id="titulo-backlog">Creacion de Historias</h2>
+                                <p class="subtitulo">
+                                    Gestión de historias de usuario y requerimientos del proyecto.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div id="contenedor-formulario">
+
+                            <form
+                                id="formulario-crear-historia"
+                                class="formulario"
+                                method="post"
+                                novalidate
+                            >
+
+                                <label for="titulo">Título de la Historia</label>
+
+                                <input
+                                    type="text"
+                                    id="titulo"
+                                    name="titulo"
+                                    placeholder="Ej. Autenticación de usuarios"
+                                    autocomplete="off"
+                                    required
+                                >
+
+                                <label for="descripcion">Descripción</label>
+
+                                <textarea
+                                    id="descripcion"
+                                    name="descripcion"
+                                    rows="3"
+                                    maxlength="1000"
+                                    placeholder="Detalles de la funcionalidad..."
+                                    required
+                                ></textarea>
+
+                                <div class="fila-fechas">
+
+                                    <div>
+                                        <label for="puntos">Puntos de Historia</label>
+
+                                        <input
+                                            type="number"
+                                            id="puntos"
+                                            name="puntos"
+                                            min="1"
+                                            placeholder="Ej. 3, 5, 8"
+                                        >
+                                    </div>
+
+                                    <div>
+                                        <label for="prioridad">Prioridad</label>
+
+                                        <select id="prioridad" name="prioridad">
+                                            <option value="Alta">Alta</option>
+                                            <option value="Media" selected>Media</option>
+                                            <option value="Baja">Baja</option>
+                                        </select>
+                                    </div>
+
+                                </div>
+
+                                <div class="acciones-formulario" style="margin-top: 15px;">
+                                    <button type="submit">Guardar en Backlog</button>
+                                </div>
+
+                            </form>
 
                         </div>
 
-                        <!-- ===== FIN PB-29 ===== -->
+                        <h3 style="margin-top: 30px; margin-bottom: 15px;">
+                            Historias Actuales
+                        </h3>
 
+                        <div style="overflow-x: auto;">
 
+                            <table style="width: 100%; border-collapse: collapse; text-align: left;">
 
+                                <thead>
+                                    <tr style="border-bottom: 2px solid #e1e4e8;">
+                                        <th style="padding: 10px;">Título</th>
+                                        <th style="padding: 10px;">Descripción</th>
+                                        <th style="padding: 10px;">Esfuerzo (puntos)</th>
+                                        <th style="padding: 10px;">Valor de negocio</th>
+                                        <th style="padding: 10px;">Valor / esfuerzo</th>
+                                        <th style="padding: 10px;">Prioridad</th>
+                                        <th style="padding: 10px;">Acciones</th>
+                                    </tr>
+                                </thead>
 
+                                <tbody id="tabla-backlog-body">
+                                    <!-- Los datos se inyectarán dinámicamente mediante JavaScript -->
+                                </tbody>
 
+                            </table>
 
-
-                <!-- NUEVA SECCIÓN: PANEL DE CRITERIOS DE ACEPTACIÓN (PB-12) -->
-                <div id="panel-criterios" class="bloque" style="margin-top: 20px; display: none;">
-                    <div class="cabecera-bloque">
-                        <div>
-                            <h3 id="titulo-criterios-historia">Criterios de Aceptación</h3>
-                            <p class="subtitulo">Gestiona los criterios de aceptación para esta historia.</p>
                         </div>
-                        <button type="button" onclick="cerrarPanelCriterios()" class="boton-secundario">Cerrar</button>
+
+                    </section>
+
+                    <!-- HISTORIAL DE CAMBIOS -->
+                    <div
+                        id="panel-historial-historias"
+                        class="bloque"
+                        style="margin-top: 20px; display: none;"
+                    >
+
+                        <div class="cabecera-bloque">
+                            <div>
+                                <h3 id="titulo-historial-historias">Historial de cambios</h3>
+
+                                <p class="subtitulo">
+                                    Modificaciones registradas de esta historia.
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                id="cerrar-historial-historias"
+                                class="boton-secundario"
+                            >
+                                Cerrar
+                            </button>
+                        </div>
+
+                        <div
+                            id="lista-historial-historias"
+                            class="lista-sprints"
+                        ></div>
+
                     </div>
 
-                    <form id="form-crear-criterio" class="formulario" style="margin-bottom: 20px;">
-                        <label for="desc-criterio">Nuevo Criterio (Dado / Cuando / Entonces)</label>
-                        <textarea id="desc-criterio" name="descripcion" rows="2" placeholder="Ej. Dada una cuenta activa, cuando..." required></textarea>
-                        <div class="acciones-formulario" style="margin-top: 10px;">
-                            <button type="submit">Agregar Criterio</button>
+                    <!-- PANEL DE CRITERIOS DE ACEPTACIÓN -->
+                    <div
+                        id="panel-criterios"
+                        class="bloque"
+                        style="margin-top: 20px; display: none;"
+                    >
+
+                        <div class="cabecera-bloque">
+                            <div>
+                                <h3 id="titulo-criterios-historia">Criterios de Aceptación</h3>
+
+                                <p class="subtitulo">
+                                    Gestiona los criterios de aceptación para esta historia.
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                onclick="cerrarPanelCriterios()"
+                                class="boton-secundario"
+                            >
+                                Cerrar
+                            </button>
                         </div>
-                    </form>
 
-                    <ul id="lista-criterios" style="list-style-type: none; padding: 0;">
-                        <!-- Se inyectarán dinámicamente -->
-                    </ul>
+                        <form
+                            id="form-crear-criterio"
+                            class="formulario"
+                            style="margin-bottom: 20px;"
+                        >
+
+                            <label for="desc-criterio">
+                                Nuevo Criterio (Dado / Cuando / Entonces)
+                            </label>
+
+                            <textarea
+                                id="desc-criterio"
+                                name="descripcion"
+                                rows="2"
+                                placeholder="Ej. Dada una cuenta activa, cuando..."
+                                required
+                            ></textarea>
+
+                            <div class="acciones-formulario" style="margin-top: 10px;">
+                                <button type="submit">Agregar Criterio</button>
+                            </div>
+
+                        </form>
+
+                        <ul
+                            id="lista-criterios"
+                            style="list-style-type: none; padding: 0;"
+                        ></ul>
+
+                    </div>
+
                 </div>
-                </div>
 
+                <!-- PLANNING POKER -->
+                <div
+                    class="panel-pestana"
+                    role="tabpanel"
+                    id="panel-planning"
+                    aria-labelledby="pestana-planning"
+                    hidden
+                >
+                    <section
+                        class="estado-lista apartado-vacio"
+                        aria-labelledby="titulo-panel-planning"
+                    >
 
-                <!-- PLANNING POKER (apartado vacío por ahora) -->
-                <div class="panel-pestana" role="tabpanel" id="panel-planning" aria-labelledby="pestana-planning" hidden>
-                    <section class="estado-lista apartado-vacio" aria-labelledby="titulo-panel-planning">
                         <div class="simbolo-estado">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="6" width="18" height="15" rx="2"/><path d="M8 6V3h8v3M3 12h18M10 12v3h4v-3"/></svg>
                         </div>
+
                         <h2 id="titulo-panel-planning">Planning Poker</h2>
+
                         <p>Este apartado todavía está vacío.</p>
+
                     </section>
                 </div>
 
-
                 <!-- BURNDOWN CHART -->
-                <div class="panel-pestana" role="tabpanel" id="panel-burndown" aria-labelledby="pestana-burndown" hidden>
+                <div
+                    class="panel-pestana"
+                    role="tabpanel"
+                    id="panel-burndown"
+                    aria-labelledby="pestana-burndown"
+                    hidden
+                >
+
                     <section class="bloque" aria-labelledby="titulo-burndown">
+
                         <div class="cabecera-bloque">
                             <div>
                                 <h2 id="titulo-burndown">Burndown Chart</h2>
-                                <p class="subtitulo">Puntos de historia que faltan por completar durante el Sprint. Se calculan solos a partir del estado de las historias.</p>
+
+                                <p class="subtitulo">
+                                    Puntos de historia que faltan por completar durante el Sprint.
+                                    Se calculan solos a partir del estado de las historias.
+                                </p>
                             </div>
+
                             <div class="selector-burndown" id="selector-burndown" hidden>
                                 <label for="sprint-burndown">Sprint</label>
                                 <select id="sprint-burndown"></select>
                             </div>
                         </div>
 
-                        <p id="estado-burndown" class="ayuda-campo" role="status" aria-live="polite">Cargando el Burndown Chart...</p>
+                        <p
+                            id="estado-burndown"
+                            class="ayuda-campo"
+                            role="status"
+                            aria-live="polite"
+                        >
+                            Cargando el Burndown Chart...
+                        </p>
+
                         <p id="error-burndown" class="mensaje-error" role="alert" aria-live="polite"></p>
 
                         <div id="contenido-burndown" hidden>
+
                             <p id="objetivo-burndown" class="texto-dato"></p>
+
                             <p id="fechas-burndown" class="fechas-sprint"></p>
 
                             <dl class="resumen-burndown">
@@ -546,42 +873,89 @@
                             </dl>
 
                             <ul class="leyenda-burndown" aria-label="Leyenda de la gráfica">
-                                <li><span class="muestra-linea muestra-ideal"></span> Línea ideal</li>
-                                <li><span class="muestra-linea muestra-real"></span> Línea real</li>
+                                <li>
+                                    <span class="muestra-linea muestra-ideal"></span>
+                                    Línea ideal
+                                </li>
+
+                                <li>
+                                    <span class="muestra-linea muestra-real"></span>
+                                    Línea real
+                                </li>
                             </ul>
-                            <div class="grafica-burndown" id="grafica-burndown" role="img" aria-labelledby="titulo-burndown" aria-describedby="tabla-burndown-descripcion"></div>
+
+                            <div
+                                class="grafica-burndown"
+                                id="grafica-burndown"
+                                role="img"
+                                aria-labelledby="titulo-burndown"
+                                aria-describedby="tabla-burndown-descripcion"
+                            ></div>
 
                             <h3 class="titulo-tabla-burndown">Detalle por día</h3>
-                            <p id="tabla-burndown-descripcion" class="ayuda-campo">Puntos pendientes que deberían quedar (ideal) y los que realmente quedaron al cierre de cada día.</p>
+
+                            <p id="tabla-burndown-descripcion" class="ayuda-campo">
+                                Puntos pendientes que deberían quedar (ideal) y los que realmente
+                                quedaron al cierre de cada día.
+                            </p>
+
                             <div class="contenedor-tabla-burndown">
+
                                 <table class="tabla-burndown">
                                     <thead>
-                                        <tr><th scope="col">Día</th><th scope="col">Ideal</th><th scope="col">Real</th></tr>
+                                        <tr>
+                                            <th scope="col">Día</th>
+                                            <th scope="col">Ideal</th>
+                                            <th scope="col">Real</th>
+                                        </tr>
                                     </thead>
+
                                     <tbody id="tabla-burndown-cuerpo"></tbody>
                                 </table>
+
                             </div>
+
                         </div>
+
                     </section>
                 </div>
 
+                <!-- BURNDOWN GENERAL -->
+                <div
+                    class="panel-pestana"
+                    role="tabpanel"
+                    id="panel-burndown-general"
+                    aria-labelledby="pestana-burndown-general"
+                    hidden
+                >
 
-                
-
-                <!-- BURNDOWN GENERAL: suma de los puntos de todos los Sprints del proyecto -->
-                <div class="panel-pestana" role="tabpanel" id="panel-burndown-general" aria-labelledby="pestana-burndown-general" hidden>
                     <section class="bloque" aria-labelledby="titulo-burndown-general">
+
                         <div class="cabecera-bloque">
                             <div>
                                 <h2 id="titulo-burndown-general">Burndown General</h2>
-                                <p class="subtitulo">Avance de todo el proyecto, Sprint por Sprint. Suma los puntos de cada Sprint y se actualiza solo cuando se crean Sprints o cambian sus historias.</p>
+
+                                <p class="subtitulo">
+                                    Avance de todo el proyecto, Sprint por Sprint.
+                                    Suma los puntos de cada Sprint y se actualiza solo
+                                    cuando se crean Sprints o cambian sus historias.
+                                </p>
                             </div>
                         </div>
 
-                        <p id="estado-general" class="ayuda-campo" role="status" aria-live="polite">Cargando el Burndown General...</p>
+                        <p
+                            id="estado-general"
+                            class="ayuda-campo"
+                            role="status"
+                            aria-live="polite"
+                        >
+                            Cargando el Burndown General...
+                        </p>
+
                         <p id="error-general" class="mensaje-error" role="alert" aria-live="polite"></p>
 
                         <div id="contenido-general" hidden>
+
                             <dl class="resumen-burndown">
                                 <div><dt>Puntos del proyecto</dt><dd id="general-totales">0</dd></div>
                                 <div><dt>Completados</dt><dd id="general-completados">0</dd></div>
@@ -589,20 +963,49 @@
                                 <div><dt>Avance</dt><dd id="general-ritmo" class="valor-ritmo">—</dd></div>
                             </dl>
 
-                            <div class="barra-avance" role="progressbar" aria-label="Porcentaje de puntos completados" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="barra-general">
+                            <div
+                                class="barra-avance"
+                                role="progressbar"
+                                aria-label="Porcentaje de puntos completados"
+                                aria-valuemin="0"
+                                aria-valuemax="100"
+                                aria-valuenow="0"
+                                id="barra-general"
+                            >
                                 <span id="relleno-general"></span>
                             </div>
+
                             <p id="texto-porcentaje-general" class="ayuda-campo"></p>
 
-                            <ul class="leyenda-burndown" aria-label="Leyenda de la gráfica">
-                                <li><span class="muestra-linea muestra-ideal"></span> Línea ideal</li>
-                                <li><span class="muestra-linea muestra-real"></span> Línea real</li>
+                            <ul class="leyenda-burndown">
+                                <li>
+                                    <span class="muestra-linea muestra-ideal"></span>
+                                    Línea ideal
+                                </li>
+
+                                <li>
+                                    <span class="muestra-linea muestra-real"></span>
+                                    Línea real
+                                </li>
                             </ul>
-                            <div class="grafica-burndown" id="grafica-general" role="img" aria-labelledby="titulo-burndown-general" aria-describedby="tabla-general-descripcion"></div>
+
+                            <div
+                                class="grafica-burndown"
+                                id="grafica-general"
+                                role="img"
+                                aria-labelledby="titulo-burndown-general"
+                                aria-describedby="tabla-general-descripcion"
+                            ></div>
 
                             <h3 class="titulo-tabla-burndown">Detalle por Sprint</h3>
-                            <p id="tabla-general-descripcion" class="ayuda-campo">Puntos que cada Sprint tiene planeados, los que se completaron y los que quedan pendientes en el proyecto después de cada Sprint (ideal y real).</p>
+
+                            <p id="tabla-general-descripcion" class="ayuda-campo">
+                                Puntos que cada Sprint tiene planeados, los que se completaron
+                                y los que quedan pendientes en el proyecto después de cada Sprint.
+                            </p>
+
                             <div class="contenedor-tabla-burndown">
+
                                 <table class="tabla-burndown">
                                     <thead>
                                         <tr>
@@ -614,204 +1017,442 @@
                                             <th scope="col">Real</th>
                                         </tr>
                                     </thead>
+
                                     <tbody id="tabla-general-cuerpo"></tbody>
                                 </table>
+
                             </div>
+
                         </div>
+
                     </section>
+
                 </div>
 
-
                 <!-- TABLERO KANBAN -->
-                <div class="panel-pestana" role="tabpanel" id="panel-kanban" aria-labelledby="pestana-kanban" hidden>
+                <div
+                    class="panel-pestana"
+                    role="tabpanel"
+                    id="panel-kanban"
+                    aria-labelledby="pestana-kanban"
+                    hidden
+                >
+
                     <section class="bloque">
-                        <!-- ENCABEZADO -->
+
                         <div class="cabecera-bloque cabecera-kanban">
+
                             <div>
                                 <h2>Tablero Kanban</h2>
+
                                 <p class="subtitulo">
                                     Visualiza y administra las historias
                                     del Sprint seleccionado.
                                 </p>
                             </div>
-                            <!-- SELECCIONAR SPRINT -->
+
                             <div class="controles-kanban">
-                                <label for="select-sprint-kanban">
-                                    Sprint:
-                                </label>
+
+                                <label for="select-sprint-kanban">Sprint:</label>
+
                                 <select id="select-sprint-kanban">
-                                    <option value="">
-                                        Cargando Sprints...
-                                    </option>
+                                    <option value="">Cargando Sprints...</option>
                                 </select>
-                                <button id="actualizar-kanban" type="button" class="boton-secundario">
+
+                                <button
+                                    id="actualizar-kanban"
+                                    type="button"
+                                    class="boton-secundario"
+                                >
                                     Actualizar
                                 </button>
+
                             </div>
+
                         </div>
-                        <!-- MENSAJES -->
+
                         <p class="ayuda-campo">
-                            Haz doble clic en una historia para consultar su información en el Product Backlog.
-                            Las historias solo pasan a Terminada cuando
-                            el Product Owner las aprueba.
+                            Haz doble clic en una historia para consultar su información
+                            en el Product Backlog. Las historias solo pasan a Terminada
+                            cuando el Product Owner las aprueba.
                         </p>
-                        <p id="mensaje-kanban" class="mensaje-kanban" role="status" aria-live="polite"></p>
+
+                        <p
+                            id="mensaje-kanban"
+                            class="mensaje-kanban"
+                            role="status"
+                            aria-live="polite"
+                        ></p>
 
                         <div class="tablero-kanban">
-                            <section class="columna-kanban kanban-pendiente" data-estado="Pendiente">
+
+                            <!-- PENDIENTE -->
+                            <section
+                                class="columna-kanban kanban-pendiente"
+                                data-estado="Pendiente"
+                            >
+
                                 <div class="cabecera-columna">
                                     <h3>Pendiente</h3>
-                                    <span id="contador-pendiente" class="contador-kanban">
-                                        0
-                                    </span>
+                                    <span id="contador-pendiente" class="contador-kanban">0</span>
                                 </div>
+
                                 <div id="tarjetas-pendiente" class="contenedor-tarjetas"></div>
+
                             </section>
 
-                            <section class="columna-kanban kanban-en-curso" data-estado="En curso">
+                            <!-- EN CURSO -->
+                            <section
+                                class="columna-kanban kanban-en-curso"
+                                data-estado="En curso"
+                            >
+
                                 <div class="cabecera-columna">
                                     <h3>En curso</h3>
-                                    <span id="contador-en-curso" class="contador-kanban">
-                                        0
-                                    </span>
+                                    <span id="contador-en-curso" class="contador-kanban">0</span>
                                 </div>
+
                                 <div id="tarjetas-en-curso" class="contenedor-tarjetas"></div>
+
                             </section>
 
-                            <section class="columna-kanban kanban-en-revision" data-estado="En revision">
+                            <!-- EN REVISIÓN -->
+                            <section
+                                class="columna-kanban kanban-en-revision"
+                                data-estado="En revision"
+                            >
+
                                 <div class="cabecera-columna">
                                     <h3>En revisión</h3>
-                                    <span id="contador-en-revision" class="contador-kanban">
-                                        0
-                                    </span>
+                                    <span id="contador-en-revision" class="contador-kanban">0</span>
                                 </div>
+
                                 <div id="tarjetas-en-revision" class="contenedor-tarjetas"></div>
+
                             </section>
 
-                            <section class="columna-kanban kanban-terminada" data-estado="Aprobada">
+                            <!-- TERMINADA -->
+                            <section
+                                class="columna-kanban kanban-terminada"
+                                data-estado="Aprobada"
+                            >
+
                                 <div class="cabecera-columna">
                                     <h3>Terminada</h3>
-                                    <span id="contador-terminada" class="contador-kanban">
-                                        0
-                                    </span>
+                                    <span id="contador-terminada" class="contador-kanban">0</span>
                                 </div>
+
                                 <div id="tarjetas-terminada" class="contenedor-tarjetas"></div>
+
                             </section>
+
                         </div>
+
                     </section>
+
                 </div>
 
+                <!-- FORO -->
+                <div
+                    class="panel-pestana"
+                    role="tabpanel"
+                    id="panel-foro"
+                    aria-labelledby="pestana-foro"
+                    hidden
+                >
 
-                <!-- PB-30: foro para dudas y comentarios de todos los integrantes del proyecto. -->
-                <div class="panel-pestana" role="tabpanel" id="panel-foro" aria-labelledby="pestana-foro" hidden>
                     <section class="bloque" aria-labelledby="titulo-foro">
+
                         <div class="cabecera-bloque foro-cabecera">
                             <div>
                                 <h2 id="titulo-foro">Foro del proyecto</h2>
-                                <p class="subtitulo">Comparte tus dudas y comentarios con el equipo.</p>
+
+                                <p class="subtitulo">
+                                    Comparte tus dudas y comentarios con el equipo.
+                                </p>
                             </div>
                         </div>
-                        <p id="foro-estado" class="foro-estado" role="status" aria-live="polite">Cargando conversación…</p>
-                        <div id="foro-conversacion" class="foro-conversacion" role="log" aria-label="Conversación del proyecto" aria-live="polite" aria-relevant="additions text" tabindex="0">
-                            <p id="foro-vacio" class="foro-vacio" hidden>Todavía no hay mensajes. ¡Inicia la conversación!</p>
+
+                        <p
+                            id="foro-estado"
+                            class="foro-estado"
+                            role="status"
+                            aria-live="polite"
+                        >
+                            Cargando conversación…
+                        </p>
+
+                        <div
+                            id="foro-conversacion"
+                            class="foro-conversacion"
+                            role="log"
+                            aria-label="Conversación del proyecto"
+                            aria-live="polite"
+                            aria-relevant="additions text"
+                            tabindex="0"
+                        >
+
+                            <p id="foro-vacio" class="foro-vacio" hidden>
+                                Todavía no hay mensajes. ¡Inicia la conversación!
+                            </p>
+
                         </div>
-                        <form id="foro-formulario" class="foro-formulario" method="post" novalidate>
+
+                        <form
+                            id="foro-formulario"
+                            class="foro-formulario"
+                            method="post"
+                            novalidate
+                        >
+
                             <label for="foro-contenido">Tu mensaje</label>
+
                             <div class="foro-redaccion">
-                                <textarea id="foro-contenido" name="contenido" rows="2" maxlength="5000" placeholder="Escribe una duda o comentario…" aria-describedby="foro-ayuda foro-error" required></textarea>
-                                <button id="foro-enviar" type="submit" disabled>Enviar</button>
+
+                                <textarea
+                                    id="foro-contenido"
+                                    name="contenido"
+                                    rows="2"
+                                    maxlength="5000"
+                                    placeholder="Escribe una duda o comentario…"
+                                    aria-describedby="foro-ayuda foro-error"
+                                    required
+                                ></textarea>
+
+                                <button id="foro-enviar" type="submit" disabled>
+                                    Enviar
+                                </button>
+
                             </div>
-                            <p id="foro-ayuda" class="foro-ayuda">Enter para enviar · Shift + Enter para un salto de línea · Máximo 5000 caracteres.</p>
+
+                            <p id="foro-ayuda" class="foro-ayuda">
+                                Enter para enviar · Shift + Enter para un salto de línea ·
+                                Máximo 5000 caracteres.
+                            </p>
+
                             <p id="foro-error" class="mensaje-error" role="alert" aria-live="polite"></p>
+
                         </form>
+
                     </section>
+
                 </div>
 
-                <!-- AVISOS: Scrum Master y Product Owner publican; los desarrolladores solo consultan.
-                     Los ids y clases "-po" se conservan de los mensajes anteriores para reutilizar mensajes.css. -->
-                <div class="panel-pestana" role="tabpanel" id="panel-avisos" aria-labelledby="pestana-avisos" hidden>
-                    <section id="seccion-mensajes-po" class="bloque" aria-labelledby="titulo-mensajes-po">
+                <!-- AVISOS -->
+                <div
+                    class="panel-pestana"
+                    role="tabpanel"
+                    id="panel-avisos"
+                    aria-labelledby="pestana-avisos"
+                    hidden
+                >
+
+                    <section
+                        id="seccion-mensajes-po"
+                        class="bloque"
+                        aria-labelledby="titulo-mensajes-po"
+                    >
+
                         <div class="cabecera-bloque cabecera-mensajes-po">
+
                             <div>
                                 <h2 id="titulo-mensajes-po">Avisos del proyecto</h2>
-                                <p class="subtitulo" id="subtitulo-avisos">Avisos del Scrum Master y del Product Owner para el equipo.</p>
+
+                                <p class="subtitulo" id="subtitulo-avisos">
+                                    Avisos del Scrum Master y del Product Owner para el equipo.
+                                </p>
                             </div>
+
                             <div class="acciones-mensajes-po">
-                                <button id="nuevo-mensaje-po" type="button" hidden>+ Nuevo aviso</button>
+                                <button id="nuevo-mensaje-po" type="button" hidden>
+                                    + Nuevo aviso
+                                </button>
                             </div>
+
                         </div>
-                        <form id="form-mensaje-po" class="formulario" method="post" novalidate hidden>
+
+                        <form
+                            id="form-mensaje-po"
+                            class="formulario"
+                            method="post"
+                            novalidate
+                            hidden
+                        >
+
                             <p class="ayuda-campo" id="tipo-publicacion"></p>
+
                             <label for="titulo-mensaje-po">Título del aviso</label>
-                            <input id="titulo-mensaje-po" name="titulo" type="text" minlength="3" maxlength="150" autocomplete="off" required>
+
+                            <input
+                                id="titulo-mensaje-po"
+                                name="titulo"
+                                type="text"
+                                minlength="3"
+                                maxlength="150"
+                                autocomplete="off"
+                                required
+                            >
+
                             <label for="contenido-mensaje-po">Contenido del aviso</label>
-                            <textarea id="contenido-mensaje-po" name="contenido" rows="5" maxlength="5000" aria-describedby="ayuda-mensaje-po" required></textarea>
-                            <p id="ayuda-mensaje-po" class="ayuda-campo">Describe el aviso, cambio o requisito que necesita conocer el equipo. Hasta 5000 caracteres.</p>
+
+                            <textarea
+                                id="contenido-mensaje-po"
+                                name="contenido"
+                                rows="5"
+                                maxlength="5000"
+                                aria-describedby="ayuda-mensaje-po"
+                                required
+                            ></textarea>
+
+                            <p id="ayuda-mensaje-po" class="ayuda-campo">
+                                Describe el aviso, cambio o requisito que necesita conocer el equipo.
+                                Hasta 5000 caracteres.
+                            </p>
+
                             <p id="error-mensaje-po" class="mensaje-error" role="alert" aria-live="polite"></p>
+
                             <div class="acciones-formulario">
-                                <button id="cancelar-mensaje-po" type="button" class="boton-secundario">Cancelar</button>
+                                <button
+                                    id="cancelar-mensaje-po"
+                                    type="button"
+                                    class="boton-secundario"
+                                >
+                                    Cancelar
+                                </button>
+
                                 <button type="submit">Publicar aviso</button>
                             </div>
+
                         </form>
+
                         <p id="confirmacion-mensaje-po" class="mensaje-confirmacion" role="status" hidden></p>
-                        <p id="estado-mensajes-po" class="estado-mensajes-po" role="status" aria-live="polite">Cargando avisos...</p>
+
+                        <p id="estado-mensajes-po" class="estado-mensajes-po" role="status" aria-live="polite">
+                            Cargando avisos...
+                        </p>
 
                         <div class="columnas-avisos">
-                            <section class="columna-avisos" aria-labelledby="titulo-avisos-sm">
-                                <h3 id="titulo-avisos-sm" class="titulo-columna-avisos">Scrum Master <span id="conteo-avisos-sm" class="conteo-avisos">0</span></h3>
-                                <p id="vacio-avisos-sm" class="aviso-vacio" hidden>El Scrum Master todavía no ha publicado avisos.</p>
-                                <div id="lista-mensajes-sm" class="lista-mensajes-po" aria-label="Avisos del Scrum Master"></div>
+
+                            <section
+                                class="columna-avisos"
+                                aria-labelledby="titulo-avisos-sm"
+                            >
+
+                                <h3 id="titulo-avisos-sm" class="titulo-columna-avisos">
+                                    Scrum Master
+                                    <span id="conteo-avisos-sm" class="conteo-avisos">0</span>
+                                </h3>
+
+                                <p id="vacio-avisos-sm" class="aviso-vacio" hidden>
+                                    El Scrum Master todavía no ha publicado avisos.
+                                </p>
+
+                                <div
+                                    id="lista-mensajes-sm"
+                                    class="lista-mensajes-po"
+                                    aria-label="Avisos del Scrum Master"
+                                ></div>
+
                             </section>
-                            <section class="columna-avisos" aria-labelledby="titulo-avisos-po">
-                                <h3 id="titulo-avisos-po" class="titulo-columna-avisos">Product Owner <span id="conteo-avisos-po" class="conteo-avisos">0</span></h3>
-                                <p id="vacio-avisos-po" class="aviso-vacio" hidden>El Product Owner todavía no ha publicado avisos.</p>
-                                <div id="lista-mensajes-po" class="lista-mensajes-po" aria-label="Avisos del Product Owner"></div>
+
+                            <section
+                                class="columna-avisos"
+                                aria-labelledby="titulo-avisos-po"
+                            >
+
+                                <h3 id="titulo-avisos-po" class="titulo-columna-avisos">
+                                    Product Owner
+                                    <span id="conteo-avisos-po" class="conteo-avisos">0</span>
+                                </h3>
+
+                                <p id="vacio-avisos-po" class="aviso-vacio" hidden>
+                                    El Product Owner todavía no ha publicado avisos.
+                                </p>
+
+                                <div
+                                    id="lista-mensajes-po"
+                                    class="lista-mensajes-po"
+                                    aria-label="Avisos del Product Owner"
+                                ></div>
+
                             </section>
+
                         </div>
+
                     </section>
+
                 </div>
 
             </div>
+
         </main>
     </div>
+
+    <!-- PLANTILLA DE SPRINT -->
     <template id="plantilla-sprint">
         <article class="tarjeta-sprint">
+
             <div class="cabecera-sprint">
                 <h3 class="nombre-sprint"></h3>
                 <span class="estado-sprint"></span>
             </div>
+
             <p class="objetivo-sprint"></p>
             <p class="fechas-sprint"></p>
+
         </article>
     </template>
 
+    <!-- PLANTILLA DE MENSAJES -->
     <template id="plantilla-mensaje-po">
         <article class="mensaje-po">
+
             <div class="cabecera-mensaje-po">
                 <h3 class="titulo-mensaje-po"></h3>
+
                 <button type="button" class="marcar-leido-po" title="Marcar como leído">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        aria-hidden="true"
+                    >
+                        <path d="m5 12 4 4L19 6"/>
+                    </svg>
+
                     <span>Marcar como leído</span>
                 </button>
             </div>
+
             <div class="datos-mensaje-po">
                 <span class="autor-mensaje-po"></span>
                 <span class="estado-lectura-po"></span>
                 <time class="fecha-mensaje-po"></time>
             </div>
+
             <p class="contenido-mensaje-po"></p>
+
         </article>
     </template>
 
-    <!-- Script del Backlog -->
+    <!-- JAVASCRIPT DEL PRODUCT BACKLOG -->
     <script src="/js/backlog.js" defer></script>
-    <!-- PB-57: evidencias y envío a revisión (Desarrollador) -->
+
+    <!-- EVIDENCIAS DEL DESARROLLADOR -->
     <script src="/js/evidencias.js" defer></script>
-    <!-- PB-19 y PB-20: revisión de entregables (Product Owner) -->
+
+    <!-- REVISIÓN DEL PRODUCT OWNER -->
     <script src="/js/revision.js" defer></script>
-    <!-- Pestañas del proyecto y Burndown Chart -->
+
+    <!-- PESTAÑAS -->
     <script src="/js/pestanas.js" defer></script>
+
+    <!-- BURNDOWN CHART -->
     <script src="/js/burndown.js" defer></script>
+
+    <!-- BURNDOWN GENERAL -->
     <script src="/js/burndownGeneral.js" defer></script>
+
 </body>
 </html>
