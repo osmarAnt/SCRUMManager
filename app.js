@@ -9,6 +9,7 @@ const scrumMasterRutas = require('./src/rutas/scrumMasterRutas');
 const productOwnerRutas = require('./src/rutas/productOwnerRutas');
 const desarrolladorRutas = require('./src/rutas/desarrolladorRutas');
 const backlogRutas = require('./src/rutas/backlogRutas');
+const notificacionRutas = require('./src/rutas/notificacionRutas');
 const burndownDAO = require('./src/dao/burndownDAO');
 const app = express();
 const puerto = 3000;
@@ -99,6 +100,11 @@ app.use(
 app.use(
     '/',
     backlogRutas
+);
+
+app.use(
+    '/notificaciones',
+    notificacionRutas
 );
 
 app.get('/api/usuario-actual', (req, res) => {

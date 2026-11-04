@@ -39,25 +39,68 @@ const BacklogDAO = {
 
     // ===== JESÚS: PB-16 - ASIGNAR RESPONSABLE =====
     asignarResponsable: async (idProyecto, idSprint, idHistoria, idResponsable) => {
-        const query = `
-            UPDATE product_backlog AS historia
-            INNER JOIN proyecto_usuarios AS integrante
+        const conexion = await pool.crearConexion();
+
+        try {
+            await conexion.beginTransaction();
+
+            const [historias] = await conexion.execute(
+                `SELECT titulo, id_responsable
+             FROM product_backlog
+             WHERE id_proyecto = ?
+             AND id_sprint = ?
+             AND id_historia = ?
+             FOR UPDATE`,
+                [idProyecto, idSprint, idHistoria]
+            );
+
+            if (!historias.length) {
+                await conexion.rollback();
+                return false;
+            }
+
+            const [resultado] = await conexion.execute(
+                `UPDATE product_backlog AS historia
+             INNER JOIN proyecto_usuarios AS integrante
                 ON integrante.id_proyecto = historia.id_proyecto
                 AND integrante.id_usuario = ?
                 AND integrante.rol = 'Desarrollador'
                 AND integrante.activo = TRUE
-            INNER JOIN usuarios AS usuario
+             INNER JOIN usuarios AS usuario
                 ON usuario.id_usuario = integrante.id_usuario
                 AND usuario.activo = TRUE
-            SET historia.id_responsable = integrante.id_usuario
-            WHERE historia.id_proyecto = ?
-                AND historia.id_sprint = ?
-                AND historia.id_historia = ?
-        `;
-        const [resultado] = await pool.promise().query(query, [
-            idResponsable, idProyecto, idSprint, idHistoria
-        ]);
-        return resultado.affectedRows > 0;
+             SET historia.id_responsable = integrante.id_usuario
+             WHERE historia.id_proyecto = ?
+             AND historia.id_sprint = ?
+             AND historia.id_historia = ?`,
+                [idResponsable, idProyecto, idSprint, idHistoria]
+            );
+
+            if (!resultado.affectedRows) {
+                await conexion.rollback();
+                return false;
+            }
+
+            // Notificar únicamente si cambió el responsable
+            if (Number(historias[0].id_responsable) !== Number(idResponsable)) {
+                await conexion.execute(
+                    `INSERT INTO notificaciones_historias
+                (id_usuario, id_proyecto, id_historia, titulo_historia)
+                VALUES (?, ?, ?, ?)`,
+                    [idResponsable, idProyecto, idHistoria, historias[0].titulo]
+                );
+            }
+
+            await conexion.commit();
+            return true;
+
+        } catch (error) {
+            await conexion.rollback();
+            throw error;
+
+        } finally {
+            await conexion.end();
+        }
     },
 
     // ===== JESÚS: PB-17 - ACTUALIZAR ESTADO =====

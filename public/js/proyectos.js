@@ -66,8 +66,20 @@ const cargarProyectos = async () => {
         }
         botonNuevo.hidden = resultado.usuario.rol !== 'Scrum Master';
         const nombre = resultado.usuario.nombre;
+
         nombreUsuario.textContent = nombre;
         avatar.textContent = Array.from(nombre.trim())[0]?.toUpperCase() || 'S';
+
+        // ACTIVAR BUZÓN DE NOTIFICACIONES
+        document.dispatchEvent(new CustomEvent('usuario-cargado', {
+            detail: {
+                rol: resultado.usuario.rol,
+                tieneRolDesarrollador: resultado.proyectos.some(
+                    proyecto => proyecto.rol === 'Desarrollador'
+                )
+            }
+        }));
+
         mostrarProyectos(resultado.proyectos);
     } catch (error) {
         mostrarEstado('No pudimos cargar tus proyectos', 'Pulsa Actualizar para intentarlo de nuevo.', 'error');
