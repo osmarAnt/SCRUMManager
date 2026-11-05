@@ -11,6 +11,7 @@ const desarrolladorRutas = require('./src/rutas/desarrolladorRutas');
 const backlogRutas = require('./src/rutas/backlogRutas');
 const notificacionRutas = require('./src/rutas/notificacionRutas');
 const burndownDAO = require('./src/dao/burndownDAO');
+const { verificarSesion } = require('./src/middlewares/autenticacion');
 const app = express();
 const puerto = 3000;
 
@@ -113,6 +114,12 @@ app.get('/api/usuario-actual', (req, res) => {
     } else {
         res.status(401).json({ error: 'No hay sesión activa' });
     }
+});
+
+app.get('/capacitacion', verificarSesion, (req, res) => {
+    res.sendFile(
+        path.join(__dirname, 'vistas', 'capacitacion.html')
+    );
 });
 
 app.listen(
