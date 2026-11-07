@@ -25,6 +25,9 @@ const burndownControlador = require('../controladores/burndownControlador');
 // PB-30: foro para dudas y comentarios de cualquier integrante.
 const foroControlador = require('../controladores/foroControlador');
 
+// PB-32 y PB-33: registro de horas por historia y resumen de tiempo.
+const tiempoControlador = require('../controladores/tiempoControlador');
+
 
 // =======================================
 // PROYECTOS
@@ -294,6 +297,32 @@ router.post(
     '/:id/revisiones/:idHistoria',
     verificarSesion,
     revisionControlador.registrarDecision
+);
+
+
+// =======================================
+// PB-32: REGISTRAR HORAS POR HISTORIA
+// Solo el desarrollador al que está asignada la historia.
+// PB-33: CONSULTAR ACUMULADO DE TIEMPO
+// Solo el Scrum Master del proyecto.
+// =======================================
+
+router.get(
+    '/:id/tiempos/mios',
+    verificarSesion,
+    tiempoControlador.consultarMisTiempos
+);
+
+router.post(
+    '/:id/historias/:idHistoria/tiempos',
+    verificarSesion,
+    tiempoControlador.registrarTiempo
+);
+
+router.get(
+    '/:id/tiempos/resumen',
+    verificarSesion,
+    tiempoControlador.consultarResumen
 );
 
 

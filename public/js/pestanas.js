@@ -1,4 +1,4 @@
-// Pestañas del proyecto: Menú principal, Backlog, Planning Poker, Burndown Chart, Tablero Kanban y Avisos.
+// Pestañas del proyecto: Menú principal, Backlog, Planning Poker, Burndown Chart, Tablero Kanban, Tiempos y Avisos.
 // La pestaña activa se guarda en la dirección (#burndown, #avisos...) para que al recargar o compartir el enlace se conserve.
 (() => {
     const barra = document.getElementById('pestanas-proyecto');

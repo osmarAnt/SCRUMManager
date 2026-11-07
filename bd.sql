@@ -641,3 +641,22 @@ CREATE TABLE IF NOT EXISTS notificaciones_historias (
         REFERENCES product_backlog(id_historia)
         ON DELETE CASCADE
 );
+
+#---Sprint 4: PB-32 y PB-33 (César): Registro y consulta de tiempos---
+CREATE TABLE IF NOT EXISTS registros_tiempo (
+    id_registro INT AUTO_INCREMENT PRIMARY KEY,
+    id_historia INT NOT NULL,
+    id_usuario INT NOT NULL,
+    fecha_trabajo DATE NOT NULL,
+    horas DECIMAL(5,2) NOT NULL,
+    fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_tiempos_historia (id_historia),
+    INDEX idx_tiempos_usuario_fecha (id_usuario, fecha_trabajo),
+    CONSTRAINT chk_tiempos_horas CHECK (horas > 0 AND horas <= 24),
+    CONSTRAINT fk_tiempos_historia
+        FOREIGN KEY (id_historia) REFERENCES product_backlog(id_historia)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_tiempos_usuario
+        FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
