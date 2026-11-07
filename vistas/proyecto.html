@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="/css/pestanas.css">
     <link rel="stylesheet" href="/css/burndown.css">
     <link rel="stylesheet" href="/css/kanban.css">
+    <link rel="stylesheet" href="/css/tiempos.css">
 
     <!-- CSS DEL BUZÓN DE NOTIFICACIONES -->
     <link rel="stylesheet" href="/css/notificaciones.css">
@@ -26,6 +27,7 @@
     <script src="/js/mensajes.js" defer></script>
     <script src="/js/foro.js" defer></script>
     <script src="/js/kanban.js" defer></script>
+    <script src="/js/tiempos.js" defer></script>
 </head>
 <body>
     <div class="aplicacion">
@@ -224,6 +226,8 @@
                     <button type="button" role="tab" id="pestana-burndown-general" data-panel="burndown-general" aria-controls="panel-burndown-general" aria-selected="false" tabindex="-1">Burndown General</button>
 
                     <button type="button" role="tab" id="pestana-kanban" data-panel="kanban" aria-controls="panel-kanban" aria-selected="false" tabindex="-1">Tablero Kanban</button>
+
+                    <button type="button" role="tab" id="pestana-tiempos" data-panel="tiempos" aria-controls="panel-tiempos" aria-selected="false" tabindex="-1">Tiempos</button>
 
                     <button type="button" role="tab" id="pestana-avisos" data-panel="avisos" aria-controls="panel-avisos" aria-selected="false" tabindex="-1">
                         Avisos<span id="insignia-avisos" class="insignia-pestana" hidden></span>
@@ -1248,6 +1252,200 @@
 
                         </form>
 
+                    </section>
+
+                </div>
+
+                <!-- TIEMPOS: PB-32 (desarrollador registra horas) y PB-33 (Scrum Master consulta el acumulado) -->
+                <div
+                    class="panel-pestana"
+                    role="tabpanel"
+                    id="panel-tiempos"
+                    aria-labelledby="pestana-tiempos"
+                    hidden
+                >
+
+                    <!-- DESARROLLADOR: REGISTRAR HORAS -->
+                    <section
+                        id="tiempos-desarrollador"
+                        class="bloque"
+                        aria-labelledby="titulo-registro-tiempo"
+                        hidden
+                    >
+
+                        <div class="cabecera-bloque">
+                            <div>
+                                <h2 id="titulo-registro-tiempo">Registrar horas</h2>
+
+                                <p class="subtitulo">
+                                    Documenta el tiempo que dedicaste a las historias asignadas a tu cuenta.
+                                </p>
+                            </div>
+                        </div>
+
+                        <p id="tiempos-estado" class="ayuda-campo" role="status" aria-live="polite">
+                            Cargando tus historias...
+                        </p>
+
+                        <form id="form-tiempo" class="formulario" method="post" novalidate hidden>
+
+                            <label for="historia-tiempo">Historia</label>
+
+                            <select id="historia-tiempo" name="historia" required></select>
+
+                            <div class="fila-fechas">
+
+                                <div>
+                                    <label for="fecha-tiempo">Fecha de trabajo</label>
+                                    <input type="date" id="fecha-tiempo" name="fecha_trabajo" required>
+                                </div>
+
+                                <div>
+                                    <label for="horas-tiempo">Duración (horas)</label>
+                                    <input
+                                        type="number"
+                                        id="horas-tiempo"
+                                        name="horas"
+                                        inputmode="decimal"
+                                        step="0.01"
+                                        min="0.01"
+                                        max="24"
+                                        placeholder="Ej. 1.5"
+                                        autocomplete="off"
+                                        required
+                                    >
+                                </div>
+
+                            </div>
+
+                            <p id="ayuda-tiempo" class="ayuda-campo">
+                                Máximo 24 horas por registro y hasta 2 decimales. La fecha no puede ser futura.
+                            </p>
+
+                            <p id="error-tiempo" class="mensaje-error" role="alert" aria-live="polite"></p>
+
+                            <div class="acciones-formulario">
+                                <button type="submit" id="guardar-tiempo">Registrar horas</button>
+                            </div>
+
+                        </form>
+
+                        <p id="confirmacion-tiempo" class="mensaje-confirmacion" role="status" hidden></p>
+
+                        <div id="mis-registros-tiempo" hidden>
+
+                            <h3 class="titulo-tiempos">Mis registros</h3>
+
+                            <p id="mis-totales-tiempo" class="ayuda-campo"></p>
+
+                            <div class="contenedor-tabla-tiempos">
+                                <table class="tabla-tiempos">
+                                    <caption class="solo-lectores">Registros de tiempo más recientes</caption>
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Fecha</th>
+                                            <th scope="col">Historia</th>
+                                            <th scope="col" class="numero">Horas</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cuerpo-mis-registros"></tbody>
+                                </table>
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                    <!-- SCRUM MASTER: RESUMEN DE TIEMPO -->
+                    <section
+                        id="tiempos-scrum-master"
+                        class="bloque"
+                        aria-labelledby="titulo-resumen-tiempo"
+                        hidden
+                    >
+
+                        <div class="cabecera-bloque">
+                            <div>
+                                <h2 id="titulo-resumen-tiempo">Resumen de tiempo</h2>
+
+                                <p class="subtitulo">
+                                    Horas registradas por el equipo en cada historia y por cada desarrollador.
+                                </p>
+                            </div>
+
+                            <button id="actualizar-resumen-tiempo" type="button" class="boton-secundario">
+                                Actualizar
+                            </button>
+                        </div>
+
+                        <p id="estado-resumen-tiempo" class="ayuda-campo" role="status" aria-live="polite">
+                            Cargando el resumen...
+                        </p>
+
+                        <p id="error-resumen-tiempo" class="mensaje-error" role="alert" aria-live="polite"></p>
+
+                        <div id="contenido-resumen-tiempo" hidden>
+
+                            <dl class="resumen-tiempos">
+                                <div><dt>Horas registradas</dt><dd id="total-horas-tiempo">0</dd></div>
+                                <div><dt>Registros</dt><dd id="total-registros-tiempo">0</dd></div>
+                                <div><dt>Historias con horas</dt><dd id="total-historias-tiempo">0</dd></div>
+                                <div><dt>Desarrolladores con horas</dt><dd id="total-desarrolladores-tiempo">0</dd></div>
+                            </dl>
+
+                            <h3 class="titulo-tiempos">Horas por historia</h3>
+
+                            <div class="contenedor-tabla-tiempos">
+                                <table class="tabla-tiempos">
+                                    <caption class="solo-lectores">Horas registradas por historia</caption>
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Historia</th>
+                                            <th scope="col">Sprint</th>
+                                            <th scope="col">Responsable</th>
+                                            <th scope="col" class="numero">Registros</th>
+                                            <th scope="col" class="numero">Horas</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cuerpo-resumen-historias"></tbody>
+                                </table>
+                            </div>
+
+                            <h3 class="titulo-tiempos">Horas por desarrollador</h3>
+
+                            <div class="contenedor-tabla-tiempos">
+                                <table class="tabla-tiempos">
+                                    <caption class="solo-lectores">Horas registradas por desarrollador</caption>
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Desarrollador</th>
+                                            <th scope="col" class="numero">Historias</th>
+                                            <th scope="col" class="numero">Registros</th>
+                                            <th scope="col">Último registro</th>
+                                            <th scope="col" class="numero">Horas</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cuerpo-resumen-desarrolladores"></tbody>
+                                </table>
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                    <!-- PRODUCT OWNER -->
+                    <section
+                        id="tiempos-sin-acceso"
+                        class="estado-lista apartado-vacio"
+                        aria-labelledby="titulo-tiempos-sin-acceso"
+                        hidden
+                    >
+                        <h2 id="titulo-tiempos-sin-acceso">Tiempos</h2>
+
+                        <p>
+                            Este apartado es para que los desarrolladores registren sus horas
+                            y para que el Scrum Master consulte el acumulado del equipo.
+                        </p>
                     </section>
 
                 </div>
