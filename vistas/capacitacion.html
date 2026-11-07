@@ -158,26 +158,73 @@
 
                 <h2 id="cap-titulo-detalle" tabindex="-1"></h2>
 
-                <div class="cap-espacio" aria-live="polite">
-                    <svg
-                        viewBox="0 0 64 64"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        aria-hidden="true"
-                    >
-                        <rect x="11" y="15"
-                              width="42" height="34"
-                              rx="6"/>
+                        
+        <!-- ===== JESÚS: PB-39 - CAPACITACIÓN PRODUCT OWNER ===== -->
 
-                        <path d="m28 24 13 8-13 8z"/>
-                    </svg>
-                    <h3>Contenido pendiente</h3>
-                    <p>
-                        El material de esta capacitación
-                        será agregado próximamente por el equipo.
-                    </p>
-                </div>
+        <div id="cap-espacio" class="cap-espacio" aria-live="polite">
+            <svg viewBox="0 0 64 64" fill="none"
+                stroke="currentColor" stroke-width="2"
+                aria-hidden="true">
+                <rect x="11" y="15" width="42" height="34" rx="6"/>
+                <path d="m28 24 13 8-13 8z"/>
+            </svg>
+            <h3>Capacitación próximamente</h3>
+            <p>El contenido de este rol todavía está en desarrollo.</p>
+        </div>
+
+        <div id="cap-contenido" class="cap-contenido" hidden>
+
+            <div class="cap-progreso">
+                <span id="cap-contador">Imagen 1 de 6</span>
+                <progress id="cap-barra" value="1" max="8"></progress>
+            </div>
+
+            <figure class="cap-figura">
+                <img id="cap-imagen" alt="Imagen de capacitación">
+                <figcaption id="cap-imagen-pie"></figcaption>
+            </figure>
+
+            <div class="cap-explicacion">
+                <h3 id="cap-lamina-titulo"></h3>
+                <p id="cap-lamina-descripcion"></p>
+                <ul id="cap-lamina-pasos"></ul>
+            </div>
+
+            <p id="cap-mensaje" role="status" aria-live="polite"></p>
+
+            <div class="cap-controles">
+
+                <button type="button"
+                        id="cap-anterior"
+                        class="cap-boton-secundario">
+                    ← Anterior
+                </button>
+
+                <button type="button"
+                        id="cap-siguiente"
+                        class="cap-boton-principal">
+                    Siguiente →
+                </button>
+
+                <button type="button"
+                        id="cap-terminar"
+                        class="cap-boton-principal"
+                        hidden>
+                    Terminar capacitación
+                </button>
+
+                <button type="button"
+                        id="cap-salir"
+                        class="cap-boton-salir">
+                    Salir
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- ===== FIN PB-39 ===== -->
+
             </section>
         </main>
     </div>
