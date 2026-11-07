@@ -1,6 +1,6 @@
-
 // ======================================================
 // JESÚS - PB-39: CAPACITACIÓN PRODUCT OWNER
+// OSMAR - PB-36: CAPACITACIÓN DESARROLLADOR
 // ======================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -12,11 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
         'desarrollador': 'Capacitación para Desarrollador'
     };
 
+    // Variable global para saber qué arreglo de láminas estamos usando
+    let laminasActuales = [];
+
     // ==================================================
     // LÁMINAS DE CAPACITACIÓN PRODUCT OWNER
     // ==================================================
-
-    const laminas = [
+    const laminasProductOwner = [
         {
             titulo: 'Conoce Scrument y entra a tu proyecto',
             descripcion: 'Desde Mis proyectos puedes consultar los proyectos en los que participas. Identifica el proyecto en el que tienes el rol Product Owner y selecciónalo para acceder.',
@@ -118,9 +120,80 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     // ==================================================
+    // OSMAR - LÁMINAS DE CAPACITACIÓN DESARROLLADOR
+    // ==================================================
+    const laminasDesarrollador = [
+        {
+            titulo: "Consultar descripciones en el Backlog",
+            descripcion: "Como Desarrollador, debes consultar el Backlog para entender qué requiere cada historia.",
+            pasos: [
+                "Ve a la pestaña 'Backlog'.",
+                "Localiza la sección 'Historias Actuales'.",
+                "Revisa la columna 'Descripción' para conocer los detalles y requerimientos de la tarea que debes realizar."
+            ],
+            imagen: "/img/capacitacion-DEV/cap-dev-1.png",
+            pie: "Sección de Historias Actuales en el Backlog."
+        },
+        {
+            titulo: "El Tablero Kanban",
+            descripcion: "Como Desarrollador, el Tablero Kanban es tu herramienta principal durante el Sprint.",
+            pasos: [
+                "En la pestaña 'Tablero Kanban', selecciona el Sprint actual.",
+                "Verás todas las historias distribuidas en cuatro columnas: Pendiente, En curso, En revision y Terminada."
+            ],
+            imagen: "/img/capacitacion-DEV/cap-dev-2.png", 
+            pie: "Vista general del Tablero Kanban."
+        },
+        {
+            titulo: "Actualizar estado de una historia",
+            descripcion: "Es vital mantener el tablero actualizado para que el Burndown Chart refleje el progreso real.",
+            pasos: [
+                "Ve a la pestaña 'Sprint Backlog'.",
+                "Busca la historia en la que vas a trabajar.",
+                "Cambia su estado de 'Pendiente' a 'En curso'."
+            ],
+            imagen: "/img/capacitacion-DEV/cap-dev-3.png",
+            pie: "Cambiando el estado de una historia."
+        },
+        {
+            titulo: "Entregar y subir evidencias",
+            descripcion: "Cuando terminas una historia, debes enviar la evidencia para que el Product Owner la apruebe.",
+            pasos: [
+                "Abre los detalles de tu historia terminada.",
+                "Adjunta los archivos, capturas o documentos correspondientes.",
+                "Cambia el estado de la historia."
+            ],
+            imagen: "/img/capacitacion-DEV/cap-dev-4.png",
+            pie: "Subiendo evidencias a una historia."
+        },
+        {
+            titulo: "Registrar horas de trabajo",
+            descripcion: "Debes documentar el tiempo exacto que dedicas a cada una de tus historias asignadas.",
+            pasos: [
+                "Ve a la pestaña 'Tiempos'.",
+                "En la sección 'Registrar horas', selecciona la historia en la que trabajaste.",
+                "Ingresa la Fecha de trabajo y la Duración en horas (hasta 2 decimales).",
+                "Presiona 'Registrar horas'."
+            ],
+            imagen: "/img/capacitacion-DEV/cap-dev-5.png",
+            pie: "Formulario para el registro de horas de trabajo."
+        },
+        {
+            titulo: "Revisar Avisos del equipo",
+            descripcion: "La comunicación oficial del proyecto se maneja a través de los Avisos.",
+            pasos: [
+                "Ve a la pestaña 'Avisos'.",
+                "Aquí podrás leer los mensajes publicados por el Scrum Master y el Product Owner.",
+                "Asegúrate de marcar los mensajes como leídos."
+            ],
+            imagen: "/img/capacitacion-DEV/cap-dev-6.png",
+            pie: "Consultando la sección de Avisos."
+        }
+    ];
+
+    // ==================================================
     // ELEMENTOS HTML
     // ==================================================
-
     const opciones = document.getElementById('cap-opciones');
     const detalle = document.getElementById('cap-detalle');
     const titulo = document.getElementById('cap-titulo-detalle');
@@ -144,7 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const salir = document.getElementById('cap-salir');
     const mensaje = document.getElementById('cap-mensaje');
 
-    // Comprobar que los elementos necesarios existen
     const elementos = [
         opciones, detalle, titulo, volver,
         espacio, contenido, imagen, pieImagen,
@@ -154,27 +226,23 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     if (elementos.some(elemento => !elemento)) {
-        console.error(
-            'PB-39: No se encontraron todos los elementos HTML de capacitación.'
-        );
+        console.error('Faltan elementos HTML de capacitación.');
         return;
     }
 
     // ==================================================
     // ESTADO DE LA CAPACITACIÓN
     // ==================================================
-
     let indice = 0;
     let registrando = false;
     let estadoFinalizacion = 'inicial';
+    let rolActivo = null; // Para saber qué rol se está guardando
 
     // ==================================================
     // MOSTRAR LÁMINA ACTUAL
     // ==================================================
-
     function mostrarLamina() {
-
-        const lamina = laminas[indice];
+        const lamina = laminasActuales[indice];
 
         imagen.src = lamina.imagen;
         imagen.alt = lamina.titulo;
@@ -183,41 +251,24 @@ document.addEventListener('DOMContentLoaded', () => {
         tituloLamina.textContent = lamina.titulo;
         descripcion.textContent = lamina.descripcion;
 
-        // Generar lista de instrucciones
         listaPasos.replaceChildren();
-
         lamina.pasos.forEach(paso => {
-
             const li = document.createElement('li');
             li.textContent = paso;
-
             listaPasos.appendChild(li);
-
         });
 
-        // Actualizar contador y progreso
-        contador.textContent =
-            `Imagen ${indice + 1} de ${laminas.length}`;
-
-        barra.max = laminas.length;
+        contador.textContent = `Imagen ${indice + 1} de ${laminasActuales.length}`;
+        barra.max = laminasActuales.length;
         barra.value = indice + 1;
 
-        // Controlar botones
         anterior.disabled = indice === 0;
+        siguiente.hidden = indice === laminasActuales.length - 1;
+        terminar.hidden = indice !== laminasActuales.length - 1;
+        salir.hidden = false;
 
-        siguiente.hidden =
-            indice === laminas.length - 1;
-
-        terminar.hidden =
-            indice !== laminas.length - 1;
-
-            salir.hidden = false;
-
-        // Restablecer mensaje
         mensaje.textContent = '';
-
         estadoFinalizacion = 'inicial';
-
         terminar.textContent = 'Terminar capacitación';
         terminar.disabled = false;
     }
@@ -225,227 +276,134 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==================================================
     // ABRIR Y CERRAR CAPACITACIONES
     // ==================================================
-
     function mostrarCapacitacion(rol, actualizarUrl = true) {
-
-        const valido = Object.prototype.hasOwnProperty.call(
-            capacitaciones,
-            rol
-        );
+        const valido = Object.prototype.hasOwnProperty.call(capacitaciones, rol);
+        rolActivo = rol;
 
         opciones.hidden = valido;
         detalle.hidden = !valido;
 
-        titulo.textContent = valido
-            ? capacitaciones[rol]
-            : '';
+        titulo.textContent = valido ? capacitaciones[rol] : '';
 
         if (valido) {
-
             const esProductOwner = rol === 'product-owner';
+            const esDesarrollador = rol === 'desarrollador';
 
-            espacio.hidden = esProductOwner;
-            contenido.hidden = !esProductOwner;
+            // Si es PO o Desarrollador, mostramos el contenido. Si es Scrum Master, mostramos el aviso "próximamente".
+            if (esProductOwner || esDesarrollador) {
+                espacio.hidden = true;
+                contenido.hidden = false;
 
-            if (esProductOwner) {
+                // Asignamos el arreglo correcto
+                laminasActuales = esProductOwner ? laminasProductOwner : laminasDesarrollador;
+                
                 indice = 0;
                 mostrarLamina();
+            } else {
+                espacio.hidden = false;
+                contenido.hidden = true;
             }
 
             titulo.focus();
-
         } else {
-
             espacio.hidden = false;
             contenido.hidden = true;
-
         }
 
         if (actualizarUrl) {
-
-            const destino = valido
-                ? `/capacitacion?rol=${encodeURIComponent(rol)}`
-                : '/capacitacion';
-
-            history.pushState(
-                { rol: valido ? rol : null },
-                '',
-                destino
-            );
+            const destino = valido ? `/capacitacion?rol=${encodeURIComponent(rol)}` : '/capacitacion';
+            history.pushState({ rol: valido ? rol : null }, '', destino);
         }
     }
 
     // ==================================================
-    // FINALIZAR CAPACITACIÓN
-    // CONEXIÓN CON FRANCISCO - PB-40
+    // FINALIZAR CAPACITACIÓN Y REGISTRO BD
     // ==================================================
-
     async function finalizarCapacitacion() {
-
         if (registrando) return;
 
-        // Después del intento de registro, el botón permite salir.
         if (estadoFinalizacion !== 'inicial') {
             mostrarCapacitacion(null);
             return;
         }
 
         registrando = true;
-
         terminar.disabled = true;
+        mensaje.textContent = 'Registrando la capacitación...';
 
-        mensaje.textContent =
-            'Registrando la capacitación...';
+        // Definimos la variable a enviar según el rol
+        const tipoRegistro = rolActivo === 'product-owner' ? 'PRODUCT_OWNER' : 'DESARROLLADOR';
 
         try {
-
-            const respuesta = await fetch(
-                '/capacitaciones/completadas',
-                {
-                    method: 'POST',
-
-                    credentials: 'same-origin',
-
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-
-                    body: JSON.stringify({
-                        tipoCapacitacion: 'PRODUCT_OWNER'
-                    })
-                }
-            );
+            const respuesta = await fetch('/capacitaciones/completadas', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ tipoCapacitacion: tipoRegistro })
+            });
 
             const resultado = await respuesta.json().catch(() => ({}));
 
             if (!respuesta.ok) {
-
-                throw new Error(
-                    resultado.mensaje ||
-                    'No se pudo registrar la capacitación.'
-                );
-
+                throw new Error(resultado.mensaje || 'No se pudo registrar la capacitación.');
             }
 
-            // El servidor confirmó el registro
             estadoFinalizacion = 'registrado';
-
-            mensaje.textContent =
-                'Capacitación completada y registrada correctamente.';
-
+            mensaje.textContent = 'Capacitación completada y registrada correctamente.';
             terminar.textContent = 'Salir';
             salir.hidden = true;
 
-            window.dispatchEvent(
-                new CustomEvent(
-                    'scrument:capacitacion-completada',
-                    {
-                        detail: {
-                            tipoCapacitacion: 'PRODUCT_OWNER'
-                        }
-                    }
-                )
-            );
+            window.dispatchEvent(new CustomEvent('scrument:capacitacion-completada', {
+                detail: { tipoCapacitacion: tipoRegistro }
+            }));
 
         } catch (error) {
-
-            // No afirmar que se guardó si el servidor no lo confirmó
             estadoFinalizacion = 'pendiente';
-
             mensaje.textContent = 'Has terminado la capacitación.';
-
             terminar.textContent = 'Salir';
             salir.hidden = true;
-
-            console.warn(
-                'Registro de capacitación pendiente:',
-                error.message
-            );
-
+            console.warn('Registro de capacitación pendiente:', error.message);
         } finally {
-
             registrando = false;
             terminar.disabled = false;
-
         }
     }
 
     // ==================================================
-    // EVENTOS DE NAVEGACIÓN
+    // EVENTOS
     // ==================================================
-
-    // Seleccionar Scrum Master, Product Owner o Desarrollador
     document.querySelectorAll('[data-cap-rol]').forEach(tarjeta => {
-
         tarjeta.addEventListener('click', () => {
-
-            mostrarCapacitacion(
-                tarjeta.dataset.capRol
-            );
-
+            mostrarCapacitacion(tarjeta.dataset.capRol);
         });
-
     });
 
-    // Regresar a las opciones
-    volver.addEventListener('click', () => {
-        mostrarCapacitacion(null);
-    });
+    volver.addEventListener('click', () => mostrarCapacitacion(null));
+    salir.addEventListener('click', () => mostrarCapacitacion(null));
 
-    // Salir de la capacitación
-    salir.addEventListener('click', () => {
-        mostrarCapacitacion(null);
-    });
-
-    // Lámina anterior
     anterior.addEventListener('click', () => {
-
         if (indice > 0) {
-
             indice--;
             mostrarLamina();
-
         }
-
     });
 
-    // Lámina siguiente
     siguiente.addEventListener('click', () => {
-
-        if (indice < laminas.length - 1) {
-
+        if (indice < laminasActuales.length - 1) {
             indice++;
             mostrarLamina();
-
         }
-
     });
 
-    // Terminar capacitación
-    terminar.addEventListener(
-        'click',
-        finalizarCapacitacion
-    );
+    terminar.addEventListener('click', finalizarCapacitacion);
 
-    // Navegación del navegador
     window.addEventListener('popstate', () => {
-
-        mostrarCapacitacion(
-            new URLSearchParams(location.search).get('rol'),
-            false
-        );
-
+        mostrarCapacitacion(new URLSearchParams(location.search).get('rol'), false);
     });
 
-    // Recuperar rol si se accede directamente por URL
-    mostrarCapacitacion(
-        new URLSearchParams(location.search).get('rol'),
-        false
-    );
+    mostrarCapacitacion(new URLSearchParams(location.search).get('rol'), false);
 
 });
-
-// ======================================================
-// FIN JESÚS - PB-39
-// ======================================================
