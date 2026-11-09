@@ -10,6 +10,7 @@ const productOwnerRutas = require('./src/rutas/productOwnerRutas');
 const desarrolladorRutas = require('./src/rutas/desarrolladorRutas');
 const backlogRutas = require('./src/rutas/backlogRutas');
 const notificacionRutas = require('./src/rutas/notificacionRutas');
+const capacitacionRutas = require('./src/rutas/capacitacionRutas');
 const burndownDAO = require('./src/dao/burndownDAO');
 const { verificarSesion } = require('./src/middlewares/autenticacion');
 const app = express();
@@ -115,6 +116,8 @@ app.get('/api/usuario-actual', (req, res) => {
         res.status(401).json({ error: 'No hay sesión activa' });
     }
 });
+
+app.use('/capacitaciones', capacitacionRutas);
 
 app.get('/capacitacion', verificarSesion, (req, res) => {
     res.sendFile(
