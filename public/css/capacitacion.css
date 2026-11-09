@@ -391,3 +391,25 @@
 }
 
 /* ===== FIN PB-39 ===== */
+
+
+/* Francisco: PB-41, número de capacitaciones completadas por usuario. */
+.cap-veces {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: #e8f0ff;
+    color: #17365d;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#cap-totales-mensaje {
+    margin-bottom: 16px;
+    color: #9a3c3c;
+    font-size: 14px;
+}
+
+#cap-totales-mensaje:empty {
+    display: none;
+}

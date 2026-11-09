@@ -333,13 +333,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const terminar = document.getElementById('cap-terminar');
     const salir = document.getElementById('cap-salir');
     const mensaje = document.getElementById('cap-mensaje');
+    const mensajeTotales = document.getElementById('cap-totales-mensaje');
 
     const elementos = [
         opciones, detalle, titulo, volver,
         espacio, contenido, imagen, pieImagen,
         tituloLamina, descripcion, listaPasos,
         contador, barra, anterior, siguiente,
-        terminar, salir, mensaje
+        terminar, salir, mensaje, mensajeTotales
     ];
 
     if (elementos.some(elemento => !elemento)) {
@@ -348,22 +349,85 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==================================================
-    // ESTADO DE LA CAPACITACIÓN
+    // FRANCISCO: PB-40 Y PB-41
     // ==================================================
     let indice = 0;
     let registrando = false;
     let estadoFinalizacion = 'inicial';
-    let rolActivo = null; // Para saber qué rol se está guardando
+    let rolActivo = null;
+    let idIntento = null;
+    let versionConsulta = 0;
 
-    // ==================================================
-    // MOSTRAR LÁMINA ACTUAL
-    // ==================================================
+    // Se conserva durante los reintentos de una misma capacitación.
+    // Al abrir otra capacitación se genera uno nuevo y puede contarse otra vez.
+    function crearIdIntento() {
+        return Array.from(
+            crypto.getRandomValues(new Uint8Array(16)),
+            numero => numero.toString(16).padStart(2, '0')
+        ).join('');
+    }
+
+    async function cargarTotales() {
+        const version = ++versionConsulta;
+
+        try {
+            const respuesta = await fetch('/capacitaciones/totales', {
+                credentials: 'same-origin',
+                cache: 'no-store',
+                headers: { 'Accept': 'application/json' }
+            });
+            const resultado = await respuesta.json();
+
+            if (!respuesta.ok) {
+                throw new Error(resultado.mensaje || 'No se pudieron consultar tus capacitaciones.');
+            }
+
+            if (version !== versionConsulta) return;
+
+            const etiquetas = document.querySelectorAll('[data-cap-total]');
+            // Validar antes de mostrar evita confundir un error con un total de cero.
+            etiquetas.forEach(etiqueta => {
+                const total = resultado.totales?.[etiqueta.dataset.capTotal];
+                if (!Number.isSafeInteger(total) || total < 0) {
+                    throw new Error('No se pudieron consultar tus capacitaciones.');
+                }
+            });
+
+            etiquetas.forEach(etiqueta => {
+                const total = resultado.totales[etiqueta.dataset.capTotal];
+                etiqueta.textContent = `Completada ${total} ${total === 1 ? 'vez' : 'veces'}`;
+            });
+            mensajeTotales.textContent = '';
+        } catch (error) {
+            if (version !== versionConsulta) return;
+            document.querySelectorAll('[data-cap-total]').forEach(etiqueta => {
+                etiqueta.textContent = 'Conteo no disponible';
+            });
+            mensajeTotales.textContent = 'No se pudieron cargar tus totales. Recarga la página para reintentar.';
+        }
+    }
+
+    function actualizarControles() {
+        const registrada = estadoFinalizacion === 'registrado';
+        const ultima = indice === laminasActuales.length - 1;
+
+        anterior.disabled = registrando || indice === 0 || registrada;
+        siguiente.hidden = ultima;
+        siguiente.disabled = registrando;
+        terminar.hidden = !ultima;
+        terminar.disabled = registrando;
+        terminar.textContent = registrando
+            ? 'Guardando...'
+            : registrada ? 'Salir' : 'Terminar capacitación';
+        volver.disabled = registrando;
+        salir.disabled = registrando;
+        salir.hidden = registrada;
+    }
+
     function mostrarLamina() {
         const lamina = laminasActuales[indice];
-
         imagen.src = lamina.imagen;
         imagen.alt = lamina.titulo;
-
         pieImagen.textContent = lamina.pie;
         tituloLamina.textContent = lamina.titulo;
         descripcion.textContent = lamina.descripcion;
@@ -378,40 +442,29 @@ document.addEventListener('DOMContentLoaded', () => {
         contador.textContent = `Imagen ${indice + 1} de ${laminasActuales.length}`;
         barra.max = laminasActuales.length;
         barra.value = indice + 1;
-
-        anterior.disabled = indice === 0;
-        siguiente.hidden = indice === laminasActuales.length - 1;
-        terminar.hidden = indice !== laminasActuales.length - 1;
-        salir.hidden = false;
-
         mensaje.textContent = '';
-        estadoFinalizacion = 'inicial';
-        terminar.textContent = 'Terminar capacitación';
-        terminar.disabled = false;
+        actualizarControles();
     }
 
-    // ==================================================
-    // ABRIR Y CERRAR CAPACITACIONES
-    // ==================================================
     function mostrarCapacitacion(rol, actualizarUrl = true) {
+        if (registrando) return;
+
         const valido = Object.prototype.hasOwnProperty.call(capacitaciones, rol);
-        rolActivo = rol;
+        rolActivo = valido ? rol : null;
+        estadoFinalizacion = 'inicial';
+        idIntento = valido ? crearIdIntento() : null;
+        indice = 0;
 
         opciones.hidden = valido;
         detalle.hidden = !valido;
-
         titulo.textContent = valido ? capacitaciones[rol] : '';
+        mensaje.textContent = '';
 
         if (valido) {
             espacio.hidden = true;
             contenido.hidden = false;
-
-            // Asignamos el arreglo correcto
             laminasActuales = laminasPorRol[rol];
-
-            indice = 0;
             mostrarLamina();
-
             titulo.focus();
         } else {
             espacio.hidden = false;
@@ -420,27 +473,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (actualizarUrl) {
             const destino = valido ? `/capacitacion?rol=${encodeURIComponent(rol)}` : '/capacitacion';
-            history.pushState({ rol: valido ? rol : null }, '', destino);
+            history.pushState({ rol: rolActivo }, '', destino);
         }
     }
 
-    // ==================================================
-    // FINALIZAR CAPACITACIÓN Y REGISTRO BD
-    // ==================================================
     async function finalizarCapacitacion() {
         if (registrando) return;
 
-        if (estadoFinalizacion !== 'inicial') {
+        if (estadoFinalizacion === 'registrado') {
             mostrarCapacitacion(null);
             return;
         }
 
-        registrando = true;
-        terminar.disabled = true;
-        mensaje.textContent = 'Registrando la capacitación...';
-
-        // Definimos la variable a enviar según el rol
         const tipoRegistro = tiposRegistro[rolActivo];
+        if (!tipoRegistro || indice !== laminasActuales.length - 1) return;
+
+        registrando = true;
+        actualizarControles();
+        mensaje.textContent = 'Registrando la capacitación...';
 
         try {
             const respuesta = await fetch('/capacitaciones/completadas', {
@@ -450,39 +500,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ tipoCapacitacion: tipoRegistro })
+                body: JSON.stringify({
+                    tipoCapacitacion: tipoRegistro,
+                    idIntento
+                })
             });
-
             const resultado = await respuesta.json().catch(() => ({}));
 
-            if (!respuesta.ok) {
-                throw new Error(resultado.mensaje || 'No se pudo registrar la capacitación.');
+            if (!respuesta.ok || resultado.registrada !== true) {
+                throw new Error(resultado.mensaje || 'No se pudo confirmar el registro.');
             }
 
             estadoFinalizacion = 'registrado';
             mensaje.textContent = 'Capacitación completada y registrada correctamente.';
-            terminar.textContent = 'Salir';
-            salir.hidden = true;
+            cargarTotales();
 
             window.dispatchEvent(new CustomEvent('scrument:capacitacion-completada', {
                 detail: { tipoCapacitacion: tipoRegistro }
             }));
-
         } catch (error) {
-            estadoFinalizacion = 'pendiente';
-            mensaje.textContent = 'Has terminado la capacitación.';
-            terminar.textContent = 'Salir';
-            salir.hidden = true;
-            console.warn('Registro de capacitación pendiente:', error.message);
+            // Permite reintentar sin duplicar un registro cuya respuesta se haya perdido.
+            mensaje.textContent = `${error.message} Presiona Terminar capacitación para reintentar.`;
         } finally {
             registrando = false;
-            terminar.disabled = false;
+            actualizarControles();
         }
     }
 
-    // ==================================================
-    // EVENTOS
-    // ==================================================
     document.querySelectorAll('[data-cap-rol]').forEach(tarjeta => {
         tarjeta.addEventListener('click', () => {
             mostrarCapacitacion(tarjeta.dataset.capRol);
@@ -493,14 +537,14 @@ document.addEventListener('DOMContentLoaded', () => {
     salir.addEventListener('click', () => mostrarCapacitacion(null));
 
     anterior.addEventListener('click', () => {
-        if (indice > 0) {
+        if (!registrando && estadoFinalizacion !== 'registrado' && indice > 0) {
             indice--;
             mostrarLamina();
         }
     });
 
     siguiente.addEventListener('click', () => {
-        if (indice < laminasActuales.length - 1) {
+        if (!registrando && estadoFinalizacion !== 'registrado' && indice < laminasActuales.length - 1) {
             indice++;
             mostrarLamina();
         }
@@ -513,5 +557,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     mostrarCapacitacion(new URLSearchParams(location.search).get('rol'), false);
-
+    cargarTotales();
 });
