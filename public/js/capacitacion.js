@@ -1,6 +1,7 @@
 // ======================================================
 // JESÚS - PB-39: CAPACITACIÓN PRODUCT OWNER
 // OSMAR - PB-36: CAPACITACIÓN DESARROLLADOR
+// CAPACITACIÓN SCRUM MASTER
 // ======================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -192,6 +193,122 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     // ==================================================
+    // LÁMINAS DE CAPACITACIÓN SCRUM MASTER
+    // ==================================================
+    const laminasScrumMaster = [
+        {
+            titulo: 'Crea un nuevo proyecto',
+            descripcion: 'Desde Mis proyectos puedes registrar un proyecto nuevo. Quien lo crea queda automáticamente como su Scrum Master.',
+            pie: 'Botón Nuevo proyecto en la pantalla Mis proyectos.',
+            imagen: '/img/capacitacion-SM/01-nuevo-proyecto.png',
+            pasos: [
+                'Entra a Mis proyectos.',
+                'Presiona el botón Nuevo proyecto.'
+            ]
+        },
+        {
+            titulo: 'Registra los datos del proyecto',
+            descripcion: 'El formulario solicita la información básica del proyecto. Al guardarlo aparecerá en tu lista de proyectos con el rol Scrum Master.',
+            pie: 'Formulario Nuevo proyecto.',
+            imagen: '/img/capacitacion-SM/02-formulario-proyecto.png',
+            pasos: [
+                'Escribe el Nombre del proyecto.',
+                'Describe el Objetivo que se busca alcanzar.',
+                'Presiona Guardar proyecto.',
+                'Selecciona el proyecto en Mis proyectos para abrirlo.'
+            ]
+        },
+        {
+            titulo: 'Invita usuarios al proyecto',
+            descripcion: 'En la pestaña Menú principal, dentro de la sección Integrantes, puedes invitar a las cuentas registradas en Scrument para formar tu equipo.',
+            pie: 'Formulario para invitar a un integrante.',
+            imagen: '/img/capacitacion-SM/03-invitar-integrante.png',
+            pasos: [
+                'Presiona + Invitar integrante.',
+                'Busca a la persona por su nombre o usuario.',
+                'Selecciónala en la lista de usuarios.'
+            ]
+        },
+        {
+            titulo: 'Asigna el rol del integrante',
+            descripcion: 'Cada invitación indica el rol que tendrá la persona dentro del proyecto. El rol solo aplica a este proyecto.',
+            pie: 'Selector Rol en este proyecto y botón Enviar invitación.',
+            imagen: '/img/capacitacion-SM/04-asignar-rol.png',
+            pasos: [
+                'En Rol en este proyecto, selecciona Product Owner o Desarrollador.',
+                'Presiona Enviar invitación.'
+            ]
+        },
+        {
+            titulo: 'Da seguimiento a las invitaciones',
+            descripcion: 'El usuario invitado tendrá acceso al proyecto hasta que acepte la invitación desde su pantalla Mis proyectos.',
+            pie: 'Sección Invitaciones pendientes.',
+            imagen: '/img/capacitacion-SM/05-invitacion-pendiente.png',
+            pasos: [
+                'Localiza la sección Invitaciones pendientes.',
+                'Comprueba el usuario invitado y el rol que le asignaste.',
+                'Cuando acepte la invitación, aparecerá en la lista de Integrantes.'
+            ]
+        },
+        {
+            titulo: 'Configura un Sprint',
+            descripcion: 'Los Sprints son las iteraciones del proyecto y se administran en la sección Sprints de la pestaña Menú principal. Cada Sprint puede durar como máximo 31 días.',
+            pie: 'Botón Configurar Sprint en la sección Sprints.',
+            imagen: '/img/capacitacion-SM/06-configurar-sprint.png',
+            pasos: [
+                'Abre la pestaña Menú principal.',
+                'Localiza la sección Sprints.',
+                'Presiona Configurar Sprint.'
+            ]
+        },
+        {
+            titulo: 'Define los datos del Sprint',
+            descripcion: 'Cada Sprint necesita un objetivo y un periodo de trabajo. La duración se calcula automáticamente a partir de las fechas.',
+            pie: 'Formulario para configurar un Sprint.',
+            imagen: '/img/capacitacion-SM/07-formulario-sprint.png',
+            pasos: [
+                'Escribe el Objetivo del Sprint.',
+                'Selecciona la Fecha de inicio y la Fecha de fin.',
+                'Comprueba que la Duración no supere los 31 días.',
+                'Presiona Guardar Sprint.'
+            ]
+        },
+        {
+            titulo: 'Abre los avisos del proyecto',
+            descripcion: 'La pestaña Avisos permite comunicar información importante a los integrantes del proyecto.',
+            pie: 'Pestaña Avisos y botón Nuevo aviso.',
+            imagen: '/img/capacitacion-SM/08-abrir-avisos.png',
+            pasos: [
+                'Abre la pestaña Avisos.',
+                'Presiona + Nuevo aviso.'
+            ]
+        },
+        {
+            titulo: 'Publica un aviso para el equipo',
+            descripcion: 'Describe el aviso, cambio o requisito que necesita conocer el equipo. Tus publicaciones aparecen en la columna Scrum Master.',
+            pie: 'Formulario para publicar un aviso.',
+            imagen: '/img/capacitacion-SM/09-formulario-aviso.png',
+            pasos: [
+                'Escribe el Título del aviso.',
+                'Redacta el Contenido del aviso (hasta 5000 caracteres).',
+                'Presiona Publicar aviso.'
+            ]
+        }
+    ];
+
+    const laminasPorRol = {
+        'scrum-master': laminasScrumMaster,
+        'product-owner': laminasProductOwner,
+        'desarrollador': laminasDesarrollador
+    };
+
+    const tiposRegistro = {
+        'scrum-master': 'SCRUM_MASTER',
+        'product-owner': 'PRODUCT_OWNER',
+        'desarrollador': 'DESARROLLADOR'
+    };
+
+    // ==================================================
     // ELEMENTOS HTML
     // ==================================================
     const opciones = document.getElementById('cap-opciones');
@@ -286,23 +403,14 @@ document.addEventListener('DOMContentLoaded', () => {
         titulo.textContent = valido ? capacitaciones[rol] : '';
 
         if (valido) {
-            const esProductOwner = rol === 'product-owner';
-            const esDesarrollador = rol === 'desarrollador';
+            espacio.hidden = true;
+            contenido.hidden = false;
 
-            // Si es PO o Desarrollador, mostramos el contenido. Si es Scrum Master, mostramos el aviso "próximamente".
-            if (esProductOwner || esDesarrollador) {
-                espacio.hidden = true;
-                contenido.hidden = false;
+            // Asignamos el arreglo correcto
+            laminasActuales = laminasPorRol[rol];
 
-                // Asignamos el arreglo correcto
-                laminasActuales = esProductOwner ? laminasProductOwner : laminasDesarrollador;
-                
-                indice = 0;
-                mostrarLamina();
-            } else {
-                espacio.hidden = false;
-                contenido.hidden = true;
-            }
+            indice = 0;
+            mostrarLamina();
 
             titulo.focus();
         } else {
@@ -332,7 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mensaje.textContent = 'Registrando la capacitación...';
 
         // Definimos la variable a enviar según el rol
-        const tipoRegistro = rolActivo === 'product-owner' ? 'PRODUCT_OWNER' : 'DESARROLLADOR';
+        const tipoRegistro = tiposRegistro[rolActivo];
 
         try {
             const respuesta = await fetch('/capacitaciones/completadas', {
