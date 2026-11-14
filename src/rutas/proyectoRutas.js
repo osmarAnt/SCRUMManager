@@ -28,6 +28,9 @@ const foroControlador = require('../controladores/foroControlador');
 // PB-32 y PB-33: registro de horas por historia y resumen de tiempo.
 const tiempoControlador = require('../controladores/tiempoControlador');
 
+// Francisco: PB-45 - Contenido de Planning Poker.
+const planningControlador = require('../controladores/planningControlador');
+
 
 // =======================================
 // PROYECTOS
@@ -228,6 +231,10 @@ router.put(
     verificarSesion,
     mensajeControlador.marcarMensajeLeido
 );
+
+
+// PB-45: CONSULTAR PLANNING POKER (todos los integrantes activos del proyecto).
+router.get('/:id/planning', verificarSesion, planningControlador.consultarPlanning);
 
 
 // PB-30: FORO DEL PROYECTO (todos los roles)
