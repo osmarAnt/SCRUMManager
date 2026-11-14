@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="/css/burndown.css">
     <link rel="stylesheet" href="/css/kanban.css">
     <link rel="stylesheet" href="/css/tiempos.css">
+    <link rel="stylesheet" href="/css/planning.css">
 
     <!-- CSS DEL BUZÓN DE NOTIFICACIONES -->
     <link rel="stylesheet" href="/css/notificaciones.css">
@@ -28,6 +29,7 @@
     <script src="/js/foro.js" defer></script>
     <script src="/js/kanban.js" defer></script>
     <script src="/js/tiempos.js" defer></script>
+    <script src="/js/planning.js" defer></script>
 </head>
 <body>
     <div class="aplicacion">
@@ -815,7 +817,7 @@
 
                 </div>
 
-                <!-- PLANNING POKER -->
+                <!-- FRANCISCO: PB-45 - PLANNING POKER -->
                 <div
                     class="panel-pestana"
                     role="tabpanel"
@@ -823,19 +825,25 @@
                     aria-labelledby="pestana-planning"
                     hidden
                 >
-                    <section
-                        class="estado-lista apartado-vacio"
-                        aria-labelledby="titulo-panel-planning"
-                    >
-
-                        <div class="simbolo-estado">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="6" width="18" height="15" rx="2"/><path d="M8 6V3h8v3M3 12h18M10 12v3h4v-3"/></svg>
+                    <section class="bloque" aria-labelledby="titulo-panel-planning">
+                        <div class="cabecera-bloque">
+                            <div>
+                                <h2 id="titulo-panel-planning">Planning Poker</h2>
+                                <p class="subtitulo">
+                                    Consulta las historias del proyecto organizadas por Sprint,
+                                    con su responsable, puntos de historia y horas estimadas.
+                                </p>
+                            </div>
                         </div>
 
-                        <h2 id="titulo-panel-planning">Planning Poker</h2>
-
-                        <p>Este apartado todavía está vacío.</p>
-
+                        <p id="planning-resumen" class="planning-resumen" hidden></p>
+                        <p id="planning-estado" class="planning-estado" role="status" aria-live="polite">
+                            Cargando historias…
+                        </p>
+                        <button id="planning-reintentar" type="button" class="boton-secundario" hidden>
+                            Reintentar
+                        </button>
+                        <div id="planning-grupos" aria-busy="false"></div>
                     </section>
                 </div>
 
