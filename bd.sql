@@ -675,3 +675,23 @@ CREATE TABLE IF NOT EXISTS capacitaciones_completadas (
         ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Francisco: Sprint 5, PB-45 - Contenido de Planning Poker.
+SET @pb45_existe_horas = (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'product_backlog'
+      AND COLUMN_NAME = 'horas_estimadas'
+);
+
+SET @pb45_sql_horas = IF(
+    @pb45_existe_horas = 0,
+    'ALTER TABLE product_backlog ADD COLUMN horas_estimadas DECIMAL(7,2) NULL DEFAULT NULL AFTER puntos',
+    'SELECT ''horas_estimadas ya existe; se conserva sin cambios.'' AS mensaje'
+);
+
+PREPARE pb45_sentencia_horas FROM @pb45_sql_horas;
+EXECUTE pb45_sentencia_horas;
+DEALLOCATE PREPARE pb45_sentencia_horas;
+
+SHOW COLUMNS FROM product_backlog LIKE 'horas_estimadas';
