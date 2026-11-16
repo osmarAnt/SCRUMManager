@@ -31,6 +31,8 @@ const tiempoControlador = require('../controladores/tiempoControlador');
 // Francisco: PB-45 - Contenido de Planning Poker.
 const planningControlador = require('../controladores/planningControlador');
 
+// JESÚS - PB-34: RETROSPECTIVA DEL SPRINT
+const retrospectivaControlador = require('../controladores/retrospectivaControlador');
 
 // =======================================
 // PROYECTOS
@@ -351,6 +353,30 @@ router.get(
     verificarSesion,
     burndownControlador.consultarGeneral
 );
+
+
+
+// =======================================
+// JESÚS - PB-34: RETROSPECTIVA DEL SPRINT
+// Cualquier integrante activo puede consultar y registrar.
+// =======================================
+
+router.get(
+    '/:id/retrospectivas',
+    verificarSesion,
+    retrospectivaControlador.listar
+);
+
+router.post(
+    '/:id/retrospectivas',
+    verificarSesion,
+    retrospectivaControlador.guardar
+);
+
+
+
+
+
 
 
 // =======================================

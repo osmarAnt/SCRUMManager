@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="/css/kanban.css">
     <link rel="stylesheet" href="/css/tiempos.css">
     <link rel="stylesheet" href="/css/planning.css">
+    <link rel="stylesheet" href="/css/retrospectiva.css">
 
     <!-- CSS DEL BUZÓN DE NOTIFICACIONES -->
     <link rel="stylesheet" href="/css/notificaciones.css">
@@ -30,6 +31,7 @@
     <script src="/js/kanban.js" defer></script>
     <script src="/js/tiempos.js" defer></script>
     <script src="/js/planning.js" defer></script>
+    <script src="/js/retrospectiva.js" defer></script>
 </head>
 <body>
     <div class="aplicacion">
@@ -236,6 +238,20 @@
                     </button>
 
                     <button type="button" role="tab" id="pestana-foro" data-panel="foro" aria-controls="panel-foro" aria-selected="false" tabindex="-1">Foro</button>
+                   <button
+                        type="button"
+                        role="tab"
+                        id="pestana-retrospectiva"
+                        data-panel="retrospectiva"
+                        aria-controls="panel-retrospectiva"
+                        aria-selected="false"
+                        tabindex="-1"
+                    >
+                        Retrospectiva
+                    </button>
+
+
+
                 </div>
 
                 <!-- MENÚ PRINCIPAL -->
@@ -1601,6 +1617,114 @@
 
                     </section>
 
+                </div>
+
+
+                <!-- PB-34: RETROSPECTIVA DEL SPRINT -->
+                <div
+                    class="panel-pestana"
+                    role="tabpanel"
+                    id="panel-retrospectiva"
+                    aria-labelledby="pestana-retrospectiva"
+                    hidden
+                >
+                    <section class="bloque" aria-labelledby="titulo-retrospectiva">
+                        <div class="cabecera-bloque">
+                            <div>
+                                <h2 id="titulo-retrospectiva">Retrospectiva del Sprint</h2>
+                                <p class="subtitulo">
+                                    Registra los aciertos, los aspectos por mejorar y las acciones acordadas.
+                                </p>
+                            </div>
+                        </div>
+
+                        <p
+                            id="retrospectiva-estado"
+                            class="retrospectiva-estado"
+                            role="status"
+                            aria-live="polite"
+                        >
+                            Selecciona un Sprint para comenzar.
+                        </p>
+
+                        <form
+                            id="retrospectiva-formulario"
+                            class="formulario"
+                            method="post"
+                            novalidate
+                        >
+                            <label for="retrospectiva-sprint">Seleccionar Sprint</label>
+                            <select id="retrospectiva-sprint" name="id_sprint" required>
+                                <option value="">Selecciona un Sprint</option>
+                            </select>
+
+                            <label for="retrospectiva-aciertos">Aciertos: ¿qué funcionó bien?</label>
+                            <textarea
+                                id="retrospectiva-aciertos"
+                                name="aciertos"
+                                rows="4"
+                                maxlength="3000"
+                                placeholder="Describe lo que funcionó bien durante el Sprint..."
+                                required
+                            ></textarea>
+
+                            <label for="retrospectiva-mejoras">Aspectos por mejorar</label>
+                            <textarea
+                                id="retrospectiva-mejoras"
+                                name="aspectos_mejorar"
+                                rows="4"
+                                maxlength="3000"
+                                placeholder="Describe qué se puede mejorar..."
+                                required
+                            ></textarea>
+
+                            <label for="retrospectiva-acciones">Acciones acordadas</label>
+                            <textarea
+                                id="retrospectiva-acciones"
+                                name="acciones_acordadas"
+                                rows="4"
+                                maxlength="3000"
+                                placeholder="Escribe los acuerdos y acciones para el siguiente Sprint..."
+                                required
+                            ></textarea>
+
+                            <p class="retrospectiva-ayuda">
+                                Cada integrante puede registrar una aportación por Sprint.
+                                Si vuelve a guardar, se actualizará su registro.
+                            </p>
+
+                            <p
+                                id="retrospectiva-error"
+                                class="mensaje-error"
+                                role="alert"
+                                aria-live="polite"
+                            ></p>
+
+                            <div class="acciones-formulario">
+                                <button id="retrospectiva-guardar" type="submit">
+                                    Guardar retrospectiva
+                                </button>
+                            </div>
+                        </form>
+
+                        <p
+                            id="retrospectiva-confirmacion"
+                            class="mensaje-confirmacion"
+                            role="status"
+                            hidden
+                        ></p>
+
+                        <section
+                            class="retrospectiva-listado"
+                            aria-labelledby="titulo-lista-retrospectivas"
+                        >
+                            <h3 id="titulo-lista-retrospectivas">Retrospectivas registradas</h3>
+                            <div id="retrospectiva-lista"></div>
+                            <p id="retrospectiva-vacia" class="ayuda-campo" hidden>
+                                Todavía no hay aportaciones registradas.
+                            </p>
+                        </section>
+                    </section>
                 </div>
 
             </div>
