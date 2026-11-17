@@ -1,0 +1,139 @@
+/* ---- Reuniones (PB-42) ---- */
+.cabecera-reuniones {
+    flex-wrap: wrap;
+}
+
+.acciones-reuniones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#form-reunion {
+    margin: 0 0 20px;
+    padding: 0 0 20px;
+    border-bottom: 1px solid var(--borde);
+}
+
+.fila-reunion {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 18px;
+}
+
+.estado-reuniones {
+    margin: 20px 0 0;
+    color: var(--texto-secundario);
+    font-size: 13px;
+}
+
+.estado-reuniones[data-tipo="error"] {
+    color: #b42318;
+}
+
+.grupo-reuniones {
+    margin-top: 22px;
+}
+
+.titulo-grupo-reuniones {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--borde);
+    font-size: 16px;
+}
+
+.lista-reuniones {
+    display: grid;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.reunion {
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid var(--borde);
+    border-left: 4px solid var(--azul);
+    border-radius: 8px;
+    background: var(--blanco);
+}
+
+.reunion-pasada {
+    border-left-color: var(--borde);
+    background: #f8f9fb;
+}
+
+.cabecera-reunion {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.titulo-reunion {
+    min-width: 0;
+    margin: 0 0 8px;
+    font-size: 17px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.etiqueta-modalidad {
+    flex-shrink: 0;
+    padding: 3px 10px;
+    border-radius: 5px;
+    background: var(--azul-claro);
+    color: var(--azul);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.etiqueta-modalidad[data-modalidad="Presencial"] {
+    background: #e4f5e9;
+    color: #176534;
+}
+
+.fecha-reunion {
+    display: block;
+    color: var(--azul);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.reunion-pasada .fecha-reunion {
+    color: var(--texto-secundario);
+}
+
+.lugar-reunion {
+    margin: 10px 0 0;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.lugar-reunion a {
+    color: var(--azul);
+}
+
+.descripcion-reunion {
+    margin: 14px 0 0;
+    color: var(--texto);
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.autor-reunion {
+    margin: 14px 0 0;
+    color: var(--texto-secundario);
+    font-size: 12px;
+}
+
+@media (max-width: 640px) {
+    .fila-reunion {
+        grid-template-columns: 1fr;
+    }
+}
