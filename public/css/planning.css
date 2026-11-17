@@ -110,3 +110,104 @@
     color: var(--texto-secundario);
     font-weight: 400;
 }
+
+/* PB-46: apartado para que el Scrum Master asigne horas estimadas a cada historia. */
+.planning-tabla-estimar {
+    min-width: 780px;
+}
+
+.planning-tabla-estimar thead th:first-child {
+    width: 30%;
+}
+
+.planning-tabla-estimar thead th:nth-child(2) {
+    width: 19%;
+}
+
+.planning-tabla-estimar thead th:nth-child(3) {
+    width: 11%;
+}
+
+.planning-tabla-estimar thead th:nth-child(4) {
+    width: 13%;
+}
+
+.planning-celda-estimar {
+    text-align: right;
+}
+
+.planning-estimar {
+    margin: 0;
+}
+
+.planning-fila-horas {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.planning-campo-horas {
+    width: 78px;
+    min-height: 34px;
+    margin: 0;
+    padding: 6px 8px;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    font: inherit;
+    font-size: 14px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.planning-campo-horas:focus-visible {
+    outline: 3px solid #b3d4ff;
+    outline-offset: 1px;
+}
+
+.planning-sufijo {
+    color: var(--texto-secundario);
+    font-size: 13px;
+}
+
+.planning-boton-horas {
+    width: auto;
+    min-height: 34px;
+    margin: 0;
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+.planning-boton-horas:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.planning-mensaje-horas {
+    display: block;
+    min-height: 0;
+    margin-top: 4px;
+    color: var(--texto-secundario);
+    font-size: 12px;
+    text-align: right;
+}
+
+.planning-mensaje-horas:empty {
+    display: none;
+}
+
+.planning-mensaje-horas[data-tipo="ok"] {
+    color: #216e4e;
+}
+
+.planning-mensaje-horas[data-tipo="error"] {
+    color: #ae2a19;
+}
+
+.planning-oculto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}

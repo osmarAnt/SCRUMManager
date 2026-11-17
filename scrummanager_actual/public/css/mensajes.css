@@ -1,0 +1,137 @@
+.cabecera-mensajes-po {
+    flex-wrap: wrap;
+}
+
+.acciones-mensajes-po {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#form-mensaje-po {
+    margin: 0 0 20px;
+    padding: 0 0 20px;
+    border-bottom: 1px solid var(--borde);
+}
+
+.estado-mensajes-po {
+    margin: 20px 0 0;
+    color: var(--texto-secundario);
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.estado-mensajes-po[data-tipo="error"] {
+    color: #b42318;
+}
+
+.lista-mensajes-po {
+    display: grid;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.mensaje-po {
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid var(--borde);
+    border-left: 4px solid var(--azul);
+    border-radius: 8px;
+    background: var(--blanco);
+}
+
+.titulo-mensaje-po {
+    min-width: 0;
+    margin: 0 0 10px;
+    font-size: 17px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.cabecera-mensaje-po {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.marcar-leido-po {
+    flex-shrink: 0;
+    min-height: 36px;
+    padding: 7px 10px;
+    border-color: #c7d4e8;
+    background: var(--azul-claro);
+    color: var(--azul);
+    font-size: 12px;
+}
+
+.marcar-leido-po:hover {
+    background: #dce8ff;
+}
+
+.marcar-leido-po:disabled {
+    opacity: 1;
+    background: var(--fondo);
+    color: var(--texto-secundario);
+    border-color: var(--borde);
+    cursor: default;
+}
+
+.estado-lectura-po {
+    color: var(--azul);
+    font-weight: 700;
+}
+
+.mensaje-po-leido {
+    border-left-color: var(--borde);
+    background: #f8f9fb;
+}
+
+.mensaje-po-leido .estado-lectura-po {
+    color: var(--texto-secundario);
+    font-weight: 400;
+}
+
+.datos-mensaje-po {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 6px 18px;
+    color: var(--texto-secundario);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 520px) {
+    .marcar-leido-po {
+        width: 40px;
+        min-height: 40px;
+        padding: 8px;
+    }
+
+    .marcar-leido-po span {
+        display: none;
+    }
+}
+
+.contenido-mensaje-po {
+    margin: 16px 0 0;
+    color: var(--texto);
+    font-size: 14px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+    .acciones-mensajes-po {
+        width: 100%;
+    }
+
+    .acciones-mensajes-po button {
+        flex: 1;
+    }
+
+    .mensaje-po {
+        padding: 16px;
+    }
+}

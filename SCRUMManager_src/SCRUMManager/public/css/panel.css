@@ -1,0 +1,227 @@
+.aplicacion {
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr);
+    min-height: 100vh;
+}
+
+.barra-lateral {
+    position: sticky;
+    top: 0;
+    display: flex;
+    height: 100vh;
+    flex-direction: column;
+    padding: 30px 18px 22px;
+    border-right: 1px solid var(--borde);
+    background: var(--blanco);
+}
+
+.marca-lateral {
+    padding: 0 10px;
+}
+
+.descripcion-marca {
+    margin: 8px 10px 30px;
+    color: var(--texto-secundario);
+    font-size: 12px;
+}
+
+.navegacion a {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 12px 14px;
+    border-radius: 7px;
+    color: var(--texto);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.navegacion .activo {
+    background: var(--azul-claro);
+    color: var(--azul);
+}
+
+.pie-menu {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid var(--borde);
+}
+
+.pie-menu .boton-salir {
+    width: 100%;
+    justify-content: flex-start;
+    border-color: var(--borde);
+    background: var(--blanco);
+    color: var(--texto-secundario);
+}
+
+.pie-menu .boton-salir:hover {
+    background: var(--fondo);
+    color: var(--texto);
+}
+
+.barra-cuenta {
+    display: flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.ruta-actual {
+    margin: 0;
+    color: var(--texto-secundario);
+    font-size: 13px;
+}
+
+.perfil {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    max-width: 100%;
+}
+
+.perfil > div {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+}
+
+.avatar {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    place-items: center;
+    border: 1px solid #cdddf9;
+    border-radius: 50%;
+    background: var(--azul-claro);
+    color: var(--azul);
+    font-weight: 700;
+}
+
+.nombre-cuenta {
+    display: block;
+    max-width: 220px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.estado-cuenta {
+    color: var(--azul);
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background: var(--azul-claro);
+    white-space: nowrap;
+}
+
+.encabezado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--borde);
+    background: var(--blanco);
+}
+
+.encabezado .subtitulo {
+    margin: 6px 0 0;
+}
+
+.contenido-panel {
+    width: calc(100% - 48px);
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 32px;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    background: var(--blanco);
+}
+
+.contenido-panel p {
+    color: var(--texto-secundario);
+}
+
+@media (max-width: 1000px) {
+    .aplicacion {
+        grid-template-columns: 205px minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 760px) {
+    .aplicacion {
+        display: block;
+    }
+
+    .barra-lateral {
+        position: static;
+        display: grid;
+        height: auto;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 20px 10px;
+        padding: 20px;
+        border-right: 0;
+        border-bottom: 1px solid var(--borde);
+    }
+
+    .marca-lateral {
+        padding: 0;
+    }
+
+    .descripcion-marca {
+        display: none;
+    }
+
+    .navegacion {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+    .pie-menu {
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    .pie-menu .boton-salir {
+        padding: 9px 12px;
+        font-size: 12px;
+    }
+
+    .barra-cuenta {
+        margin-bottom: 28px;
+    }
+
+    .ruta-actual {
+        display: none;
+    }
+
+    .perfil {
+        margin-left: auto;
+    }
+
+    .encabezado {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 24px;
+    }
+}
+
+@media (max-width: 380px) {
+    .marca-lateral {
+        font-size: 25px;
+    }
+
+    .pie-menu .boton-salir {
+        gap: 6px;
+        padding: 8px;
+    }
+}

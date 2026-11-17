@@ -1,0 +1,112 @@
+/* Francisco: PB-45. Conserva los colores, la tipografía y los bloques del proyecto. */
+.planning-resumen,
+.planning-estado {
+    margin: 0 0 18px;
+    color: var(--texto-secundario);
+    font-size: 14px;
+}
+
+.planning-estado[data-tipo="error"] {
+    color: #ae2a19;
+}
+
+.planning-grupo + .planning-grupo {
+    margin-top: 28px;
+}
+
+.planning-cabecera-grupo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.planning-cabecera-grupo h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.planning-contenedor-tabla {
+    overflow-x: auto;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+}
+
+.planning-contenedor-tabla:focus-visible {
+    outline: 3px solid #b3d4ff;
+    outline-offset: 3px;
+}
+
+.planning-tabla {
+    width: 100%;
+    min-width: 660px;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 14px;
+    text-align: left;
+}
+
+.planning-tabla caption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.planning-tabla th,
+.planning-tabla td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--borde);
+    vertical-align: top;
+    overflow-wrap: anywhere;
+}
+
+.planning-tabla thead th {
+    background: var(--fondo);
+    color: var(--texto-secundario);
+    font-size: 12px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.planning-tabla thead th:first-child {
+    width: 34%;
+}
+
+.planning-tabla thead th:nth-child(2) {
+    width: 23%;
+}
+
+.planning-tabla thead th:nth-child(3) {
+    width: 13%;
+}
+
+.planning-tabla tbody tr:last-child th,
+.planning-tabla tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.planning-tabla .planning-numero {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.planning-historia {
+    font-weight: 700;
+}
+
+.planning-id {
+    display: block;
+    margin-top: 3px;
+    color: var(--texto-secundario);
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.planning-pendiente {
+    color: var(--texto-secundario);
+    font-weight: 400;
+}

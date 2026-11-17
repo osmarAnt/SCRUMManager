@@ -1,0 +1,253 @@
+/* PB-19 y PB-20: revisión de entregables */
+
+/* Estados de historia del flujo de revisión (se suman a los de PB-17) */
+.estado-historia--revision {
+    background: #eae6ff;
+    color: #403294;
+    border-color: #c0b6f2;
+}
+
+.estado-historia--aprobada {
+    background: #e4f5e9;
+    color: #176534;
+    border-color: #b7ddc5;
+}
+
+.estado-historia--rechazada {
+    background: #ffebe6;
+    color: #a3200e;
+    border-color: #f5b8ac;
+}
+
+.titulo-lista-revision {
+    margin: 22px 0 0;
+    font-size: 15px;
+}
+
+.tarjeta-revision {
+    display: grid;
+    gap: 6px;
+}
+
+.tarjeta-revision .cabecera-sprint {
+    flex-wrap: wrap;
+}
+
+.tarjeta-revision .meta-revision {
+    margin: 0;
+    color: var(--texto-secundario);
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.tarjeta-revision .acciones-formulario {
+    justify-content: flex-start;
+    margin-top: 6px;
+}
+
+/* Última decisión del Product Owner dentro de la tarjeta del Sprint Backlog */
+.revision-historia {
+    margin: 10px 0 0;
+    padding: 10px 12px;
+    border-left: 4px solid var(--azul);
+    border-radius: 4px;
+    background: var(--azul-claro);
+    font-size: 13px;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+/* Panel de detalle */
+.panel-revision {
+    margin-top: 24px;
+    padding: 22px;
+    border: 2px solid #c7d4e8;
+    border-radius: 10px;
+    background: #fbfcff;
+}
+
+.panel-revision h4.etiqueta-dato {
+    margin-top: 20px;
+}
+
+.cabecera-panel-revision {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.cabecera-panel-revision h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    overflow-wrap: anywhere;
+}
+
+.cabecera-panel-revision h3:focus {
+    outline: none;
+}
+
+.datos-revision {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin: 18px 0 0;
+}
+
+.datos-revision dt {
+    color: var(--texto-secundario);
+    font-size: 12px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.datos-revision dd {
+    margin: 2px 0 0;
+    font-size: 14px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.lista-revision {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.lista-revision li {
+    padding: 10px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    background: var(--blanco);
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.lista-revision .vacio {
+    color: var(--texto-secundario);
+    background: transparent;
+    border-style: dashed;
+}
+
+.criterio-revision {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.marca-criterio {
+    flex: none;
+    min-width: 76px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.marca-criterio--si {
+    background: #e4f5e9;
+    color: #176534;
+}
+
+.marca-criterio--no {
+    background: #fff3d6;
+    color: #805600;
+}
+
+.evidencia-revision a {
+    font-weight: 700;
+}
+
+.detalle-evidencia,
+.detalle-decision {
+    display: block;
+    margin-top: 2px;
+    color: var(--texto-secundario);
+    font-size: 12px;
+}
+
+.observacion-decision {
+    margin: 6px 0 0;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+/* Formulario de decisión */
+.formulario-revision {
+    margin-top: 24px;
+    padding-top: 6px;
+    border-top: 1px solid var(--borde);
+}
+
+.formulario-revision fieldset {
+    margin: 14px 0 0;
+    padding: 0;
+    border: 0;
+}
+
+.formulario-revision legend,
+.formulario-revision > label {
+    display: block;
+    margin: 14px 0 8px;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.opcion-decision {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 8px;
+    padding: 12px 14px;
+    border: 1px solid #b3bac5;
+    border-radius: 6px;
+    background: var(--blanco);
+    cursor: pointer;
+}
+
+.opcion-decision input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
+.opcion-decision:has(input:checked) {
+    border-color: var(--azul);
+    background: var(--azul-claro);
+}
+
+.opcion-decision:has(input:focus-visible) {
+    outline: 3px solid #b3d4ff;
+    outline-offset: 2px;
+}
+
+.formulario-revision textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 11px 12px;
+    border: 1px solid #b3bac5;
+    border-radius: 6px;
+    background: var(--blanco);
+    color: var(--texto);
+    font: inherit;
+    resize: vertical;
+}
+
+.formulario-revision textarea:focus-visible {
+    outline: 3px solid #b3d4ff;
+    outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+    .panel-revision {
+        padding: 16px;
+    }
+
+    .cabecera-panel-revision {
+        flex-direction: column;
+    }
+}

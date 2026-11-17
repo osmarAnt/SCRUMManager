@@ -1,0 +1,644 @@
+.principal-proyectos {
+    width: 100%;
+    min-width: 0;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 40px 44px;
+}
+
+.cabecera-proyectos {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.cabecera-proyectos .subtitulo {
+    margin: 10px 0 0;
+}
+
+.boton-secundario {
+    border-color: #c7d4e8;
+    background: var(--blanco);
+    color: var(--azul);
+}
+
+.boton-secundario:hover {
+    background: var(--azul-claro);
+}
+
+.resumen-lista {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 18px;
+    color: var(--texto-secundario);
+    font-size: 13px;
+}
+
+.conteo-proyectos {
+    padding: 4px 10px;
+    border: 1px solid var(--borde);
+    border-radius: 20px;
+    background: var(--blanco);
+    color: var(--texto);
+    font-weight: 700;
+}
+
+.lista-proyectos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.tarjeta-proyecto {
+    display: flex;
+    min-width: 0;
+    min-height: 235px;
+    flex-direction: column;
+    padding: 24px;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    background: var(--blanco);
+}
+
+.icono-proyecto {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    border-radius: 9px;
+    background: var(--azul-claro);
+    color: var(--azul);
+}
+
+.nombre-proyecto {
+    margin: 18px 0 8px;
+    font-size: 19px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.objetivo-proyecto {
+    flex: 1;
+    margin: 0 0 22px;
+    color: var(--texto-secundario);
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.pie-proyecto {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 9px;
+    padding-top: 16px;
+    border-top: 1px solid #eef0f3;
+    color: var(--texto-secundario);
+    font-size: 12px;
+}
+
+.rol-proyecto {
+    padding: 4px 9px;
+    border-radius: 5px;
+    background: var(--azul-claro);
+    color: var(--azul);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.estado-lista {
+    display: flex;
+    min-height: 320px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 42px 26px;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    background: var(--blanco);
+    text-align: center;
+}
+
+.simbolo-estado {
+    display: grid;
+    width: 64px;
+    height: 64px;
+    place-items: center;
+    border-radius: 16px;
+    background: var(--azul-claro);
+    color: var(--azul);
+}
+
+.simbolo-estado svg {
+    width: 30px;
+    height: 30px;
+}
+
+.estado-lista h2 {
+    margin: 22px 0 8px;
+    font-size: 21px;
+}
+
+.estado-lista p {
+    max-width: 430px;
+    margin: 0;
+    color: var(--texto-secundario);
+    font-size: 14px;
+}
+
+.estado-lista[data-tipo="error"] {
+    border-color: #efc7c4;
+}
+
+.acciones-cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+a.tarjeta-proyecto {
+    color: inherit;
+    text-decoration: none;
+}
+
+a.tarjeta-proyecto:hover {
+    border-color: #b3c7ee;
+    box-shadow: 0 4px 14px rgba(23, 43, 77, 0.08);
+}
+
+.ruta-actual a {
+    font-weight: 700;
+    text-decoration: none;
+}
+
+/* ---- Formularios (crear / editar proyecto, configurar Sprint) ---- */
+.formulario label {
+    display: block;
+    margin: 18px 0 8px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.formulario input,
+.formulario textarea {
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 12px;
+    border: 1px solid #b3bac5;
+    border-radius: 6px;
+    background: var(--blanco);
+    color: var(--texto);
+    font: inherit;
+}
+
+.formulario textarea {
+    resize: vertical;
+}
+
+.formulario input:focus-visible,
+.formulario textarea:focus-visible {
+    outline: 3px solid #b3d4ff;
+    outline-offset: 2px;
+}
+
+.ayuda-campo {
+    margin: 8px 0 0;
+    color: var(--texto-secundario);
+    font-size: 12px;
+}
+
+.mensaje-error {
+    min-height: 22px;
+    margin: 12px 0 0;
+    color: #b42318;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.mensaje-confirmacion {
+    margin: 16px 0 0;
+    padding: 12px 14px;
+    border: 1px solid #abddc5;
+    border-radius: 6px;
+    background: #eefaf4;
+    color: #176745;
+    font-size: 13px;
+}
+
+.acciones-formulario {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.fila-fechas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 16px;
+}
+
+.dialogo {
+    width: min(520px, calc(100% - 32px));
+    padding: 28px;
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    background: var(--blanco);
+    color: var(--texto);
+    box-shadow: 0 16px 48px rgba(23, 43, 77, 0.25);
+}
+
+.dialogo::backdrop {
+    background: rgba(9, 30, 66, 0.45);
+}
+
+.dialogo h2 {
+    margin: 0;
+    font-size: 21px;
+}
+
+/* ---- Detalle de proyecto ---- */
+.bloque {
+    margin-bottom: 24px;
+    padding: 28px;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    background: var(--blanco);
+}
+
+.cabecera-bloque {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 18px;
+}
+
+.cabecera-bloque h1,
+.cabecera-bloque h2 {
+    overflow-wrap: anywhere;
+}
+
+.cabecera-bloque h2 {
+    margin: 0;
+    font-size: 21px;
+}
+
+.cabecera-bloque .subtitulo {
+    margin: 8px 0 0;
+}
+
+.etiqueta-dato {
+    margin: 0 0 6px;
+    color: var(--texto-secundario);
+    font-size: 12px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.texto-dato {
+    margin: 0;
+    color: var(--texto);
+    font-size: 14px;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+#form-editar,
+#form-sprint {
+    margin: 0 0 20px;
+    padding-top: 4px;
+}
+
+#form-editar {
+    margin-top: 20px;
+    padding-top: 6px;
+    border-top: 1px solid var(--borde);
+}
+
+.lista-sprints {
+    display: grid;
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.tarjeta-sprint {
+    padding: 18px 20px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+}
+
+.cabecera-sprint {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.nombre-sprint {
+    margin: 0;
+    font-size: 16px;
+}
+
+.estado-sprint {
+    padding: 4px 9px;
+    border-radius: 5px;
+    background: var(--azul-claro);
+    color: var(--azul);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.objetivo-sprint {
+    margin: 10px 0 8px;
+    font-size: 14px;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.fechas-sprint {
+    margin: 0;
+    color: var(--texto-secundario);
+    font-size: 13px;
+}
+
+@media (max-width: 1000px) {
+    .principal-proyectos {
+        padding: 30px 28px;
+    }
+}
+
+@media (max-width: 760px) {
+    .principal-proyectos {
+        padding: 26px 20px;
+    }
+
+    .cabecera-proyectos {
+        flex-wrap: wrap;
+    }
+
+    .lista-proyectos {
+        grid-template-columns: 1fr;
+    }
+
+    .cabecera-bloque {
+        flex-wrap: wrap;
+    }
+
+    .fila-fechas {
+        grid-template-columns: 1fr;
+    }
+
+    .bloque {
+        padding: 22px 18px;
+    }
+}
+.formulario select {
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 12px;
+    border: 1px solid #b3bac5;
+    border-radius: 6px;
+    background: var(--blanco);
+    color: var(--texto);
+    font: inherit;
+}
+.formulario select:focus-visible {
+    outline: 3px solid #b3d4ff;
+    outline-offset: 2px;
+}
+
+#form-invitacion {
+    margin-bottom: 20px;
+    padding: 6px 0 20px;
+    border-bottom: 1px solid var(--borde);
+}
+
+.bandeja-invitaciones {
+    margin-bottom: 28px;
+}
+
+.bandeja-invitaciones .cabecera-bloque {
+    align-items: center;
+}
+
+.bandeja-invitaciones .subtitulo {
+    margin-bottom: 0;
+}
+
+.lista-personas {
+    display: grid;
+    gap: 10px;
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.persona-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.persona-datos {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.persona-datos strong {
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.persona-datos small {
+    color: var(--texto-secundario);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.persona-rol {
+    display: inline-block;
+    padding: 4px 9px;
+    border-radius: 5px;
+    background: var(--azul-claro);
+    color: var(--azul);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.seccion-pendientes {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--borde);
+}
+
+.seccion-pendientes h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.seccion-pendientes .ayuda-campo {
+    margin-top: 6px;
+}
+#username-invitado[size] {
+    height: 120px;
+    min-height: 120px;
+    padding: 5px;
+    overflow-y: auto;
+}
+
+#username-invitado option {
+    padding: 10px;
+    cursor: pointer;
+}
+
+#username-invitado option:checked {
+    background: var(--azul-claro);
+    color: var(--texto);
+}
+
+.acciones-integrante {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.acciones-integrante button {
+    padding: 9px 13px;
+}
+
+.acciones-integrante select {
+    min-height: 40px;
+    padding: 8px;
+    border: 1px solid var(--borde);
+    border-radius: 7px;
+    color: var(--texto);
+}
+
+.boton-peligro {
+    color: #b42318;
+    background: #ffffff;
+    border: 1px solid #f0b1ab;
+}
+
+.boton-peligro:hover {
+    background: #fff1f0;
+}
+
+@media (max-width: 700px) {
+
+    .acciones-integrante {
+        width: 100%;
+    }
+
+}
+
+/* ===== JESÚS: PB-17 - COLORES DE ESTADOS ===== */
+
+.estado-historia {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid transparent;
+}
+
+/* Pendiente */
+.estado-historia--pendiente {
+    background: #eff2f5;
+    color: #44546a;
+    border-color: #d6dde5;
+}
+
+/* En curso */
+.estado-historia--curso {
+    background: #fff3d6;
+    color: #805600;
+    border-color: #f3d68c;
+}
+
+/* Terminado */
+.estado-historia--terminada {
+    background: #e4f5e9;
+    color: #176534;
+    border-color: #b7ddc5;
+}
+
+/* Selector */
+.control-estado-historia {
+    display: grid;
+    gap: 7px;
+    margin: 12px 0;
+    max-width: 270px;
+}
+
+.control-estado-historia label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--texto);
+}
+
+.control-estado-historia select {
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    background: var(--blanco);
+    color: var(--texto);
+}
+
+/* ===== FIN PB-17 ===== */
+/* Contenedor de valor de negocio */
+
+.acciones-valor-negocio {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+
+/* Campo de valor */
+
+.campo-valor-negocio {
+    width: 85px;
+    min-height: 38px;
+    padding: 7px;
+
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+
+    font: inherit;
+}
+
+
+/* Filas de la tabla */
+
+#tabla-backlog-body td {
+    padding: 12px 10px;
+
+    border-bottom: 1px solid var(--borde);
+
+    vertical-align: middle;
+}
+
+
+/* Botones de las historias */
+
+#tabla-backlog-body td:last-child button {
+    margin-right: 6px;
+    margin-bottom: 6px;
+}

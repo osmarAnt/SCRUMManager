@@ -703,3 +703,8 @@ CREATE TABLE IF NOT EXISTS retrospectivas_sprint (
 SELECT *
 FROM retrospectivas_sprint;
 
+
+#---PB-46: horas estimadas por historia (Planning Poker, Scrum Master)---
+-- NULL = todavia sin estimar.
+ALTER TABLE product_backlog
+    ADD COLUMN horas_estimadas DECIMAL(6,2) NULL AFTER puntos;

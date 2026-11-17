@@ -31,4 +31,21 @@ const obtenerHistorias = async (idProyecto) => {
     return historias;
 };
 
-module.exports = { esIntegrante, obtenerHistorias };
+// PB-46: guarda (o borra con NULL) las horas estimadas de una historia SOLO si pertenece al proyecto.
+// Devuelve el título de la historia o null si no existe en ese proyecto.
+// (Se busca primero: guardar el mismo valor puede reportar 0 filas afectadas sin ser un error.)
+const guardarHorasEstimadas = async (idProyecto, idHistoria, horas) => {
+    const [filas] = await conexion.promise().query(
+        'SELECT titulo FROM product_backlog WHERE id_historia = ? AND id_proyecto = ?',
+        [idHistoria, idProyecto]
+    );
+    if (!filas.length) return null;
+    await conexion.promise().query(
+        `UPDATE product_backlog SET horas_estimadas = ?
+         WHERE id_historia = ? AND id_proyecto = ?`,
+        [horas, idHistoria, idProyecto]
+    );
+    return filas[0].titulo;
+};
+
+module.exports = { esIntegrante, obtenerHistorias, guardarHorasEstimadas };

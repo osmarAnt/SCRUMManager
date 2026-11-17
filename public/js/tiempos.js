@@ -124,6 +124,10 @@
                 ETIQUETAS_ESTADO[historia.estado_historia] || historia.estado_historia,
                 `mis horas: ${formatearHoras(historia.mis_horas)}`
             ];
+            // PB-46: la estimación del Scrum Master, solo si la historia tiene.
+            if (historia.horas_estimadas !== null && historia.horas_estimadas !== undefined) {
+                partes.push(`estimadas: ${formatearHoras(historia.horas_estimadas)}`);
+            }
             return new Option(partes.join(' · '), historia.id_historia);
         }));
         if (historias.some((h) => String(h.id_historia) === seleccionada)) {
@@ -220,6 +224,13 @@
 
     const filaHistoria = (historia) => {
         const nombre = crear('td', {}, [crear('span', { clase: 'nombre-historia', texto: historia.titulo })]);
+        // PB-46: horas estimadas en Planning Poker, solo si la historia tiene.
+        if (historia.horas_estimadas !== null && historia.horas_estimadas !== undefined) {
+            nombre.append(crear('span', {
+                clase: 'detalle-fila horas-estimadas',
+                texto: `Horas estimadas: ${formatearHoras(historia.horas_estimadas)}`
+            }));
+        }
         if (historia.desarrolladores.length > 1) {
             nombre.append(crear('span', {
                 clase: 'detalle-fila',

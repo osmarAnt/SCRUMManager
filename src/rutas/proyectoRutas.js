@@ -238,6 +238,13 @@ router.put(
 // PB-45: CONSULTAR PLANNING POKER (todos los integrantes activos del proyecto).
 router.get('/:id/planning', verificarSesion, planningControlador.consultarPlanning);
 
+// PB-46: HORAS ESTIMADAS POR HISTORIA (solo el Scrum Master del proyecto).
+router.put(
+    '/:id/planning/historias/:idHistoria/horas',
+    verificarSesion,
+    planningControlador.guardarHorasEstimadas
+);
+
 
 // PB-30: FORO DEL PROYECTO (todos los roles)
 router.get('/:id/foro', verificarSesion, foroControlador.listarMensajes);

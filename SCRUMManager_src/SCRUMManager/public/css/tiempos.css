@@ -1,0 +1,127 @@
+/* PB-32 y PB-33: registro y resumen de tiempo */
+
+.titulo-tiempos {
+    margin: 26px 0 0;
+    font-size: 16px;
+}
+
+/* Texto solo para lectores de pantalla (títulos de las tablas) */
+.solo-lectores {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.contenedor-tabla-tiempos {
+    margin-top: 14px;
+    overflow-x: auto;
+}
+
+.tabla-tiempos {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    text-align: left;
+}
+
+.tabla-tiempos th,
+.tabla-tiempos td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--borde);
+    vertical-align: top;
+}
+
+.tabla-tiempos thead th {
+    border-bottom: 2px solid #e1e4e8;
+    color: var(--texto-secundario);
+    font-size: 12px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.tabla-tiempos .numero {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.tabla-tiempos td.numero {
+    font-variant-numeric: tabular-nums;
+}
+
+.tabla-tiempos td.horas {
+    font-weight: 700;
+}
+
+.tabla-tiempos .sin-horas {
+    color: var(--texto-secundario);
+    font-weight: 400;
+}
+
+.tabla-tiempos .nombre-historia {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.tabla-tiempos .detalle-fila {
+    display: block;
+    margin-top: 2px;
+    color: var(--texto-secundario);
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.tabla-tiempos .ex-integrante {
+    color: var(--texto-secundario);
+    font-size: 12px;
+}
+
+/* Tarjetas de totales */
+.resumen-tiempos {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin: 20px 0 6px;
+}
+
+.resumen-tiempos > div {
+    padding: 16px 18px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+}
+
+.resumen-tiempos dt {
+    color: var(--texto-secundario);
+    font-size: 12px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.resumen-tiempos dd {
+    margin: 6px 0 0;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+}
+
+#form-tiempo select,
+#form-tiempo input {
+    max-width: 100%;
+}
+
+@media (max-width: 900px) {
+    .resumen-tiempos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+    .resumen-tiempos dd {
+        font-size: 20px;
+    }
+}
