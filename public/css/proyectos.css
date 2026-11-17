@@ -642,3 +642,44 @@ a.tarjeta-proyecto:hover {
     margin-right: 6px;
     margin-bottom: 6px;
 }
+
+.buscador-backlog {
+    display: grid;
+    gap: 8px;
+    max-width: 520px;
+    margin: 0 0 20px;
+}
+
+.buscador-backlog label {
+    color: var(--texto);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.buscador-backlog input {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    background: var(--blanco);
+    color: var(--texto);
+    font: inherit;
+}
+
+.buscador-backlog input:focus-visible {
+    outline: 3px solid #b3d4ff;
+    outline-offset: 2px;
+}
+
+#resultado-busqueda-backlog {
+    margin: 0;
+    color: var(--texto-secundario);
+    font-size: 13px;
+}
+
+#tabla-backlog-body .backlog-sin-resultados {
+    padding: 25px;
+    text-align: center;
+    color: var(--texto-secundario);
+}
