@@ -11,6 +11,7 @@ const desarrolladorRutas = require('./src/rutas/desarrolladorRutas');
 const backlogRutas = require('./src/rutas/backlogRutas');
 const notificacionRutas = require('./src/rutas/notificacionRutas');
 const capacitacionRutas = require('./src/rutas/capacitacionRutas');
+const reunionRutas = require('./src/rutas/reunionRutas');
 const burndownDAO = require('./src/dao/burndownDAO');
 const { verificarSesion } = require('./src/middlewares/autenticacion');
 const app = express();
@@ -78,6 +79,9 @@ app.use(
     '/proyectos',
     proyectoRutas
 );
+
+// PB-42: apartado Reuniones (GET/POST /proyectos/:id/reuniones)
+app.use('/proyectos', reunionRutas);
 
 app.use(
     '/invitaciones',

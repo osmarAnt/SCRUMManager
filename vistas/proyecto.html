@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="/css/tiempos.css">
     <link rel="stylesheet" href="/css/planning.css">
     <link rel="stylesheet" href="/css/retrospectiva.css">
+    <link rel="stylesheet" href="/css/reuniones.css">
 
     <!-- CSS DEL BUZÓN DE NOTIFICACIONES -->
     <link rel="stylesheet" href="/css/notificaciones.css">
@@ -256,6 +257,8 @@
                     <button type="button" role="tab" id="pestana-avisos" data-panel="avisos" aria-controls="panel-avisos" aria-selected="false" tabindex="-1">
                         Avisos<span id="insignia-avisos" class="insignia-pestana" hidden></span>
                     </button>
+
+                    <button type="button" role="tab" id="pestana-reuniones" data-panel="reuniones" aria-controls="panel-reuniones" aria-selected="false" tabindex="-1">Reuniones</button>
 
                     <button type="button" role="tab" id="pestana-foro" data-panel="foro" aria-controls="panel-foro" aria-selected="false" tabindex="-1">Foro</button>
                    <button
@@ -1645,6 +1648,65 @@
                 </div>
 
 
+                <!-- REUNIONES (PB-42): el Scrum Master las crea y todo el equipo las consulta -->
+                <div class="panel-pestana" role="tabpanel" id="panel-reuniones" aria-labelledby="pestana-reuniones" hidden>
+                    <section class="bloque" aria-labelledby="titulo-reuniones">
+                        <div class="cabecera-bloque cabecera-reuniones">
+                            <div>
+                                <h2 id="titulo-reuniones">Reuniones</h2>
+                                <p class="subtitulo">Reuniones programadas del equipo. El Scrum Master las crea y todos los integrantes pueden consultarlas.</p>
+                            </div>
+                            <div class="acciones-reuniones">
+                                <button id="nueva-reunion" type="button" hidden>+ Nueva reunión</button>
+                            </div>
+                        </div>
+
+                        <form id="form-reunion" class="formulario" method="post" novalidate hidden>
+                            <label for="titulo-reunion">Título de la reunión</label>
+                            <input id="titulo-reunion" name="titulo" type="text" minlength="3" maxlength="150" autocomplete="off" required>
+
+                            <label for="descripcion-reunion">Descripción</label>
+                            <textarea id="descripcion-reunion" name="descripcion" rows="4" maxlength="2000" required></textarea>
+
+                            <div class="fila-reunion">
+                                <div>
+                                    <label for="fecha-reunion">Fecha y hora</label>
+                                    <input id="fecha-reunion" name="fecha" type="datetime-local" required>
+                                </div>
+                                <div>
+                                    <label for="modalidad-reunion">Modalidad</label>
+                                    <select id="modalidad-reunion" name="modalidad" required>
+                                        <option value="Presencial">Presencial</option>
+                                        <option value="En linea">En línea</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <label for="lugar-reunion" id="etiqueta-lugar-reunion">Lugar</label>
+                            <input id="lugar-reunion" name="lugar_enlace" type="text" maxlength="500" autocomplete="off" aria-describedby="ayuda-lugar-reunion" required>
+                            <p id="ayuda-lugar-reunion" class="ayuda-campo">Indica dónde será la reunión (salón, sala, dirección).</p>
+
+                            <p id="error-reunion" class="mensaje-error" role="alert" aria-live="polite"></p>
+                            <div class="acciones-formulario">
+                                <button id="cancelar-reunion" type="button" class="boton-secundario">Cancelar</button>
+                                <button type="submit">Crear reunión</button>
+                            </div>
+                        </form>
+
+                        <p id="confirmacion-reunion" class="mensaje-confirmacion" role="status" hidden></p>
+                        <p id="estado-reuniones" class="estado-reuniones" role="status" aria-live="polite">Cargando reuniones...</p>
+
+                        <section id="grupo-proximas" class="grupo-reuniones" aria-labelledby="titulo-proximas" hidden>
+                            <h3 id="titulo-proximas" class="titulo-grupo-reuniones">Próximas <span id="conteo-proximas" class="conteo-avisos">0</span></h3>
+                            <div id="lista-proximas" class="lista-reuniones"></div>
+                        </section>
+                        <section id="grupo-pasadas" class="grupo-reuniones" aria-labelledby="titulo-pasadas" hidden>
+                            <h3 id="titulo-pasadas" class="titulo-grupo-reuniones">Pasadas <span id="conteo-pasadas" class="conteo-avisos">0</span></h3>
+                            <div id="lista-pasadas" class="lista-reuniones"></div>
+                        </section>
+                    </section>
+                </div>
+
                 <!-- PB-34: RETROSPECTIVA DEL SPRINT -->
                 <div
                     class="panel-pestana"
@@ -1822,6 +1884,9 @@
 
     <!-- BURNDOWN GENERAL -->
     <script src="/js/burndownGeneral.js" defer></script>
+
+    <!-- REUNIONES (PB-42) -->
+    <script src="/js/reuniones.js" defer></script>
 
 </body>
 </html>
