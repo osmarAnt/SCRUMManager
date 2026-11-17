@@ -20,6 +20,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     cargarHistorias(idProyecto);
+    const buscadorHistorias = document.getElementById('buscar-historias');
+    if (buscadorHistorias) {
+        buscadorHistorias.addEventListener('input', aplicarBusquedaHistorias);
+    }
 
     // JESÚS: PB-29 - Cerrar historial
     document.getElementById('cerrar-historial-historias')
@@ -75,12 +79,46 @@ async function cargarHistorias(idProyecto) {
     try {
         const respuesta = await fetch(`/backlog/${idProyecto}`);
         if (!respuesta.ok) throw new Error('Error al obtener el backlog');
-        
         listaHistorias = await respuesta.json();
-        mostrarEnTabla(listaHistorias);
+        aplicarBusquedaHistorias();
     } catch (error) {
         console.error(error);
         alert('No se pudieron cargar las historias del servidor.');
+    }
+}
+function normalizarBusqueda(texto) {
+    return String(texto ?? '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+}
+
+function aplicarBusquedaHistorias() {
+    const buscador = document.getElementById('buscar-historias');
+    const termino = normalizarBusqueda(buscador?.value);
+
+    const coincidencias = termino
+        ? listaHistorias.filter(historia => {
+            const contenido = normalizarBusqueda(
+                `${historia.titulo ?? ''} ${historia.descripcion ?? ''}`
+            );
+            return contenido.includes(termino);
+        })
+        : listaHistorias;
+
+    mostrarEnTabla(coincidencias);
+
+    const resultado = document.getElementById('resultado-busqueda-backlog');
+
+    if (resultado) {
+        if (!termino) {
+            resultado.textContent = '';
+        } else if (coincidencias.length === 0) {
+            resultado.textContent = 'No se encontraron coincidencias.';
+        } else {
+            resultado.textContent = `Se encontraron ${coincidencias.length} coincidencia(s).`;
+        }
     }
 }
 
@@ -90,6 +128,18 @@ function mostrarEnTabla(historias) {
     );
     if (!tbody) return;
     tbody.replaceChildren();
+    if (historias.length === 0) {
+        const fila = document.createElement('tr');
+        const celda = document.createElement('td');
+        celda.colSpan = 7;
+        celda.className = 'backlog-sin-resultados';
+        celda.textContent = listaHistorias.length === 0
+            ? 'Todavía no hay historias registradas.'
+            : 'No se encontraron historias que coincidan con la búsqueda.';
+        fila.appendChild(celda);
+        tbody.appendChild(fila);
+        return;
+    }
     const crearCelda = (texto) => {
         const td = document.createElement('td');
         td.textContent = String(texto);
