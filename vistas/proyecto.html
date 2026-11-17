@@ -32,6 +32,10 @@
     <script src="/js/tiempos.js" defer></script>
     <script src="/js/planning.js" defer></script>
     <script src="/js/retrospectiva.js" defer></script>
+    <!-- Librerías para generar y descargar reporte PDF (PB-43 / PB-44) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" defer></script>
+    <script src="/js/reporte.js" defer></script>
 </head>
 <body>
     <div class="aplicacion">
@@ -190,6 +194,22 @@
                             Editar proyecto
                         </button>
                     </div>
+                    <div style="display: flex; gap: 10px;">
+                            <button id="generar-reporte-pdf" type="button" class="boton-secundario" hidden>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="12" y1="18" x2="12" y2="12"/>
+                                    <polyline points="9 15 12 18 15 15"/>
+                                </svg>
+                                Reporte PDF
+                            </button>
+
+                            <button id="editar-proyecto" type="button" class="boton-secundario" hidden>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4ZM13.5 6.5l4 4"/></svg>
+                                Editar proyecto
+                            </button>
+                        </div>
 
                     <h3 class="etiqueta-dato">Objetivo</h3>
                     <p id="objetivo-proyecto" class="texto-dato"></p>
