@@ -11,6 +11,9 @@
     let peticion = null;
     let version = 0;
     let paginaActiva = true;
+    // PB-46: el servidor indica si el usuario es el Scrum Master del proyecto.
+    let puedeEstimar = false;
+    let horasMaximas = 999;
 
     const visible = () => paginaActiva && !panel.hidden && !document.hidden;
     const crear = (etiqueta, texto, clase) => {
@@ -18,6 +21,117 @@
         if (texto !== undefined) elemento.textContent = texto;
         if (clase) elemento.className = clase;
         return elemento;
+    };
+
+    // ---------- PB-46: horas estimadas (Scrum Master) ----------
+
+    // Mismas reglas y mensajes que el servidor (src/utilidades/horasEstimadas.js); el servidor las vuelve a comprobar.
+    const validarHoras = (texto) => {
+        if (texto === '') return '';
+        if (!/^-?\d+(\.\d+)?$/.test(texto)) return 'Escribe un número, por ejemplo 6.5 (usa punto decimal).';
+        const horas = Number(texto);
+        if (horas <= 0) return 'Las horas estimadas deben ser mayores que 0.';
+        if (horas > horasMaximas) return `Las horas estimadas no pueden superar ${horasMaximas} horas.`;
+        if (Math.abs(horas * 100 - Math.round(horas * 100)) > 1e-9) return 'Usa máximo 2 decimales (por ejemplo 2.25).';
+        return '';
+    };
+
+    const textoHoras = (horas) => horas === null ? 'Sin estimar' : `${numeros.format(horas)} h`;
+
+    const crearApartadoHoras = (historia) => {
+        const formulario = crear('form', undefined, 'planning-estimar');
+        formulario.noValidate = true;
+        const idCampo = `planning-horas-${historia.id_historia}`;
+        const etiqueta = crear('label', `Horas estimadas de ${historia.titulo}`, 'planning-oculto');
+        etiqueta.htmlFor = idCampo;
+        const campo = crear('input', undefined, 'planning-campo-horas');
+        campo.id = idCampo;
+        campo.type = 'number';
+        campo.inputMode = 'decimal';
+        campo.min = '0.01';
+        campo.max = String(horasMaximas);
+        campo.step = '0.25';
+        campo.placeholder = 'Horas';
+        campo.value = historia.horas_estimadas === null ? '' : String(historia.horas_estimadas);
+        const boton = crear('button', 'Guardar', 'planning-boton-horas');
+        boton.type = 'submit';
+        const sufijo = crear('span', 'h', 'planning-sufijo');
+        sufijo.setAttribute('aria-hidden', 'true');
+        const mensaje = crear('span', '', 'planning-mensaje-horas');
+        mensaje.setAttribute('role', 'status');
+        mensaje.setAttribute('aria-live', 'polite');
+        const fila = crear('div', undefined, 'planning-fila-horas');
+        fila.append(campo, sufijo, boton);
+        formulario.append(etiqueta, fila, mensaje);
+
+        let guardado = historia.horas_estimadas;
+        let enviando = false;
+        const avisar = (texto, tipo) => {
+            mensaje.textContent = texto;
+            mensaje.dataset.tipo = tipo || '';
+        };
+        // Marca el apartado con cambios sin guardar para que una recarga automática no los borre.
+        const marcarPendiente = () => {
+            const texto = campo.value.trim();
+            const actual = guardado === null ? '' : String(guardado);
+            if (texto !== actual || campo.validity.badInput) formulario.dataset.pendiente = 'true';
+            else delete formulario.dataset.pendiente;
+        };
+        campo.addEventListener('input', () => {
+            avisar('');
+            marcarPendiente();
+        });
+
+        formulario.addEventListener('submit', async (evento) => {
+            evento.preventDefault();
+            if (enviando) return;
+            const texto = campo.value.trim();
+            // Un campo number con texto inválido reporta value = '': no confundirlo con "quitar estimación".
+            if (texto === '' && campo.validity.badInput) {
+                avisar('Escribe un número, por ejemplo 6.5 (usa punto decimal).', 'error');
+                return;
+            }
+            const error = validarHoras(texto);
+            if (error) {
+                avisar(error, 'error');
+                return;
+            }
+            const nuevo = texto === '' ? null : Math.round(Number(texto) * 100) / 100;
+            if (nuevo === guardado) {
+                avisar(nuevo === null ? 'Sin estimar.' : 'Sin cambios.');
+                return;
+            }
+            enviando = true;
+            boton.disabled = true;
+            avisar('Guardando…');
+            try {
+                const respuesta = await fetch(`/proyectos/${idProyecto}/planning/historias/${historia.id_historia}/horas`, {
+                    method: 'PUT',
+                    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ horas_estimadas: texto === '' ? null : texto })
+                });
+                if (respuesta.status === 401) {
+                    window.location.replace('/login');
+                    return;
+                }
+                const datos = await respuesta.json().catch(() => ({}));
+                if (!respuesta.ok) throw new Error(datos.mensaje || 'No se pudieron guardar las horas estimadas.');
+                guardado = datos.horas_estimadas;
+                campo.value = guardado === null ? '' : String(guardado);
+                marcarPendiente();
+                avisar(guardado === null ? 'Estimación eliminada.' : `Guardado: ${textoHoras(guardado)}.`, 'ok');
+                // Otras pestañas (por ejemplo Tiempos) pueden refrescarse con este evento.
+                document.dispatchEvent(new CustomEvent('horas-estimadas-actualizadas', {
+                    detail: { id_historia: historia.id_historia, horas_estimadas: guardado }
+                }));
+            } catch (error) {
+                avisar(error.message || 'No se pudo conectar con el servidor.', 'error');
+            } finally {
+                enviando = false;
+                boton.disabled = false;
+            }
+        });
+        return formulario;
     };
 
     const pintarGrupo = (grupo) => {
@@ -35,7 +149,7 @@
         contenedor.tabIndex = 0;
         contenedor.setAttribute('role', 'region');
         contenedor.setAttribute('aria-labelledby', titulo.id);
-        const tabla = crear('table', undefined, 'planning-tabla');
+        const tabla = crear('table', undefined, puedeEstimar ? 'planning-tabla planning-tabla-estimar' : 'planning-tabla');
         const caption = crear('caption', `Historias de ${nombre}`);
         const encabezado = crear('thead');
         const filaTitulos = crear('tr');
@@ -56,11 +170,16 @@
             const responsable = crear('td', historia.responsable || 'Sin asignar');
             const puntos = crear('td', historia.puntos === null ? 'Sin estimar' : numeros.format(historia.puntos),
                 'planning-numero');
-            const horas = crear('td', historia.horas_estimadas === null ? 'Sin estimar' :
-                `${numeros.format(historia.horas_estimadas)} h`, 'planning-numero');
+            let horas;
+            if (puedeEstimar) {
+                horas = crear('td', undefined, 'planning-celda-estimar');
+                horas.append(crearApartadoHoras(historia));
+            } else {
+                horas = crear('td', textoHoras(historia.horas_estimadas), 'planning-numero');
+                if (historia.horas_estimadas === null) horas.classList.add('planning-pendiente');
+            }
             if (!historia.responsable) responsable.classList.add('planning-pendiente');
             if (historia.puntos === null) puntos.classList.add('planning-pendiente');
-            if (historia.horas_estimadas === null) horas.classList.add('planning-pendiente');
             fila.append(tituloHistoria, responsable, crear('td', nombre), puntos, horas);
             cuerpo.append(fila);
         });
@@ -104,6 +223,8 @@
             const datos = await respuesta.json();
             if (actual !== version || !visible()) return;
             if (!respuesta.ok) throw new Error(datos.mensaje || 'No se pudo cargar Planning Poker.');
+            puedeEstimar = datos.puede_estimar === true;
+            if (Number(datos.horas_maximas) > 0) horasMaximas = Number(datos.horas_maximas);
             lista.replaceChildren(...datos.grupos.map(pintarGrupo));
             resumen.textContent = `${datos.total_historias} ` +
                 `${datos.total_historias === 1 ? 'historia en el proyecto' : 'historias en el proyecto'}`;
@@ -123,7 +244,12 @@
         }
     };
 
-    const sincronizar = () => visible() ? cargar() : detener();
+    const sincronizar = () => {
+        if (!visible()) return detener();
+        // PB-46: no recargar (y borrar) horas escritas que todavía no se guardan.
+        if (lista.querySelector('.planning-estimar[data-pendiente]')) return;
+        cargar();
+    };
     document.addEventListener('pestana-activa', sincronizar);
     document.addEventListener('visibilitychange', sincronizar);
     // PB-46 puede emitir este evento después de guardar para refrescar las horas.

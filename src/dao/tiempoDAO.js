@@ -3,6 +3,9 @@ const { sumarHoras } = require('../utilidades/tiempos');
 
 const consultar = async (sql, parametros) => (await conexion.promise().query(sql, parametros))[0];
 
+// PB-46: DECIMAL llega como texto desde mysql2; NULL se conserva (historia sin estimar, no 0 h).
+const estimadas = (valor) => valor === null || valor === undefined ? null : Number(valor);
+
 // PB-32: guarda el registro SOLO si la historia es de ese proyecto y está asignada a ese usuario.
 // Una sola sentencia (INSERT ... SELECT): no hay hueco entre comprobar y guardar.
 // Devuelve { registrado: true, id_registro, titulo }, { noEncontrada: true } o { sinPermiso: true }.
@@ -29,7 +32,7 @@ const registrar = async (idProyecto, idHistoria, idUsuario, horas, fecha) => {
 const obtenerMisTiempos = async (idProyecto, idUsuario) => {
     const [historias, registros, totales] = await Promise.all([
         consultar(
-            `SELECT h.id_historia, h.titulo, h.estado_historia, s.numero AS sprint_numero,
+            `SELECT h.id_historia, h.titulo, h.estado_historia, s.numero AS sprint_numero, h.horas_estimadas,
                     (SELECT COALESCE(SUM(t.horas), 0) FROM registros_tiempo t
                       WHERE t.id_historia = h.id_historia AND t.id_usuario = ?) AS mis_horas
              FROM product_backlog h
@@ -57,7 +60,11 @@ const obtenerMisTiempos = async (idProyecto, idUsuario) => {
         )
     ]);
     return {
-        historias: historias.map((h) => ({ ...h, mis_horas: sumarHoras([h.mis_horas]) })),
+        historias: historias.map((h) => ({
+            ...h,
+            mis_horas: sumarHoras([h.mis_horas]),
+            horas_estimadas: estimadas(h.horas_estimadas)
+        })),
         registros: registros.map((r) => ({ ...r, horas: Number(r.horas) })),
         total_horas: sumarHoras([totales[0].total]),
         total_registros: Number(totales[0].registros)
@@ -71,7 +78,7 @@ const obtenerResumen = async (idProyecto) => {
     const [historias, integrantes, desglose] = await Promise.all([
         // Historias del Sprint (aunque aún no tengan horas) y cualquier otra que ya tenga registros.
         consultar(
-            `SELECT h.id_historia, h.titulo, h.puntos, h.estado_historia,
+            `SELECT h.id_historia, h.titulo, h.puntos, h.estado_historia, h.horas_estimadas,
                     s.numero AS sprint_numero, u.nombre AS responsable
              FROM product_backlog h
              LEFT JOIN sprints s ON s.id_sprint = h.id_sprint
@@ -109,6 +116,7 @@ const obtenerResumen = async (idProyecto) => {
             .sort((a, b) => Number(b.horas) - Number(a.horas));
         return {
             ...historia,
+            horas_estimadas: estimadas(historia.horas_estimadas),
             horas_totales: sumarHoras(filas.map((fila) => fila.horas)),
             total_registros: filas.reduce((total, fila) => total + Number(fila.registros), 0),
             desarrolladores: filas.map((fila) => ({

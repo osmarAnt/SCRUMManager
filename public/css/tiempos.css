@@ -125,3 +125,9 @@
         font-size: 20px;
     }
 }
+
+/* PB-46: horas estimadas (Planning Poker) en cada historia del resumen. */
+.tabla-tiempos .horas-estimadas {
+    color: #0052cc;
+    font-weight: 600;
+}
