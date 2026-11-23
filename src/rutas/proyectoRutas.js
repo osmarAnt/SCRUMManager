@@ -21,6 +21,8 @@ const evidenciaControlador = require('../controladores/evidenciaControlador');
 
 // Burndown Chart del Sprint
 const burndownControlador = require('../controladores/burndownControlador');
+// JESÚS - PB-60: BURNDOWN POR HORAS
+const burndownHorasControlador = require('../controladores/burndownHorasControlador');
 
 // PB-30: foro para dudas y comentarios de cualquier integrante.
 const foroControlador = require('../controladores/foroControlador');
@@ -356,6 +358,21 @@ router.get(
     verificarSesion,
     burndownControlador.consultar
 );
+
+
+// =======================================
+// JESÚS - PB-60: BURNDOWN POR HORAS
+// Cualquier integrante activo del proyecto puede consultarlo.
+// =======================================
+
+router.get(
+    '/:id/burndown-horas',
+    verificarSesion,
+    burndownHorasControlador.consultar
+);
+
+
+
 
 // Burndown General: suma de todos los Sprints del proyecto
 router.get(

@@ -1,0 +1,55 @@
+
+/* =====================================================
+   JESÚS - PB-60: BURNDOWN POR HORAS
+   ===================================================== */
+
+.resumen-burndown-horas #horas-resumen-ritmo {
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+#horas-resumen-ritmo[data-ritmo="En ritmo"],
+#horas-resumen-ritmo[data-ritmo="Completado"] {
+    color: #176534;
+}
+
+#horas-resumen-ritmo[data-ritmo="Atrasado"],
+#horas-resumen-ritmo[data-ritmo="Con horas pendientes"],
+#horas-resumen-ritmo[data-ritmo="Estimación agotada"] {
+    color: #b42318;
+}
+
+.aviso-burndown-horas {
+    margin: 14px 0;
+    padding: 12px 14px;
+    border: 1px solid #e7c66b;
+    border-radius: 8px;
+    background: #fff8e5;
+    color: #74520a;
+    line-height: 1.5;
+}
+
+#sin-estimaciones-burndown-horas {
+    margin: 16px 0;
+}
+
+#tabla-burndown-horas-historias th:first-child {
+    min-width: 220px;
+}
+
+#tabla-burndown-horas-historias td,
+#tabla-burndown-horas-dias td {
+    white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+    .resumen-burndown-horas {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .aviso-burndown-horas {
+        font-size: 13px;
+    }
+}
+
+/* FIN PB-60 */

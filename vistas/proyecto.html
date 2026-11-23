@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="/css/evidencias.css">
     <link rel="stylesheet" href="/css/pestanas.css">
     <link rel="stylesheet" href="/css/burndown.css">
+    <link rel="stylesheet" href="/css/burndownHoras.css">
     <link rel="stylesheet" href="/css/kanban.css">
     <link rel="stylesheet" href="/css/tiempos.css">
     <link rel="stylesheet" href="/css/planning.css">
@@ -997,18 +998,163 @@
                         </div>
 
                         <!-- Burndown por horas: aquí se dibuja la gráfica de PB-60 -->
-                        <div
-                            role="tabpanel"
-                            id="subpanel-burndown-horas"
-                            aria-labelledby="subpestana-burndown-horas"
-                            hidden
-                        >
-                            <div class="espacio-burndown-horas" id="espacio-burndown-horas">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-                                <h3>Burndown por horas</h3>
-                                <p>Aquí se mostrará cuántas horas de trabajo faltan en el Sprint, comparando la línea ideal contra la real.</p>
+                        
+                            <div
+                                role="tabpanel"
+                                id="subpanel-burndown-horas"
+                                aria-labelledby="subpestana-burndown-horas"
+                                hidden
+                            >
+                                <p
+                                    id="estado-burndown-horas"
+                                    class="ayuda-campo"
+                                    role="status"
+                                    aria-live="polite"
+                                >
+                                    Selecciona la vista Por horas para cargar la información.
+                                </p>
+
+                                <p
+                                    id="error-burndown-horas"
+                                    class="mensaje-error"
+                                    role="alert"
+                                    aria-live="polite"
+                                ></p>
+
+                                <div id="contenido-burndown-horas" hidden>
+
+                                    <p id="objetivo-burndown-horas" class="texto-dato"></p>
+                                    <p id="fechas-burndown-horas" class="fechas-sprint"></p>
+
+                                    <dl class="resumen-burndown resumen-burndown-horas">
+
+                                        <div>
+                                            <dt>Horas estimadas</dt>
+                                            <dd id="horas-resumen-estimadas">0 h</dd>
+                                        </div>
+
+                                        <div>
+                                            <dt>Horas registradas</dt>
+                                            <dd id="horas-resumen-reales">0 h</dd>
+                                        </div>
+
+                                        <div>
+                                            <dt>Horas restantes</dt>
+                                            <dd id="horas-resumen-restantes">0 h</dd>
+                                        </div>
+
+                                        <div>
+                                            <dt>Ritmo del equipo</dt>
+                                            <dd id="horas-resumen-ritmo">—</dd>
+                                        </div>
+
+                                    </dl>
+
+                                    <p
+                                        id="aviso-burndown-horas"
+                                        class="aviso-burndown-horas"
+                                        role="status"
+                                        aria-live="polite"
+                                        hidden
+                                    ></p>
+
+                                    <p
+                                        id="sin-estimaciones-burndown-horas"
+                                        class="ayuda-campo"
+                                        role="status"
+                                        hidden
+                                    >
+                                        Este Sprint todavía no tiene historias con horas estimadas.
+                                        Registra las estimaciones desde Planning Poker para generar la gráfica.
+                                    </p>
+
+                                    <section id="seccion-grafica-burndown-horas">
+
+                                        <h3 class="titulo-tabla-burndown">
+                                            Horas restantes por día
+                                        </h3>
+
+                                        <ul class="leyenda-burndown" aria-label="Leyenda de la gráfica">
+
+                                            <li>
+                                                <span class="muestra-linea muestra-ideal"></span>
+                                                Línea ideal
+                                            </li>
+
+                                            <li>
+                                                <span class="muestra-linea muestra-real"></span>
+                                                Línea real
+                                            </li>
+
+                                        </ul>
+
+                                        <div
+                                            class="grafica-burndown"
+                                            id="grafica-burndown-horas"
+                                            role="img"
+                                            aria-label="Gráfica de horas restantes del Sprint"
+                                        ></div>
+
+                                        <h3 class="titulo-tabla-burndown">
+                                            Detalle diario
+                                        </h3>
+
+                                        <p class="ayuda-campo">
+                                            Compara las horas restantes ideales con las horas restantes
+                                            calculadas a partir del tiempo registrado cada día.
+                                        </p>
+
+                                        <div class="contenedor-tabla-burndown">
+
+                                            <table class="tabla-burndown">
+
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">Día</th>
+                                                        <th scope="col">Ideal</th>
+                                                        <th scope="col">Real</th>
+                                                    </tr>
+                                                </thead>
+
+                                                <tbody id="tabla-burndown-horas-dias"></tbody>
+
+                                            </table>
+
+                                        </div>
+
+                                    </section>
+
+                                    <h3 class="titulo-tabla-burndown">
+                                        Estimación contra horas reales por historia
+                                    </h3>
+
+                                    <p class="ayuda-campo">
+                                        Una diferencia positiva indica que se registraron más horas de
+                                        las estimadas; una negativa indica que se utilizaron menos horas.
+                                    </p>
+
+                                    <div class="contenedor-tabla-burndown">
+
+                                        <table class="tabla-burndown">
+
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Historia</th>
+                                                    <th scope="col">Estimadas</th>
+                                                    <th scope="col">Reales</th>
+                                                    <th scope="col">Diferencia</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody id="tabla-burndown-horas-historias"></tbody>
+
+                                        </table>
+
+                                    </div>
+
+                                </div>
                             </div>
-                        </div>
+
 
                         <div
                             role="tabpanel"
@@ -2046,6 +2192,8 @@
 
     <!-- PB-59 (Nino): sub-pestañas Por puntos / Por horas del Burndown Chart y del Burndown General -->
     <script src="/js/burndownVistas.js" defer></script>
+
+    <script src="/js/burndownHoras.js" defer></script>
 
     <!-- REUNIONES (PB-42) -->
     <script src="/js/reuniones.js" defer></script>
