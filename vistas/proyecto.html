@@ -949,7 +949,7 @@
                             <div>
                                 <h2 id="titulo-burndown">Burndown Chart</h2>
 
-                                <p class="subtitulo">
+                                <p class="subtitulo" id="subtitulo-burndown">
                                     Puntos de historia que faltan por completar durante el Sprint.
                                     Se calculan solos a partir del estado de las historias.
                                 </p>
@@ -960,6 +960,61 @@
                                 <select id="sprint-burndown"></select>
                             </div>
                         </div>
+
+                        <!-- PB-59 (Nino): sub-pestañas del Burndown Chart, por puntos y por horas -->
+                        <div
+                            class="subpestanas-burndown"
+                            id="subpestanas-burndown"
+                            role="tablist"
+                            aria-label="Tipo de Burndown"
+                            data-panel="burndown"
+                            data-subtitulo-id="subtitulo-burndown"
+                        >
+                            <button
+                                type="button"
+                                role="tab"
+                                id="subpestana-burndown-puntos"
+                                data-vista="puntos"
+                                data-subtitulo="Puntos de historia que faltan por completar durante el Sprint. Se calculan solos a partir del estado de las historias."
+                                aria-controls="subpanel-burndown-puntos"
+                                aria-selected="true"
+                            >
+                                Por puntos
+                            </button>
+
+                            <button
+                                type="button"
+                                role="tab"
+                                id="subpestana-burndown-horas"
+                                data-vista="horas"
+                                data-subtitulo="Horas de trabajo que faltan según lo estimado en Planning Poker y lo registrado en Tiempos."
+                                aria-controls="subpanel-burndown-horas"
+                                aria-selected="false"
+                                tabindex="-1"
+                            >
+                                Por horas
+                            </button>
+                        </div>
+
+                        <!-- Burndown por horas: aquí se dibuja la gráfica de PB-60 -->
+                        <div
+                            role="tabpanel"
+                            id="subpanel-burndown-horas"
+                            aria-labelledby="subpestana-burndown-horas"
+                            hidden
+                        >
+                            <div class="espacio-burndown-horas" id="espacio-burndown-horas">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                                <h3>Burndown por horas</h3>
+                                <p>Aquí se mostrará cuántas horas de trabajo faltan en el Sprint, comparando la línea ideal contra la real.</p>
+                            </div>
+                        </div>
+
+                        <div
+                            role="tabpanel"
+                            id="subpanel-burndown-puntos"
+                            aria-labelledby="subpestana-burndown-puntos"
+                        >
 
                         <p
                             id="estado-burndown"
@@ -1030,6 +1085,9 @@
 
                         </div>
 
+                        </div>
+                        <!-- Fin del Burndown por puntos -->
+
                     </section>
                 </div>
 
@@ -1048,13 +1106,68 @@
                             <div>
                                 <h2 id="titulo-burndown-general">Burndown General</h2>
 
-                                <p class="subtitulo">
+                                <p class="subtitulo" id="subtitulo-burndown-general">
                                     Avance de todo el proyecto, Sprint por Sprint.
                                     Suma los puntos de cada Sprint y se actualiza solo
                                     cuando se crean Sprints o cambian sus historias.
                                 </p>
                             </div>
                         </div>
+
+                        <!-- PB-59 (Nino): sub-pestañas del Burndown General, por puntos y por horas -->
+                        <div
+                            class="subpestanas-burndown"
+                            id="subpestanas-burndown-general"
+                            role="tablist"
+                            aria-label="Tipo de Burndown General"
+                            data-panel="burndown-general"
+                            data-subtitulo-id="subtitulo-burndown-general"
+                        >
+                            <button
+                                type="button"
+                                role="tab"
+                                id="subpestana-general-puntos"
+                                data-vista="puntos"
+                                data-subtitulo="Avance de todo el proyecto, Sprint por Sprint. Suma los puntos de cada Sprint y se actualiza solo cuando se crean Sprints o cambian sus historias."
+                                aria-controls="subpanel-general-puntos"
+                                aria-selected="true"
+                            >
+                                Por puntos
+                            </button>
+
+                            <button
+                                type="button"
+                                role="tab"
+                                id="subpestana-general-horas"
+                                data-vista="horas"
+                                data-subtitulo="Horas de todos los Sprints: suma las estimadas en Planning Poker y descuenta las registradas en Tiempos, Sprint por Sprint."
+                                aria-controls="subpanel-general-horas"
+                                aria-selected="false"
+                                tabindex="-1"
+                            >
+                                Por horas
+                            </button>
+                        </div>
+
+                        <!-- Burndown General por horas: aquí se dibuja la gráfica de PB-61 -->
+                        <div
+                            role="tabpanel"
+                            id="subpanel-general-horas"
+                            aria-labelledby="subpestana-general-horas"
+                            hidden
+                        >
+                            <div class="espacio-burndown-horas" id="espacio-general-horas">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                                <h3>Burndown General por horas</h3>
+                                <p>Aquí se mostrarán las horas estimadas y reales de todos los Sprints del proyecto, comparando la línea ideal contra la real.</p>
+                            </div>
+                        </div>
+
+                        <div
+                            role="tabpanel"
+                            id="subpanel-general-puntos"
+                            aria-labelledby="subpestana-general-puntos"
+                        >
 
                         <p
                             id="estado-general"
@@ -1137,6 +1250,9 @@
                             </div>
 
                         </div>
+
+                        </div>
+                        <!-- Fin del Burndown General por puntos -->
 
                     </section>
 
@@ -1927,6 +2043,9 @@
 
     <!-- BURNDOWN GENERAL -->
     <script src="/js/burndownGeneral.js" defer></script>
+
+    <!-- PB-59 (Nino): sub-pestañas Por puntos / Por horas del Burndown Chart y del Burndown General -->
+    <script src="/js/burndownVistas.js" defer></script>
 
     <!-- REUNIONES (PB-42) -->
     <script src="/js/reuniones.js" defer></script>

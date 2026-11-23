@@ -261,3 +261,91 @@
     background: #eff2f5;
     color: #44546a;
 }
+
+/* ---- PB-59 (Nino): sub-pestañas Por puntos / Por horas ----
+   Distintas a las pestañas del proyecto: un recuadro ovalado y la opción elegida rellena de azul. */
+.subpestanas-burndown {
+    display: inline-flex;
+    gap: 4px;
+    margin: 0 0 22px;
+    padding: 4px;
+    border: 1px solid var(--borde);
+    border-radius: 999px;
+    background: var(--fondo);
+}
+
+.subpestanas-burndown [role="tab"] {
+    min-height: 36px;
+    margin: 0;
+    padding: 7px 20px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    box-shadow: none;
+    color: var(--texto-secundario);
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.subpestanas-burndown [role="tab"]:hover {
+    background: var(--azul-claro);
+    color: var(--azul);
+}
+
+.subpestanas-burndown [role="tab"][aria-selected="true"] {
+    background: var(--azul);
+    color: var(--blanco);
+    box-shadow: 0 1px 3px rgba(9, 30, 66, 0.25);
+}
+
+.subpestanas-burndown [role="tab"]:focus-visible {
+    outline: 3px solid #b3d4ff;
+    outline-offset: 2px;
+}
+
+/* Espacio del Burndown por horas mientras PB-60 dibuja su gráfica. */
+.espacio-burndown-horas {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+    padding: 28px;
+    border: 2px dashed #c5d4e9;
+    border-radius: 12px;
+    background: #f8faff;
+    text-align: center;
+}
+
+.espacio-burndown-horas svg {
+    width: 48px;
+    height: 48px;
+    color: #8caad1;
+}
+
+.espacio-burndown-horas h3 {
+    margin: 12px 0 6px;
+    font-size: 17px;
+}
+
+.espacio-burndown-horas p {
+    max-width: 440px;
+    margin: 0;
+    color: var(--texto-secundario);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+    .subpestanas-burndown {
+        display: flex;
+    }
+
+    .subpestanas-burndown [role="tab"] {
+        flex: 1;
+        padding: 7px 12px;
+    }
+}
