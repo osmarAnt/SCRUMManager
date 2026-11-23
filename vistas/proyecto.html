@@ -32,6 +32,7 @@
     <script src="/js/kanban.js" defer></script>
     <script src="/js/tiempos.js" defer></script>
     <script src="/js/planning.js" defer></script>
+    <script src="/js/mesaPlanning.js" defer></script>
     <script src="/js/retrospectiva.js" defer></script>
     <!-- Librerías para generar y descargar reporte PDF (PB-43 / PB-44) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
@@ -871,23 +872,65 @@
                 >
                     <section class="bloque" aria-labelledby="titulo-panel-planning">
                         <div class="cabecera-bloque">
-                            <div>
-                                <h2 id="titulo-panel-planning">Planning Poker</h2>
-                                <p class="subtitulo">
-                                    Consulta las historias del proyecto organizadas por Sprint,
-                                    con su responsable, puntos de historia y horas estimadas.
-                                </p>
-                            </div>
+                            <h2 id="titulo-panel-planning">Planning Poker</h2>
+                        </div>
+                        <p id="planning-estado-mesa" class="planning-estado" role="status">Cargando la mesa…</p>
+                        <button id="planning-reintentar-mesa" type="button" class="boton-secundario" hidden>Reintentar</button>
+                        <a id="planning-ir-backlog" href="#backlog" hidden>Abrir el Product Backlog</a>
+
+                        <div id="planning-contenido" class="planning-distribucion" hidden>
+                            <section class="planning-ficha" aria-labelledby="planning-titulo-historia">
+                                <h3 id="planning-titulo-historia"><label for="planning-historia">Historia a estimar</label></h3>
+                                <select id="planning-historia"></select>
+                                <p id="planning-descripcion"></p>
+                                <dl class="planning-datos">
+                                    <div><dt>Sprint</dt><dd id="planning-sprint"></dd></div>
+                                    <div><dt>Responsable</dt><dd id="planning-responsable"></dd></div>
+                                    <div><dt>Puntos actuales</dt><dd id="planning-puntos"></dd></div>
+                                    <div><dt>Horas estimadas</dt><dd id="planning-horas-historia"></dd></div>
+                                </dl>
+                                <fieldset id="planning-presentes" hidden>
+                                    <legend>Desarrolladores presentes</legend>
+                                    <div id="planning-invitados"></div>
+                                </fieldset>
+                            </section>
+
+                            <section class="planning-juego" aria-labelledby="planning-titulo-mesa">
+                                <div class="planning-encabezado">
+                                    <h3 id="planning-titulo-mesa">Mesa de votación</h3>
+                                    <span id="planning-fase"></span>
+                                </div>
+                                <div id="planning-mesa" class="planning-mesa" aria-label="Mesa para jugar una carta">
+                                    <p id="planning-conteo" role="status"></p>
+                                    <ul id="planning-asientos" aria-label="Cartas de los participantes"></ul>
+                                </div>
+                                <div class="planning-encabezado planning-encabezado-mazo">
+                                    <h4 id="planning-titulo-mazo">Mazo de cartas</h4>
+                                </div>
+                                <div id="planning-mazo" role="group" aria-labelledby="planning-titulo-mazo"></div>
+                                <p id="planning-turno" class="planning-turno" role="status"></p>
+                                <div class="planning-acciones">
+                                    <button id="planning-iniciar" type="button" hidden>Abrir votación</button>
+                                    <button id="planning-revelar" type="button" hidden>Revelar cartas</button>
+                                    <button id="planning-guardar" type="button" hidden>Guardar acuerdo</button>
+                                    <button id="planning-repetir" class="boton-secundario" type="button" hidden>Nueva ronda</button>
+                                    <button id="planning-cancelar" class="planning-cancelar" type="button" hidden>Cancelar votación</button>
+                                </div>
+                                <p id="planning-error" class="planning-error" role="alert"></p>
+                            </section>
                         </div>
 
-                        <p id="planning-resumen" class="planning-resumen" hidden></p>
-                        <p id="planning-estado" class="planning-estado" role="status" aria-live="polite">
-                            Cargando historias…
-                        </p>
-                        <button id="planning-reintentar" type="button" class="boton-secundario" hidden>
-                            Reintentar
-                        </button>
-                        <div id="planning-grupos" aria-busy="false"></div>
+                        <details id="planning-historias-sprint" class="planning-historias-sprint">
+                            <summary>Historias por sprint</summary>
+                            <p id="planning-resumen" class="planning-resumen" hidden></p>
+                            <p id="planning-estado" class="planning-estado" role="status" aria-live="polite">
+                                Cargando historias…
+                            </p>
+                            <button id="planning-reintentar" type="button" class="boton-secundario" hidden>
+                                Reintentar
+                            </button>
+                            <div id="planning-grupos" aria-busy="false"></div>
+                        </details>
                     </section>
                 </div>
 

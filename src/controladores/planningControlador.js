@@ -1,4 +1,5 @@
 const planningDAO = require('../dao/planningDAO');
+const mesaPlanning = require('../dao/mesaPlanningDAO');
 const proyectoDAO = require('../dao/proyectoDAO');
 const { HORAS_ESTIMADAS_MAXIMAS, validarHorasEstimadas } = require('../utilidades/horasEstimadas');
 
@@ -33,6 +34,8 @@ const consultarPlanning = async (req, res) => {
             grupos.get(idSprint).historias.push({
                 id_historia: Number(historia.id_historia),
                 titulo: historia.titulo,
+                descripcion: historia.descripcion,
+                criterios: historia.criterios,
                 id_responsable: historia.id_responsable === null ? null : Number(historia.id_responsable),
                 responsable: historia.responsable,
                 puntos: historia.puntos === null ? null : Number(historia.puntos),
@@ -92,4 +95,29 @@ const guardarHorasEstimadas = async (req, res) => {
     }
 };
 
-module.exports = { consultarPlanning, guardarHorasEstimadas };
+const accionesDeMesa = new Set(['iniciar', 'votar', 'revelar', 'repetir', 'cancelar']);
+
+async function atenderMesa(req, res, accion) {
+    if (!idValido(req.params.id)) return res.status(404).json({ mensaje: 'No encontramos ese proyecto.' });
+    const idProyecto = Number(req.params.id);
+    const idUsuario = req.session.idUsuario;
+    try {
+        if (accion === 'consultar') return res.json(await mesaPlanning.consultar(idProyecto, idUsuario));
+        await mesaPlanning.actualizar(idProyecto, idUsuario, accion, req.body || {});
+        return res.sendStatus(204);
+    } catch (error) {
+        if (error instanceof mesaPlanning.ErrorMesa) return res.status(error.estado).json({ mensaje: error.message });
+        console.error('Error en la mesa de Planning Poker:', error.code || error.message);
+        return res.status(503).json({ mensaje: 'La mesa de votación no está disponible por el momento.' });
+    }
+}
+
+const consultarMesa = (req, res) => atenderMesa(req, res, 'consultar');
+const guardarAcuerdo = (req, res) => atenderMesa(req, res, 'guardar');
+const actualizarMesa = (req, res) => {
+    const accion = req.body?.accion;
+    if (!accionesDeMesa.has(accion)) return res.status(400).json({ mensaje: 'Acción de mesa desconocida.' });
+    return atenderMesa(req, res, accion);
+};
+
+module.exports = { consultarPlanning, guardarHorasEstimadas, consultarMesa, actualizarMesa, guardarAcuerdo };

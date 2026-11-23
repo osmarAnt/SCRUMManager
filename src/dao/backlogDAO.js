@@ -224,6 +224,7 @@ const BacklogDAO = {
             }
 
             const anterior = filas[0];
+            if (datos.puntos === undefined) datos = { ...datos, puntos: anterior.puntos };
 
             // Campos que vamos a comparar
             const campos = {

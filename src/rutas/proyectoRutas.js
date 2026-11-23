@@ -237,6 +237,9 @@ router.put(
 
 // PB-45: CONSULTAR PLANNING POKER (todos los integrantes activos del proyecto).
 router.get('/:id/planning', verificarSesion, planningControlador.consultarPlanning);
+router.get('/:id/planning/mesa', verificarSesion, planningControlador.consultarMesa);
+router.patch('/:id/planning/mesa', verificarSesion, planningControlador.actualizarMesa);
+router.post('/:id/planning/mesa/acuerdo', verificarSesion, planningControlador.guardarAcuerdo);
 
 // PB-46: HORAS ESTIMADAS POR HISTORIA (solo el Scrum Master del proyecto).
 router.put(

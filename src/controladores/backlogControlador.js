@@ -92,7 +92,7 @@ exports.actualizarHistoria = async (req, res) => {
         descripcion.length > 1000 ||
         !['Alta', 'Media', 'Baja'].includes(prioridad) ||
         !(
-            puntos === null ||
+            puntos === undefined || puntos === null ||
             (
                 Number.isSafeInteger(puntos) &&
                 puntos > 0 &&

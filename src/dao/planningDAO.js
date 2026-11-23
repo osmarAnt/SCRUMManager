@@ -15,7 +15,7 @@ const esIntegrante = async (idProyecto, idUsuario) => {
 
 const obtenerHistorias = async (idProyecto) => {
     const [historias] = await conexion.promise().query(
-        `SELECT h.id_historia, h.titulo, h.id_responsable,
+        `SELECT h.id_historia, h.titulo, h.descripcion, h.id_responsable,
                 u.nombre AS responsable,
                 s.id_sprint, s.numero AS sprint_numero,
                 h.puntos, h.horas_estimadas
@@ -28,6 +28,15 @@ const obtenerHistorias = async (idProyecto) => {
                   h.orden ASC, h.id_historia ASC`,
         [idProyecto]
     );
+    const [criterios] = await conexion.promise().query(
+        `SELECT c.id_historia, c.descripcion FROM criterios_aceptacion c
+         JOIN product_backlog h ON h.id_historia = c.id_historia
+         WHERE h.id_proyecto = ? ORDER BY c.id_criterio`,
+        [idProyecto]
+    );
+    const porHistoria = new Map(historias.map((historia) => [historia.id_historia, historia]));
+    for (const historia of historias) historia.criterios = [];
+    for (const criterio of criterios) porHistoria.get(criterio.id_historia)?.criterios.push(criterio.descripcion);
     return historias;
 };
 

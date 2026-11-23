@@ -767,3 +767,29 @@ DEALLOCATE PREPARE pb45_sentencia_horas;
 
 SHOW COLUMNS FROM product_backlog LIKE 'horas_estimadas';
 
+
+CREATE TABLE IF NOT EXISTS planning_rondas (
+    id_ronda INT NOT NULL AUTO_INCREMENT,
+    id_proyecto INT NOT NULL,
+    id_historia INT NOT NULL,
+    numero INT NOT NULL,
+    fase ENUM('votacion', 'revelada', 'repetida', 'cerrada', 'cancelada') NOT NULL DEFAULT 'votacion',
+    puntos_acordados INT NULL,
+    PRIMARY KEY (id_ronda),
+    INDEX idx_planning_proyecto_ronda (id_proyecto, id_ronda),
+    CONSTRAINT fk_planning_proyecto FOREIGN KEY (id_proyecto)
+        REFERENCES proyectos (id_proyecto) ON DELETE CASCADE,
+    CONSTRAINT fk_planning_historia FOREIGN KEY (id_historia)
+        REFERENCES product_backlog (id_historia) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS planning_votos (
+    id_ronda INT NOT NULL,
+    id_usuario INT NOT NULL,
+    carta VARCHAR(3) NULL,
+    PRIMARY KEY (id_ronda, id_usuario),
+    CONSTRAINT fk_planning_voto_ronda FOREIGN KEY (id_ronda)
+        REFERENCES planning_rondas (id_ronda) ON DELETE CASCADE,
+    CONSTRAINT fk_planning_voto_usuario FOREIGN KEY (id_usuario)
+        REFERENCES usuarios (id_usuario) ON DELETE CASCADE
+) ENGINE=InnoDB;

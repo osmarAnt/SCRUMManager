@@ -4,7 +4,8 @@ const idProyectoBacklog = window.location.pathname
     .filter(Boolean)[1];
 let rolActual = ''; 
 let listaHistorias = []; 
-let idHistoriaEditando = null; 
+let idHistoriaEditando = null;
+let puntosAlEditar = null;
 let idHistoriaCriteriosActual = null; // Guarda el ID de la historia cuyos criterios estamos viendo
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -20,6 +21,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     cargarHistorias(idProyecto);
+    document.addEventListener('pestana-activa', (evento) => {
+        if (evento.detail?.id === 'backlog') cargarHistorias(idProyecto);
+    });
     const buscadorHistorias = document.getElementById('buscar-historias');
     if (buscadorHistorias) {
         buscadorHistorias.addEventListener('input', aplicarBusquedaHistorias);
@@ -333,7 +337,8 @@ function prepararEdicion(idHistoria) {
 
     document.getElementById('titulo').value = historia.titulo;
     document.getElementById('descripcion').value = historia.descripcion;
-    document.getElementById('puntos').value = historia.puntos || '';
+    puntosAlEditar = historia.puntos ?? null;
+    document.getElementById('puntos').value = puntosAlEditar ?? '';
     document.getElementById('prioridad').value = historia.prioridad;
 
     idHistoriaEditando = idHistoria;
@@ -352,16 +357,20 @@ async function guardarHistoria(evento, idProyecto) {
 
     const titulo = document.getElementById('titulo').value;
     const descripcion = document.getElementById('descripcion').value;
-    const puntos = document.getElementById('puntos').value;
+    const valorPuntos = document.getElementById('puntos').value;
+    const puntos = valorPuntos === '' ? null : Number(valorPuntos);
     const prioridad = document.getElementById('prioridad').value;
 
     const datosHistoria = {
         id_proyecto: idProyecto,
         titulo,
         descripcion,
-        puntos: puntos ? parseInt(puntos) : null,
         prioridad
     };
+
+    if (idHistoriaEditando === null || puntos !== puntosAlEditar) {
+        datosHistoria.puntos = puntos;
+    }
 
     let url = '/backlog';
     let metodo = 'POST';
