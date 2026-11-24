@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="/css/planning.css">
     <link rel="stylesheet" href="/css/retrospectiva.css">
     <link rel="stylesheet" href="/css/reuniones.css">
-
+    <link rel="stylesheet" href="/css/resumenProyecto.css">
     <!-- CSS DEL BUZÓN DE NOTIFICACIONES -->
     <link rel="stylesheet" href="/css/notificaciones.css">
 
@@ -281,6 +281,88 @@
 
                 <!-- MENÚ PRINCIPAL -->
                 <div class="panel-pestana" role="tabpanel" id="panel-menu" aria-labelledby="pestana-menu">
+
+
+                    <!-- PB-64: PANEL DE RESUMEN DEL PROYECTO -->
+                    <section
+                        id="seccion-resumen-proyecto"
+                        class="bloque bloque-resumen-proyecto"
+                        aria-labelledby="titulo-resumen-proyecto"
+                    >
+                        <div class="cabecera-bloque">
+                            <div>
+                                <h2 id="titulo-resumen-proyecto">Resumen del proyecto</h2>
+                                <p class="subtitulo">Vista rápida del estado actual, avance e indicadores clave.</p>
+                            </div>
+                            <button
+                                id="actualizar-resumen-proyecto"
+                                type="button"
+                                class="boton-secundario"
+                            >
+                                Actualizar
+                            </button>
+                        </div>
+
+                        <p
+                            id="estado-resumen-proyecto"
+                            class="estado-resumen-proyecto"
+                            role="status"
+                            aria-live="polite"
+                        >
+                            Cargando resumen del proyecto...
+                        </p>
+
+                        <div id="grid-resumen-proyecto" class="grid-resumen-proyecto" hidden>
+                            <!-- Tarjeta 1: Sprint actual -->
+                            <article class="tarjeta-resumen">
+                                <div class="cabecera-tarjeta-resumen">
+                                    <h3 class="etiqueta-resumen">Sprint actual</h3>
+                                    <span id="resumen-sprint-estado" class="insignia-resumen">—</span>
+                                </div>
+                                <p id="resumen-sprint-titulo" class="valor-principal-resumen">—</p>
+                                <p id="resumen-sprint-dias" class="valor-principal-resumen" style="font-size: 16px;">—</p>
+                                <p id="resumen-sprint-detalle" class="detalle-resumen"></p>
+                            </article>
+
+                            <!-- Tarjeta 2: Avance general -->
+                            <article class="tarjeta-resumen">
+                                <div class="cabecera-tarjeta-resumen">
+                                    <h3 class="etiqueta-resumen">Avance general</h3>
+                                    <span id="resumen-avance-insignia" class="insignia-resumen">0/0 historias</span>
+                                </div>
+                                <p id="resumen-avance-porcentaje" class="valor-principal-resumen">0%</p>
+                                <div class="barra-progreso-resumen" aria-hidden="true">
+                                    <span id="resumen-avance-barra" class="relleno-progreso-resumen" style="width: 0%;"></span>
+                                </div>
+                                <p id="resumen-avance-detalle" class="detalle-resumen"></p>
+                            </article>
+
+                            <!-- Tarjeta 3: Historias por estado -->
+                            <article class="tarjeta-resumen">
+                                <div class="cabecera-tarjeta-resumen">
+                                    <h3 class="etiqueta-resumen">Historias</h3>
+                                </div>
+                                <p id="resumen-historias-total" class="valor-principal-resumen">0 historias</p>
+                                <ul id="resumen-historias-estados" class="lista-estados-resumen"></ul>
+                                <p id="resumen-historias-detalle" class="detalle-resumen"></p>
+                            </article>
+
+                            <!-- Tarjeta 4: Últimos avisos -->
+                            <article class="tarjeta-resumen tarjeta-resumen--avisos">
+                                <div class="cabecera-tarjeta-resumen">
+                                    <h3 class="etiqueta-resumen">Últimos avisos</h3>
+                                    <span id="resumen-avisos-conteo" class="insignia-resumen">0 avisos</span>
+                                </div>
+                                <p id="resumen-avisos-vacio" class="detalle-resumen" hidden>
+                                    Todavía no hay avisos publicados en este proyecto.
+                                </p>
+                                <ul id="resumen-avisos-lista" class="lista-avisos-resumen"></ul>
+                                <button type="button" id="resumen-ir-avisos" class="enlace-ver-avisos">
+                                    Ver todos los avisos →
+                                </button>
+                            </article>
+                        </div>
+                    </section>
 
                     <!-- INTEGRANTES -->
                     <section class="bloque" aria-labelledby="titulo-integrantes">
@@ -2332,6 +2414,9 @@
 
     <!-- REUNIONES (PB-42) -->
     <script src="/js/reuniones.js" defer></script>
+    
+    <!-- PB-64: PANEL DE RESUMEN DEL PROYECTO -->
+    <script src="/js/resumenProyecto.js" defer></script>
 
 </body>
 </html>

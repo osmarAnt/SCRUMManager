@@ -1,0 +1,188 @@
+/* PB-64: Panel de resumen del proyecto */
+.bloque-resumen-proyecto {
+    margin-bottom: 24px;
+}
+
+.estado-resumen-proyecto {
+    margin: 0;
+    color: var(--texto-secundario);
+    font-size: 13px;
+}
+
+.estado-resumen-proyecto[data-tipo="error"] {
+    color: #b42318;
+}
+
+.grid-resumen-proyecto {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.tarjeta-resumen {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 18px 20px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: var(--blanco);
+}
+
+.cabecera-tarjeta-resumen {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.etiqueta-resumen {
+    margin: 0;
+    color: var(--texto-secundario);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.valor-principal-resumen {
+    margin: 0;
+    color: var(--texto);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.detalle-resumen {
+    margin: 0;
+    color: var(--texto-secundario);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.insignia-resumen {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 12px;
+    background: var(--azul-claro);
+    color: var(--azul);
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.insignia-resumen--alerta {
+    background: #fff3d6;
+    color: #805600;
+}
+
+.insignia-resumen--exito {
+    background: #e4f5e9;
+    color: #176534;
+}
+
+.insignia-resumen--neutro {
+    background: var(--fondo);
+    color: var(--texto-secundario);
+}
+
+/* Barra de progreso de avance */
+.barra-progreso-resumen {
+    width: 100%;
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--fondo);
+}
+
+.relleno-progreso-resumen {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--azul);
+    transition: width 0.3s ease;
+}
+
+/* Desglose de historias por estado */
+.lista-estados-resumen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 2px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.chip-estado-resumen {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    background: var(--fondo);
+    color: var(--texto);
+    font-size: 12px;
+}
+
+.chip-estado-resumen strong {
+    color: var(--azul);
+}
+
+/* Últimos avisos dentro de la tarjeta */
+.tarjeta-resumen--avisos {
+    grid-column: 1 / -1;
+}
+
+.lista-avisos-resumen {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.item-aviso-resumen {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    background: var(--fondo);
+}
+
+.item-aviso-resumen strong {
+    font-size: 13px;
+    color: var(--texto);
+}
+
+.item-aviso-resumen span {
+    font-size: 12px;
+    color: var(--texto-secundario);
+}
+
+.enlace-ver-avisos {
+    align-self: flex-start;
+    padding: 0;
+    min-height: auto;
+    border: 0;
+    background: transparent;
+    color: var(--azul);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.enlace-ver-avisos:hover {
+    background: transparent;
+    text-decoration: underline;
+}
+
+@media (max-width: 960px) {
+    .grid-resumen-proyecto {
+        grid-template-columns: 1fr;
+    }
+}
