@@ -26,6 +26,10 @@ const duracionSprint = document.getElementById('duracion-sprint');
 const listaSprints = document.getElementById('lista-sprints');
 const sinSprints = document.getElementById('sin-sprints');
 const plantillaSprint = document.getElementById('plantilla-sprint');
+const dialogoCierreSprint = document.getElementById('dialogo-cerrar-sprint');
+const botonConfirmarCierre = document.getElementById('confirmar-cierre-sprint');
+const mensajeCierreSprint = document.getElementById('mensaje-cierre-sprint');
+let idSprintCierre = null;
 
 const SIN_OBJETIVO = 'Este proyecto todavía no tiene un objetivo registrado.';
 let proyectoActual = null;
@@ -76,16 +80,28 @@ const pintarProyecto = (proyecto) => {
     objetivoProyecto.textContent = proyecto.objetivo || SIN_OBJETIVO;
 };
 
-const pintarSprints = (sprints) => {
+const pintarSprints = (sprints, puedeAdministrar = false) => {
     listaSprints.replaceChildren();
     sinSprints.hidden = sprints.length > 0;
+
     sprints.forEach((sprint) => {
         const tarjeta = plantillaSprint.content.cloneNode(true);
+        const articulo = tarjeta.querySelector('.tarjeta-sprint');
         tarjeta.querySelector('.nombre-sprint').textContent = `Sprint ${sprint.numero}`;
         tarjeta.querySelector('.estado-sprint').textContent = sprint.estado;
         tarjeta.querySelector('.objetivo-sprint').textContent = sprint.objetivo;
         tarjeta.querySelector('.fechas-sprint').textContent =
-            `${formatearFecha(sprint.fecha_inicio)} – ${formatearFecha(sprint.fecha_fin)} · ${sprint.duracion_dias} ${sprint.duracion_dias === 1 ? 'día' : 'días'}`;
+            `${formatearFecha(sprint.fecha_inicio)} – ${formatearFecha(sprint.fecha_fin)} · ${sprint.duracion_dias} ${sprint.duracion_dias === 1 ? 'día' : 'días'}${sprint.fecha_cierre ? ` · Cerrado: ${formatearFecha(sprint.fecha_cierre)}` : ''}`;
+
+        if (puedeAdministrar && sprint.estado === 'En curso') {
+            const botonCerrar = document.createElement('button');
+            botonCerrar.type = 'button';
+            botonCerrar.className = 'boton-secundario boton-cerrar-sprint';
+            botonCerrar.textContent = 'Cerrar Sprint';
+            botonCerrar.addEventListener('click', () => abrirDialogoCierreSprint(sprint));
+            articulo.appendChild(botonCerrar);
+        }
+
         listaSprints.appendChild(tarjeta);
     });
 };
@@ -122,7 +138,7 @@ const cargarProyecto = async () => {
         formEditar.hidden = true;
         formSprint.hidden = true;
         pintarProyecto(datos.proyecto);
-        pintarSprints(datos.sprints);
+        pintarSprints(datos.sprints, datos.puedeAdministrar);
         await prepararSprintBacklog(datos.sprints, datos.puedeAdministrar);
         estadoDetalle.hidden = true;
         contenido.hidden = false;
@@ -162,6 +178,98 @@ const avisar = (elemento, texto) => {
     elemento.textContent = texto;
     elemento.hidden = false;
 };
+
+const abrirDialogoCierreSprint = async (sprint) => {
+    idSprintCierre = Number(sprint.id_sprint);
+    document.getElementById('titulo-cierre-sprint').textContent = `Cerrar Sprint ${sprint.numero}`;
+    document.getElementById('cierre-historias-completadas').textContent = 'Calculando...';
+    document.getElementById('cierre-historias-pendientes').textContent = 'Calculando...';
+    document.getElementById('cierre-puntos-completados').textContent = 'Calculando...';
+    document.getElementById('cierre-puntos-pendientes').textContent = 'Calculando...';
+    mensajeCierreSprint.textContent = '';
+    botonConfirmarCierre.disabled = true;
+    dialogoCierreSprint.showModal();
+
+    try {
+        const respuesta = await peticionJson(
+            `/proyectos/${idProyecto}/sprints/${idSprintCierre}/resumen-cierre`,
+            'GET'
+        );
+
+        if (!respuesta) return;
+
+        if (!respuesta.ok) {
+            mensajeCierreSprint.textContent = respuesta.resultado.mensaje || 'No se pudo consultar el resumen.';
+            return;
+        }
+
+        const resumen = respuesta.resultado.resumen;
+        document.getElementById('cierre-historias-completadas').textContent =
+            `${resumen.historias_completadas} de ${resumen.historias_totales}`;
+        document.getElementById('cierre-historias-pendientes').textContent =
+            `${resumen.historias_pendientes} de ${resumen.historias_totales}`;
+        document.getElementById('cierre-puntos-completados').textContent =
+            `${resumen.puntos_completados} de ${resumen.puntos_totales}`;
+        document.getElementById('cierre-puntos-pendientes').textContent =
+            `${resumen.puntos_pendientes} de ${resumen.puntos_totales}`;
+        botonConfirmarCierre.disabled = false;
+    } catch (error) {
+        console.error(error);
+        mensajeCierreSprint.textContent = 'No se pudo conectar con el servidor.';
+    }
+};
+
+const confirmarCierreSprint = async () => {
+    if (!idSprintCierre) return;
+
+    botonConfirmarCierre.disabled = true;
+    mensajeCierreSprint.textContent = '';
+
+    try {
+        const respuesta = await peticionJson(
+            `/proyectos/${idProyecto}/sprints/${idSprintCierre}/cerrar`,
+            'POST'
+        );
+
+        if (!respuesta) return;
+
+        if (!respuesta.ok) {
+            mensajeCierreSprint.textContent = respuesta.resultado.mensaje || 'No se pudo cerrar el Sprint.';
+            return;
+        }
+
+        dialogoCierreSprint.close();
+        idSprintCierre = null;
+        avisar(confirmacionSprint, respuesta.resultado.mensaje);
+
+        const actualizado = await peticionJson(`/proyectos/${idProyecto}/datos`, 'GET');
+        if (actualizado && actualizado.ok) {
+            pintarSprints(actualizado.resultado.sprints, actualizado.resultado.puedeAdministrar);
+            await prepararSprintBacklog(
+                actualizado.resultado.sprints,
+                actualizado.resultado.puedeAdministrar
+            );
+        }
+
+        document.dispatchEvent(new CustomEvent('sprint-cerrado'));
+    } catch (error) {
+        console.error(error);
+        mensajeCierreSprint.textContent = 'No se pudo conectar con el servidor.';
+    } finally {
+        botonConfirmarCierre.disabled = false;
+    }
+};
+
+document.getElementById('cancelar-cierre-sprint').addEventListener('click', () => {
+    dialogoCierreSprint.close();
+    idSprintCierre = null;
+});
+
+dialogoCierreSprint.addEventListener('cancel', () => {
+    idSprintCierre = null;
+});
+
+botonConfirmarCierre.addEventListener('click', confirmarCierreSprint);
 
 // ---- PB-05: editar proyecto ----
 botonEditar.addEventListener('click', () => {
@@ -272,7 +380,7 @@ formSprint.addEventListener('submit', async (evento) => {
         avisar(confirmacionSprint, respuesta.resultado.mensaje);
         const actualizado = await peticionJson(`/proyectos/${idProyecto}/datos`, 'GET');
         if (actualizado && actualizado.ok) {
-            pintarSprints(actualizado.resultado.sprints);
+            pintarSprints(actualizado.resultado.sprints, actualizado.resultado.puedeAdministrar);
 
             await prepararSprintBacklog(
             actualizado.resultado.sprints,
@@ -817,6 +925,8 @@ async function cargarSprintBacklog() {
 
         const planificado =
             sprint?.estado === 'Planificado';
+        const sprintFinalizado =
+            sprint?.estado === 'Finalizado';
 
         const botonAgregar =
             formAgregarHistoria.querySelector(
@@ -1015,7 +1125,7 @@ async function cargarSprintBacklog() {
             const estadoBloqueado =
                 valorEstado === 'En revision' || valorEstado === 'Aprobada';
 
-            selectorEstado.disabled = estadoBloqueado;
+            selectorEstado.disabled = estadoBloqueado || sprintFinalizado;
 
             // Guardar el estado en MySQL
             selectorEstado.addEventListener('change', async () => {
@@ -1052,7 +1162,7 @@ async function cargarSprintBacklog() {
                     mensajeEstadoHistoria.textContent =
                         error.message || 'Error al guardar el estado.';
                 } finally {
-                    selectorEstado.disabled = false;
+                    selectorEstado.disabled = estadoBloqueado || sprintFinalizado;
                 }
             });
 
@@ -1101,6 +1211,7 @@ async function cargarSprintBacklog() {
                 );
                 selector.disabled = true;
             }
+            selector.disabled = selector.disabled || sprintFinalizado;
             campo.append(etiqueta, selector);
 
 
@@ -1109,7 +1220,7 @@ async function cargarSprintBacklog() {
             botonAsignar.type = 'button';
             botonAsignar.textContent = 'Guardar responsable';
             botonAsignar.disabled =
-                !desarrolladoresBacklog.length;
+                !desarrolladoresBacklog.length || sprintFinalizado;
             botonAsignar.addEventListener('click', async () => {
                 const id_responsable = Number(selector.value);
 
@@ -1131,7 +1242,7 @@ async function cargarSprintBacklog() {
             // ===== PB-15 =====
             // Quitar una historia pendiente
 
-            if (historia.estado_historia === 'Pendiente') {
+            if (historia.estado_historia === 'Pendiente' && !sprintFinalizado) {
 
                 const botonQuitar =
                     document.createElement('button');
@@ -1170,6 +1281,7 @@ async function cargarSprintBacklog() {
 
             // PB-18: evidencias y envío a revisión (solo el desarrollador responsable de esta historia)
             if (
+                !sprintFinalizado &&
                 rolEnElProyecto === 'Desarrollador' &&
                 idUsuarioActual !== null &&
                 Number(historia.id_responsable) === idUsuarioActual &&
@@ -1177,7 +1289,7 @@ async function cargarSprintBacklog() {
             ) {
                 tarjeta.appendChild(window.crearPanelEvidencias(historia));
             }
-            if (puedeAdministrarBacklog) {
+            if (puedeAdministrarBacklog && !sprintFinalizado) {
                 tarjeta.appendChild(acciones);
             }
             listaHistoriasSprint.appendChild(tarjeta);

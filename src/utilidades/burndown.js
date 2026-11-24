@@ -35,9 +35,9 @@ const redondear = (valor) => Math.round(valor * 10) / 10;
 //  - Ideal: baja en línea recta desde la línea base hasta 0 en el último día del Sprint.
 //  - Real:  puntos pendientes guardados en el historial de cada día (null si el día aún no llega).
 // historial: [{ fecha, puntos_restantes }]
-const construirSerie = ({ fechaInicio, fechaFin, hoy, lineaBase, historial }) => {
+const construirSerie = ({ fechaInicio, fechaFin, fechaFinIdeal = fechaFin, hoy, lineaBase, historial }) => {
     const fechas = listarFechas(fechaInicio, fechaFin);
-    const total = fechas.length;
+    const diasIdeal = listarFechas(fechaInicio, fechaFinIdeal).length;
     const porFecha = new Map(historial.map((fila) => [fila.fecha, fila]));
 
     const dias = [{
@@ -51,12 +51,15 @@ const construirSerie = ({ fechaInicio, fechaFin, hoy, lineaBase, historial }) =>
     fechas.forEach((fecha, posicion) => {
         const numero = posicion + 1;
         const fila = fecha <= hoy ? porFecha.get(fecha) : null;
+        const ideal = fecha <= fechaFinIdeal
+            ? redondear(lineaBase * (diasIdeal - numero) / diasIdeal)
+            : 0;
         dias.push({
             indice: numero,
             fecha,
             etiqueta: etiquetaDia(fecha),
-            ideal: redondear(lineaBase * (total - numero) / total),
-            real: fila ? fila.puntos_restantes : null
+            ideal,
+            real: fila ? Number(fila.puntos_restantes) : null
         });
     });
 
@@ -85,10 +88,10 @@ const resumirAvance = ({ dias, hoy, fechaInicio, fechaFin }) => {
 
 // El estado del Sprint se deduce de sus fechas (la columna "estado" de la base de datos no avanza sola).
 const estadoSprint = (sprint, hoy) => {
-    if (hoy < sprint.fecha_inicio) {
-        return 'Por iniciar';
+    if (sprint.fecha_cierre || sprint.estado === 'Finalizado') {
+        return 'Finalizado';
     }
-    return hoy > sprint.fecha_fin ? 'Finalizado' : 'En curso';
+    return hoy < sprint.fecha_inicio ? 'Por iniciar' : 'En curso';
 };
 
 // sprints: [{ numero, fecha_inicio, fecha_fin, duracion_dias, planeados, completados }] ordenados por fecha.

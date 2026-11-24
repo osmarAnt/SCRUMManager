@@ -68,7 +68,9 @@ const registrarSprintsVigentes = async () => {
                     - COALESCE(SUM(CASE WHEN h.estado_historia IN (${MARCAS_COMPLETADOS}) THEN h.puntos ELSE 0 END), 0)
          FROM sprints s
          LEFT JOIN product_backlog h ON h.id_sprint = s.id_sprint
-         WHERE s.fecha_fin >= CURDATE()
+         WHERE s.fecha_inicio <= CURDATE()
+            AND s.fecha_cierre IS NULL
+            AND s.estado <> 'Finalizado'
          GROUP BY s.id_sprint
          ON DUPLICATE KEY UPDATE
             puntos_totales = VALUES(puntos_totales),
@@ -83,13 +85,26 @@ const registrarSprintsVigentes = async () => {
 //  2. Los días que nadie registró (sin cambios ni consultas) repiten el último valor conocido, porque sin
 //     cambios los puntos no se mueven. Se guardan para que el historial quede completo.
 const sincronizarSprint = async (sprint, hoy) => {
-    const actuales = await calcularPuntos(sprint.id_sprint);
-    if (hoy <= sprint.fecha_fin) {
+    const cerrado = Boolean(sprint.fecha_cierre) || sprint.estado === 'Finalizado';
+    const fechaCierre = sprint.fecha_cierre || (cerrado ? sprint.fecha_fin : null);
+    let actuales = await calcularPuntos(sprint.id_sprint);
+    let filas = await listarHistorial(sprint.id_sprint);
+
+    if (cerrado) {
+        const fotoCierre = filas.filter((fila) => fila.fecha <= fechaCierre).pop();
+        if (fotoCierre) {
+            actuales = {
+                puntos_totales: Number(fotoCierre.puntos_totales),
+                puntos_completados: Number(fotoCierre.puntos_completados),
+                puntos_restantes: Number(fotoCierre.puntos_restantes)
+            };
+        }
+    } else if (hoy >= sprint.fecha_inicio) {
         await guardarFila(sprint.id_sprint, hoy, actuales);
     }
 
-    let filas = await listarHistorial(sprint.id_sprint);
-    const ultimoDia = hoy < sprint.fecha_fin ? hoy : sprint.fecha_fin;
+    filas = await listarHistorial(sprint.id_sprint);
+    const ultimoDia = cerrado ? fechaCierre : hoy;
 
     if (ultimoDia >= sprint.fecha_inicio) {
         const porFecha = new Map(filas.map((fila) => [fila.fecha, fila]));
@@ -108,9 +123,9 @@ const sincronizarSprint = async (sprint, hoy) => {
             const origen = anterior || primeraDelSprint || actuales;
             const fila = {
                 fecha,
-                puntos_totales: origen.puntos_totales,
-                puntos_completados: origen.puntos_completados,
-                puntos_restantes: origen.puntos_restantes
+                puntos_totales: Number(origen.puntos_totales),
+                puntos_completados: Number(origen.puntos_completados),
+                puntos_restantes: Number(origen.puntos_restantes)
             };
             nuevas.push(fila);
             anterior = fila;

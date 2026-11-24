@@ -9,6 +9,9 @@ const BacklogDAO = {
             INNER JOIN sprints AS sprint
                 ON sprint.id_sprint = ?
                 AND sprint.id_proyecto = historia.id_proyecto
+                AND sprint.fecha_inicio > CURDATE()
+                AND sprint.fecha_cierre IS NULL
+                AND sprint.estado <> 'Finalizado'
             SET historia.id_sprint = sprint.id_sprint
             WHERE historia.id_historia = ?
                 AND historia.id_proyecto = ?
@@ -24,12 +27,17 @@ const BacklogDAO = {
     // ===== JESÚS: PB-15 - QUITAR HISTORIA DEL SPRINT =====
     quitarDelSprint: async (idProyecto, idSprint, idHistoria) => {
         const query = `
-            UPDATE product_backlog
-            SET id_sprint = NULL, id_responsable = NULL
-            WHERE id_proyecto = ?
-                AND id_sprint = ?
-                AND id_historia = ?
-                AND estado_historia = 'Pendiente'
+            UPDATE product_backlog AS historia
+            INNER JOIN sprints AS sprint
+                ON sprint.id_sprint = historia.id_sprint
+                AND sprint.id_proyecto = historia.id_proyecto
+                AND sprint.estado <> 'Finalizado'
+                AND sprint.fecha_cierre IS NULL
+            SET historia.id_sprint = NULL, historia.id_responsable = NULL
+            WHERE historia.id_proyecto = ?
+                AND historia.id_sprint = ?
+                AND historia.id_historia = ?
+                AND historia.estado_historia = 'Pendiente'
         `;
         const [resultado] = await pool.promise().query(query, [
             idProyecto, idSprint, idHistoria
@@ -45,11 +53,16 @@ const BacklogDAO = {
             await conexion.beginTransaction();
 
             const [historias] = await conexion.execute(
-                `SELECT titulo, id_responsable
-             FROM product_backlog
-             WHERE id_proyecto = ?
-             AND id_sprint = ?
-             AND id_historia = ?
+                `SELECT historia.titulo, historia.id_responsable
+             FROM product_backlog AS historia
+             INNER JOIN sprints AS sprint
+                ON sprint.id_sprint = historia.id_sprint
+                AND sprint.id_proyecto = historia.id_proyecto
+                AND sprint.estado <> 'Finalizado'
+                AND sprint.fecha_cierre IS NULL
+             WHERE historia.id_proyecto = ?
+             AND historia.id_sprint = ?
+             AND historia.id_historia = ?
              FOR UPDATE`,
                 [idProyecto, idSprint, idHistoria]
             );
@@ -61,6 +74,11 @@ const BacklogDAO = {
 
             const [resultado] = await conexion.execute(
                 `UPDATE product_backlog AS historia
+             INNER JOIN sprints AS sprint
+                ON sprint.id_sprint = historia.id_sprint
+                AND sprint.id_proyecto = historia.id_proyecto
+                AND sprint.estado <> 'Finalizado'
+                AND sprint.fecha_cierre IS NULL
              INNER JOIN proyecto_usuarios AS integrante
                 ON integrante.id_proyecto = historia.id_proyecto
                 AND integrante.id_usuario = ?
@@ -106,22 +124,33 @@ const BacklogDAO = {
     // ===== JESÚS: PB-17 - ACTUALIZAR ESTADO =====
     actualizarEstadoSprint: async (idProyecto, idSprint, idHistoria, estado) => {
         const [resultado] = await pool.promise().query(
-            `UPDATE product_backlog
-             SET estado_historia = ?
-             WHERE id_proyecto = ?
-                AND id_sprint = ?
-                AND id_historia = ?
-                AND estado_historia NOT IN ('En revision', 'Aprobada')`,
+            `UPDATE product_backlog AS historia
+             INNER JOIN sprints AS sprint
+                ON sprint.id_sprint = historia.id_sprint
+                AND sprint.id_proyecto = historia.id_proyecto
+                AND sprint.estado <> 'Finalizado'
+                AND sprint.fecha_cierre IS NULL
+             SET historia.estado_historia = ?
+             WHERE historia.id_proyecto = ?
+                AND historia.id_sprint = ?
+                AND historia.id_historia = ?
+                AND historia.estado_historia NOT IN ('En revision', 'Aprobada')`,
             [estado, idProyecto, idSprint, idHistoria]
         );
 
         if (resultado.affectedRows > 0) return true;
 
         const [historias] = await pool.promise().query(
-            `SELECT estado_historia FROM product_backlog
-             WHERE id_proyecto = ?
-                AND id_sprint = ?
-                AND id_historia = ?`,
+            `SELECT historia.estado_historia
+             FROM product_backlog AS historia
+             INNER JOIN sprints AS sprint
+                ON sprint.id_sprint = historia.id_sprint
+                AND sprint.id_proyecto = historia.id_proyecto
+                AND sprint.estado <> 'Finalizado'
+                AND sprint.fecha_cierre IS NULL
+             WHERE historia.id_proyecto = ?
+                AND historia.id_sprint = ?
+                AND historia.id_historia = ?`,
             [idProyecto, idSprint, idHistoria]
         );
 

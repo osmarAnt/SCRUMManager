@@ -793,3 +793,7 @@ CREATE TABLE IF NOT EXISTS planning_votos (
     CONSTRAINT fk_planning_voto_usuario FOREIGN KEY (id_usuario)
         REFERENCES usuarios (id_usuario) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+#emanuel
+ALTER TABLE sprints
+ADD COLUMN fecha_cierre DATE NULL;
