@@ -9,7 +9,8 @@
     const PREDETERMINADA = 'menu';
 
     const panelDe = (pestana) => document.getElementById(pestana.getAttribute('aria-controls'));
-    const existe = (id) => pestanas.some((pestana) => pestana.dataset.panel === id);
+    // Sprint 7 · Bloque 1 (Nino) · TC-02-04: una pestaña con data-roles solo se muestra a esos roles.
+    const existe = (id) => pestanas.some((pestana) => pestana.dataset.panel === id && !pestana.hidden);
 
     // En pantallas angostas la barra se desplaza: la pestaña activa siempre queda a la vista.
     const mostrarActiva = () => {
@@ -39,10 +40,13 @@
         document.dispatchEvent(new CustomEvent('pestana-activa', { detail: { id: destino } }));
     };
 
-    pestanas.forEach((pestana, posicion) => {
+    pestanas.forEach((pestana) => {
         pestana.addEventListener('click', () => activar(pestana.dataset.panel));
         pestana.addEventListener('keydown', (evento) => {
-            const ultimo = pestanas.length - 1;
+            // Solo se recorren las pestañas visibles para el rol del usuario.
+            const visibles = pestanas.filter((p) => !p.hidden);
+            const posicion = visibles.indexOf(pestana);
+            const ultimo = visibles.length - 1;
             const siguiente = {
                 ArrowRight: posicion === ultimo ? 0 : posicion + 1,
                 ArrowLeft: posicion === 0 ? ultimo : posicion - 1,
@@ -53,8 +57,21 @@
                 return;
             }
             evento.preventDefault();
-            activar(pestanas[siguiente].dataset.panel, { enfocar: true });
+            activar(visibles[siguiente].dataset.panel, { enfocar: true });
         });
+    });
+
+    // Sprint 7 · Bloque 1 (Nino) · TC-02-04: al conocer el rol del proyecto se ocultan las pestañas que no le tocan.
+    document.addEventListener('proyecto-cargado', (evento) => {
+        const rol = evento.detail?.rol;
+        pestanas.forEach((pestana) => {
+            const roles = pestana.dataset.roles;
+            pestana.hidden = Boolean(roles) && !roles.split(',').map((r) => r.trim()).includes(rol);
+        });
+        const activa = pestanas.find((p) => p.getAttribute('aria-selected') === 'true');
+        if (activa && activa.hidden) {
+            activar(PREDETERMINADA);
+        }
     });
 
     window.addEventListener('hashchange', () => {

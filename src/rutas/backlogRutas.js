@@ -3,9 +3,10 @@ const router = express.Router();
 const backlogControlador = require('../controladores/backlogControlador');
 const { verificarSesion } = require('../middlewares/autenticacion');
 
-router.post('/backlog', backlogControlador.crearHistoria);
-router.get('/backlog/:id_proyecto', backlogControlador.obtenerBacklogPorProyecto);
-router.delete('/backlog/:id', backlogControlador.eliminarHistoria);
+// Sprint 7 · Bloque 1 (Nino): TODAS las rutas del backlog exigen sesión (TC-03-04).
+router.post('/backlog', verificarSesion, backlogControlador.crearHistoria);
+router.get('/backlog/:id_proyecto', verificarSesion, backlogControlador.obtenerBacklogPorProyecto);
+router.delete('/backlog/:id', verificarSesion, backlogControlador.eliminarHistoria);
 // ===== JESÚS: PB-28 - EDITAR HISTORIA =====
 router.put(
     '/backlog/:id',
@@ -21,8 +22,10 @@ router.get(
 );
 
 // CORRECCIÓN: Agregamos /backlog al inicio para que coincida con el frontend
-router.get('/backlog/criterios/:id_historia', backlogControlador.obtenerCriterios);
-router.post('/backlog/criterios', backlogControlador.crearCriterio);
+router.get('/backlog/criterios/:id_historia', verificarSesion, backlogControlador.obtenerCriterios);
+router.post('/backlog/criterios', verificarSesion, backlogControlador.crearCriterio);
+// Sprint 7 · Bloque 3 (Francisco) · HU-09: marcar criterio cumplido / pendiente
+router.put('/backlog/criterios/:id_criterio/completado', verificarSesion, backlogControlador.marcarCriterio);
 
 router.put('/backlog/:id_proyecto/historias/:id_historia/valor-negocio', verificarSesion, backlogControlador.actualizarValorNegocio);
 

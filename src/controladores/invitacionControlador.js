@@ -65,12 +65,8 @@ const responderError = (res, codigo) => {
 };
 
 const invitar = async (req, res) => {
-    // Verificar que sea scrum master
-    if (req.session.rol !== 'Scrum Master') {
-        return res.status(403).json({
-            mensaje: 'Solo el Scrum Master puede enviar invitaciones.'
-        });
-    }
+    // Sprint 7 · Bloque 1 (Nino): el rol es POR PROYECTO. invitacionDAO.crearInvitacion
+    // comprueba que quien invita sea el Scrum Master de ESTE proyecto (no el rol de su cuenta).
     if (!idValido(req.params.id)) {
         return res.status(400).json({
             mensaje: 'Identificador de proyecto no válido.'
@@ -141,8 +137,7 @@ const integrantes = async (req, res) => {
         }
         const datos = await invitacionDAO.listarIntegrantes(
             idProyecto,
-            rol === 'Scrum Master' &&
-            req.session.rol === 'Scrum Master'
+            rol === 'Scrum Master'
         );
         return res.json(datos);
     } catch (error) {

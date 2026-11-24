@@ -76,16 +76,114 @@ const pintarProyecto = (proyecto) => {
     objetivoProyecto.textContent = proyecto.objetivo || SIN_OBJETIVO;
 };
 
+// Sprint 7 · Bloque 1 (Nino) · HU-12: "Sprint 2 · Despliegue en entorno simulado"
+const nombreDeSprint = (sprint) => `Sprint ${sprint.numero}${sprint.nombre ? ` · ${sprint.nombre}` : ''}`;
+let puedeAdministrarProyecto = false;
+
+const formatoHoras = (horas) => `${Number(horas).toLocaleString('es-MX', { maximumFractionDigits: 2 })} h`;
+
+// Sprint 7 · Bloque 5 (Osmar) · HU-13: capacidad del equipo contra horas comprometidas.
+const pintarCapacidad = (contenedor, sprint) => {
+    contenedor.replaceChildren();
+    const comprometidas = Number(sprint.horas_comprometidas) || 0;
+    const capacidad = sprint.capacidad_horas;
+    const resumen = document.createElement('p');
+    resumen.className = 'texto-capacidad';
+    if (capacidad === null || capacidad === undefined) {
+        resumen.textContent = `Comprometido: ${formatoHoras(comprometidas)} · Capacidad sin definir`;
+    } else {
+        const porcentaje = capacidad > 0 ? Math.round((comprometidas / capacidad) * 100) : 0;
+        resumen.textContent = `Comprometido: ${formatoHoras(comprometidas)} de ${formatoHoras(capacidad)} de capacidad (${porcentaje} %)`;
+        const barra = document.createElement('div');
+        barra.className = 'barra-capacidad';
+        barra.setAttribute('role', 'progressbar');
+        barra.setAttribute('aria-label', 'Horas comprometidas contra la capacidad del equipo');
+        barra.setAttribute('aria-valuemin', '0');
+        barra.setAttribute('aria-valuemax', '100');
+        barra.setAttribute('aria-valuenow', String(Math.min(porcentaje, 100)));
+        const relleno = document.createElement('span');
+        relleno.style.width = `${Math.min(porcentaje, 100)}%`;
+        barra.dataset.estado = porcentaje > 100 ? 'excedido' : porcentaje >= 85 ? 'justo' : 'bien';
+        barra.append(relleno);
+        contenedor.append(resumen, barra);
+        const aviso = document.createElement('p');
+        aviso.className = 'aviso-capacidad';
+        aviso.dataset.estado = barra.dataset.estado;
+        aviso.textContent = porcentaje > 100
+            ? `Sobrecarga: el equipo se comprometió a ${formatoHoras(comprometidas - capacidad)} más de su capacidad.`
+            : `Quedan ${formatoHoras(capacidad - comprometidas)} disponibles.`;
+        contenedor.append(aviso);
+    }
+    if (!contenedor.contains(resumen)) contenedor.prepend(resumen);
+    if (sprint.historias_sin_estimar > 0) {
+        const sinEstimar = document.createElement('p');
+        sinEstimar.className = 'aviso-capacidad';
+        sinEstimar.dataset.estado = 'justo';
+        sinEstimar.textContent = `${sprint.historias_sin_estimar} historia(s) del Sprint todavía no tienen horas estimadas (se estiman en Planning Poker).`;
+        contenedor.append(sinEstimar);
+    }
+    // El Scrum Master puede definir o cambiar la capacidad aquí mismo.
+    if (puedeAdministrarProyecto && sprint.estado !== 'Finalizado') {
+        const formulario = document.createElement('form');
+        formulario.className = 'form-capacidad';
+        formulario.noValidate = true;
+        const etiqueta = document.createElement('label');
+        etiqueta.htmlFor = `capacidad-${sprint.id_sprint}`;
+        etiqueta.textContent = 'Capacidad (h)';
+        const campo = document.createElement('input');
+        campo.id = etiqueta.htmlFor;
+        campo.type = 'number';
+        campo.min = '0.25';
+        campo.step = '0.25';
+        campo.inputMode = 'decimal';
+        campo.value = capacidad ?? '';
+        const boton = document.createElement('button');
+        boton.type = 'submit';
+        boton.className = 'boton-secundario';
+        boton.textContent = 'Guardar capacidad';
+        const mensaje = document.createElement('span');
+        mensaje.className = 'mensaje-error';
+        mensaje.setAttribute('role', 'alert');
+        formulario.append(etiqueta, campo, boton, mensaje);
+        formulario.addEventListener('submit', async (evento) => {
+            evento.preventDefault();
+            boton.disabled = true;
+            mensaje.textContent = '';
+            try {
+                const respuesta = await peticionJson(
+                    `/proyectos/${idProyecto}/sprints/${sprint.id_sprint}/capacidad`,
+                    'PUT',
+                    { capacidad_horas: campo.value.trim() === '' ? null : campo.value.trim() }
+                );
+                if (!respuesta) return;
+                if (!respuesta.ok) {
+                    mensaje.textContent = respuesta.resultado.mensaje || 'No se pudo guardar la capacidad.';
+                    return;
+                }
+                Object.assign(sprint, respuesta.resultado.sprint);
+                pintarCapacidad(contenedor, sprint);
+            } catch (error) {
+                mensaje.textContent = 'No se pudo conectar con el servidor.';
+            } finally {
+                boton.disabled = false;
+            }
+        });
+        contenedor.append(formulario);
+    }
+};
+
 const pintarSprints = (sprints) => {
     listaSprints.replaceChildren();
     sinSprints.hidden = sprints.length > 0;
     sprints.forEach((sprint) => {
         const tarjeta = plantillaSprint.content.cloneNode(true);
-        tarjeta.querySelector('.nombre-sprint').textContent = `Sprint ${sprint.numero}`;
+        tarjeta.querySelector('.nombre-sprint').textContent = nombreDeSprint(sprint);
         tarjeta.querySelector('.estado-sprint').textContent = sprint.estado;
         tarjeta.querySelector('.objetivo-sprint').textContent = sprint.objetivo;
         tarjeta.querySelector('.fechas-sprint').textContent =
             `${formatearFecha(sprint.fecha_inicio)} – ${formatearFecha(sprint.fecha_fin)} · ${sprint.duracion_dias} ${sprint.duracion_dias === 1 ? 'día' : 'días'}`;
+        const capacidad = tarjeta.querySelector('.capacidad-sprint');
+        if (capacidad) pintarCapacidad(capacidad, sprint);
         listaSprints.appendChild(tarjeta);
     });
 };
@@ -116,6 +214,7 @@ const cargarProyecto = async () => {
         document.dispatchEvent(new CustomEvent('proyecto-cargado', { detail: { rol: datos.rol } }));
         botonEditar.hidden = !datos.puedeAdministrar;
         botonNuevoSprint.hidden = !datos.puedeAdministrar;
+        puedeAdministrarProyecto = datos.puedeAdministrar === true;
         puedeGestionarIntegrantes = datos.puedeInvitar === true;
         botonInvitar.hidden = !puedeGestionarIntegrantes;
         formInvitacion.hidden = true;
@@ -231,7 +330,7 @@ botonNuevoSprint.addEventListener('click', () => {
     mensajeSprint.textContent = '';
     confirmacionSprint.hidden = true;
     formSprint.hidden = false;
-    document.getElementById('objetivo-sprint').focus();
+    document.getElementById('nombre-sprint').focus();
 });
 
 document.getElementById('cancelar-sprint').addEventListener('click', () => {
@@ -241,6 +340,11 @@ document.getElementById('cancelar-sprint').addEventListener('click', () => {
 formSprint.addEventListener('submit', async (evento) => {
     evento.preventDefault();
     mensajeSprint.textContent = '';
+    const nombreSprint = document.getElementById('nombre-sprint').value.trim();
+    if (nombreSprint.length < 3) {
+        mensajeSprint.textContent = 'Escribe el nombre del Sprint (al menos 3 caracteres).';
+        return;
+    }
     if (!document.getElementById('objetivo-sprint').value.trim()) {
         mensajeSprint.textContent = 'Escribe el objetivo del Sprint.';
         return;
@@ -256,7 +360,10 @@ formSprint.addEventListener('submit', async (evento) => {
     const boton = formSprint.querySelector('button[type="submit"]');
     boton.disabled = true;
     try {
+        const capacidadTexto = document.getElementById('capacidad-sprint').value.trim();
         const respuesta = await peticionJson(`/proyectos/${idProyecto}/sprints`, 'POST', {
+            nombre: nombreSprint,
+            capacidad_horas: capacidadTexto === '' ? null : capacidadTexto,
             objetivo: document.getElementById('objetivo-sprint').value,
             fecha_inicio: inicioSprint.value,
             fecha_fin: finSprint.value
@@ -758,7 +865,7 @@ async function prepararSprintBacklog(sprints, puedeAdministrar) {
     sprints.forEach(sprint => {
         seleccionarSprint.add(
             new Option(
-                `Sprint ${sprint.numero}`,
+                nombreDeSprint(sprint),
                 sprint.id_sprint
             )
         );
@@ -779,6 +886,10 @@ async function cargarSprintBacklog() {
         new Option('Selecciona una historia', '')
     );
     mensajeAgregarHistoria.textContent = '';
+    // Sprint 7 · Bloque 3 (Francisco): avisa qué Sprint se muestra para pintar su Definition of Done.
+    document.dispatchEvent(new CustomEvent('sprint-backlog-seleccionado', {
+        detail: { idSprint, puedeAdministrar: puedeAdministrarBacklog }
+    }));
     if (!idSprint) {
         listaHistoriasSprint.textContent =
             'Selecciona un Sprint.';
@@ -931,7 +1042,12 @@ async function cargarSprintBacklog() {
             detalle.className = 'objetivo-sprint';
 
             detalle.textContent =
-                `Puntos: ${historia.puntos ?? '—'} · Prioridad: ${historia.prioridad}`;
+                `Puntos: ${historia.puntos ?? '—'} · Horas estimadas: ${historia.horas_estimadas != null ? formatoHoras(historia.horas_estimadas) : 'sin estimar'} · Prioridad: ${historia.prioridad}`;
+
+            // Sprint 7 · Bloque 2 (César): épica de la historia
+            if (historia.epica_nombre && typeof window.crearChipEpica === 'function') {
+                detalle.prepend(window.crearChipEpica(historia.epica_nombre, historia.epica_color), ' ');
+            }
 
 
             // Responsable actual
@@ -1015,7 +1131,16 @@ async function cargarSprintBacklog() {
             const estadoBloqueado =
                 valorEstado === 'En revision' || valorEstado === 'Aprobada';
 
-            selectorEstado.disabled = estadoBloqueado;
+            // Sprint 7 · Bloque 1 (Nino) · TC-14-04: solo el desarrollador responsable mueve su historia.
+            const esMiHistoria =
+                rolEnElProyecto === 'Desarrollador' &&
+                idUsuarioActual !== null &&
+                Number(historia.id_responsable) === idUsuarioActual;
+
+            selectorEstado.disabled = estadoBloqueado || !esMiHistoria;
+            if (!esMiHistoria) {
+                selectorEstado.title = 'Solo el desarrollador responsable puede cambiar el estado.';
+            }
 
             // Guardar el estado en MySQL
             selectorEstado.addEventListener('change', async () => {
@@ -1051,8 +1176,9 @@ async function cargarSprintBacklog() {
                     selectorEstado.value = valorEstado;
                     mensajeEstadoHistoria.textContent =
                         error.message || 'Error al guardar el estado.';
+                    mensajeEstadoHistoria.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 } finally {
-                    selectorEstado.disabled = false;
+                    selectorEstado.disabled = !esMiHistoria;
                 }
             });
 
@@ -1167,6 +1293,17 @@ async function cargarSprintBacklog() {
                 tarjeta.appendChild(revisionPO);
             }
             tarjeta.appendChild(controlEstado);
+            if (!esMiHistoria && !estadoBloqueado) {
+                const ayudaEstado = document.createElement('p');
+                ayudaEstado.className = 'ayuda-campo';
+                ayudaEstado.textContent = 'Solo el desarrollador responsable puede cambiar el estado de esta historia.';
+                tarjeta.appendChild(ayudaEstado);
+            }
+
+            // Sprint 7 · Bloque 3 (Francisco) · HU-09 y HU-10: criterios y DoD de la historia.
+            if (typeof window.crearPanelCalidad === 'function') {
+                tarjeta.appendChild(window.crearPanelCalidad(historia));
+            }
 
             // PB-18: evidencias y envío a revisión (solo el desarrollador responsable de esta historia)
             if (

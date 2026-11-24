@@ -153,6 +153,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       tarjeta.append(titulo, responsable, detalle);
 
+      // Sprint 7 · Bloque 2 (César) · TC-14-02: la tarjeta muestra la épica.
+      if (historia.epica_nombre && typeof window.crearChipEpica === 'function') {
+        const epica = window.crearChipEpica(historia.epica_nombre, historia.epica_color);
+        epica.classList.add('chip-epica-kanban');
+        tarjeta.insertBefore(epica, titulo);
+      }
+
       // DOBLE CLIC PARA IR A LA HISTORIA
       tarjeta.addEventListener('dblclick', () => {
         abrirHistoria(historia);
@@ -239,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
       sprints.forEach(sprint => {
         selector.add(
           new Option(
-            `Sprint ${sprint.numero}: ${sprint.objetivo}`,
+            `Sprint ${sprint.numero}: ${sprint.nombre || sprint.objetivo}`,
             String(sprint.id_sprint)
           )
         );

@@ -35,11 +35,57 @@ const mostrarProyectos = (proyectos) => {
         tarjeta.querySelector('.nombre-proyecto').textContent = proyecto.nombre;
         tarjeta.querySelector('.objetivo-proyecto').textContent = proyecto.objetivo || 'Este proyecto todavía no tiene un objetivo registrado.';
         tarjeta.querySelector('.rol-proyecto').textContent = proyecto.rol;
-        lista.appendChild(tarjeta);
+        // Sprint 7 · Bloque 5 (Osmar) · HU-05: solo el Scrum Master ve "Eliminar" (TC-05-01 y TC-05-03).
+        // El botón va fuera del enlace de la tarjeta para que sea HTML válido.
+        const contenedor = document.createElement('div');
+        contenedor.className = 'contenedor-tarjeta-proyecto';
+        contenedor.appendChild(tarjeta);
+        if (proyecto.rol === 'Scrum Master') {
+            const eliminar = document.createElement('button');
+            eliminar.type = 'button';
+            eliminar.className = 'eliminar-proyecto';
+            eliminar.textContent = 'Eliminar';
+            eliminar.setAttribute('aria-label', `Eliminar el proyecto ${proyecto.nombre}`);
+            eliminar.addEventListener('click', () => eliminarProyecto(proyecto, eliminar));
+            contenedor.appendChild(eliminar);
+        }
+        lista.appendChild(contenedor);
     });
     estado.hidden = true;
     lista.hidden = false;
 };
+
+// Sprint 7 · Bloque 5 (Osmar) · HU-05: eliminar un proyecto con confirmación (TC-05-02: si se
+// cancela, no pasa nada). El servidor borra en cascada Sprints, historias y demás datos (TC-05-04).
+async function eliminarProyecto(proyecto, boton) {
+    const confirmado = window.confirm(
+        `¿Eliminar el proyecto "${proyecto.nombre}"?\n\n` +
+        'Se borrarán para siempre sus Sprints, historias, criterios, horas, épicas, impedimentos, reuniones y avisos. ' +
+        'Esta acción no se puede deshacer.'
+    );
+    if (!confirmado) {
+        return;
+    }
+    boton.disabled = true;
+    try {
+        const respuesta = await fetch(`/proyectos/${proyecto.id_proyecto}`, {
+            method: 'DELETE',
+            headers: { Accept: 'application/json' }
+        });
+        if (respuesta.status === 401) {
+            window.location.replace('/login');
+            return;
+        }
+        const resultado = await respuesta.json().catch(() => ({}));
+        if (!respuesta.ok) {
+            throw new Error(resultado.mensaje || 'No se pudo eliminar el proyecto.');
+        }
+        await cargarProyectos();
+    } catch (error) {
+        window.alert(error.message);
+        boton.disabled = false;
+    }
+}
 
 const cargarProyectos = async () => {
     botonActualizar.disabled = true;
@@ -64,7 +110,8 @@ const cargarProyectos = async () => {
                 'No se pudieron cargar tus proyectos.'
             );
         }
-        botonNuevo.hidden = resultado.usuario.rol !== 'Scrum Master';
+        // Sprint 7 · Bloque 1 (Nino) · TC-04-01: cualquier usuario crea proyectos (queda como su Scrum Master).
+        botonNuevo.hidden = false;
         const nombre = resultado.usuario.nombre;
 
         nombreUsuario.textContent = nombre;

@@ -15,6 +15,7 @@
     const botonEnviar = formulario.querySelector('button[type="submit"]');
     const campos = {
         titulo: document.getElementById('titulo-reunion'),
+        tipo: document.getElementById('tipo-reunion'),
         descripcion: document.getElementById('descripcion-reunion'),
         fecha: document.getElementById('fecha-reunion'),
         modalidad: document.getElementById('modalidad-reunion'),
@@ -40,6 +41,9 @@
     let cargando = false;
     let pendiente = false;
     let enviando = false;
+    // Sprint 7 · Bloque 6 (Emmanuel): el Scrum Master puede editar y eliminar reuniones.
+    let puedeAdministrar = false;
+    let idEditando = null;
 
     // 'AAAA-MM-DD HH:MM' (hora local del equipo, sin zona) -> Date local
     const aFecha = (texto) => {
@@ -78,7 +82,12 @@
         modalidad.className = 'etiqueta-modalidad';
         modalidad.dataset.modalidad = reunion.modalidad;
         modalidad.textContent = esEnLinea(reunion) ? 'En línea' : 'Presencial';
-        cabecera.append(titulo, modalidad);
+        // Sprint 7 · Bloque 6: tipo de reunión (Sprint Planning, Daily Scrum, Review o Retrospective).
+        const tipo = document.createElement('span');
+        tipo.className = 'etiqueta-tipo-reunion';
+        tipo.dataset.tipo = reunion.tipo || 'Otra';
+        tipo.textContent = reunion.tipo || 'Otra';
+        cabecera.append(titulo, tipo, modalidad);
 
         const fecha = aFecha(reunion.fecha_reunion);
         const cuando = document.createElement('time');
@@ -112,6 +121,24 @@
         autor.textContent = `Creada por ${reunion.autor}${reunion.username_autor ? ` · @${reunion.username_autor}` : ''}`;
 
         tarjeta.append(cabecera, cuando, donde, descripcion, autor);
+
+        // Sprint 7 · Bloque 6 (TC-17-03): solo el Scrum Master ve Editar y Eliminar.
+        if (puedeAdministrar) {
+            const acciones = document.createElement('div');
+            acciones.className = 'acciones-reunion';
+            const editar = document.createElement('button');
+            editar.type = 'button';
+            editar.className = 'boton-secundario';
+            editar.textContent = 'Editar';
+            editar.addEventListener('click', () => abrirEdicion(reunion));
+            const eliminar = document.createElement('button');
+            eliminar.type = 'button';
+            eliminar.className = 'btn-eliminar';
+            eliminar.textContent = 'Eliminar';
+            eliminar.addEventListener('click', () => eliminarReunion(reunion, eliminar));
+            acciones.append(editar, eliminar);
+            tarjeta.append(acciones);
+        }
         return tarjeta;
     };
 
@@ -135,8 +162,8 @@
             : 'Todavía no hay reuniones programadas en este proyecto.';
     };
 
-    const solicitar = async (metodo, datos) => {
-        const respuesta = await fetch(direccion, {
+    const solicitar = async (metodo, datos, url = direccion) => {
+        const respuesta = await fetch(url, {
             method: metodo,
             headers: { Accept: 'application/json', ...(datos ? { 'Content-Type': 'application/json' } : {}) },
             cache: 'no-store',
@@ -165,6 +192,7 @@
                 return;
             }
             botonNueva.hidden = !resultado.puedeCrear;
+            puedeAdministrar = resultado.puedeCrear === true;
             if (!resultado.puedeCrear) {
                 formulario.hidden = true;
             }
@@ -195,8 +223,46 @@
     const limpiarFormulario = () => {
         formulario.reset();
         errorFormulario.textContent = '';
+        idEditando = null;
+        botonEnviar.textContent = 'Crear reunión';
         ajustarLugar();
     };
+
+    // Sprint 7 · Bloque 6: carga la reunión en el formulario para editarla.
+    function abrirEdicion(reunion) {
+        limpiarFormulario();
+        idEditando = reunion.id_reunion;
+        campos.titulo.value = reunion.titulo;
+        campos.tipo.value = reunion.tipo || 'Otra';
+        campos.descripcion.value = reunion.descripcion;
+        campos.fecha.value = reunion.fecha_reunion.replace(' ', 'T');
+        campos.modalidad.value = reunion.modalidad;
+        campos.lugar.value = reunion.lugar_enlace;
+        ajustarLugar();
+        botonEnviar.textContent = 'Guardar cambios';
+        confirmacion.hidden = true;
+        formulario.hidden = false;
+        formulario.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        campos.titulo.focus();
+    }
+
+    async function eliminarReunion(reunion, boton) {
+        if (!window.confirm(`¿Eliminar la reunión "${reunion.titulo}"? Esta acción no se puede deshacer.`)) {
+            return;
+        }
+        boton.disabled = true;
+        try {
+            const resultado = await solicitar('DELETE', undefined, `${direccion}/${reunion.id_reunion}`);
+            if (!resultado) return;
+            confirmacion.textContent = resultado.mensaje;
+            confirmacion.hidden = false;
+            cargar();
+        } catch (error) {
+            estado.dataset.tipo = 'error';
+            estado.textContent = error.message || 'No se pudo eliminar la reunión.';
+            boton.disabled = false;
+        }
+    }
 
     const actualizarControles = () => {
         botonNueva.disabled = enviando;
@@ -227,6 +293,7 @@
         }
         const datos = {
             titulo: campos.titulo.value.trim(),
+            tipo: campos.tipo.value,
             descripcion: campos.descripcion.value.trim(),
             fecha: campos.fecha.value,
             modalidad: campos.modalidad.value,
@@ -258,9 +325,12 @@
 
         enviando = true;
         actualizarControles();
-        botonEnviar.textContent = 'Creando...';
+        const editando = idEditando !== null;
+        botonEnviar.textContent = editando ? 'Guardando...' : 'Creando...';
         try {
-            const resultado = await solicitar('POST', datos);
+            const resultado = editando
+                ? await solicitar('PUT', datos, `${direccion}/${idEditando}`)
+                : await solicitar('POST', datos);
             if (!resultado) {
                 return;
             }
@@ -270,10 +340,10 @@
             confirmacion.hidden = false;
             cargar();
         } catch (error) {
-            errorFormulario.textContent = error.message || 'No se pudo crear la reunión. Inténtalo de nuevo.';
+            errorFormulario.textContent = error.message || 'No se pudo guardar la reunión. Inténtalo de nuevo.';
         } finally {
             enviando = false;
-            botonEnviar.textContent = 'Crear reunión';
+            botonEnviar.textContent = idEditando !== null ? 'Guardar cambios' : 'Crear reunión';
             actualizarControles();
         }
     });

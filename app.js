@@ -12,6 +12,8 @@ const backlogRutas = require('./src/rutas/backlogRutas');
 const notificacionRutas = require('./src/rutas/notificacionRutas');
 const capacitacionRutas = require('./src/rutas/capacitacionRutas');
 const reunionRutas = require('./src/rutas/reunionRutas');
+// Sprint 7: requisitos finales (épicas, DoD, impedimentos, eliminar proyecto, capacidad y GitHub)
+const requisitosFinalesRutas = require('./src/rutas/requisitosFinalesRutas');
 const burndownDAO = require('./src/dao/burndownDAO');
 const { verificarSesion } = require('./src/middlewares/autenticacion');
 const app = express();
@@ -82,6 +84,8 @@ app.use(
 
 // PB-42: apartado Reuniones (GET/POST /proyectos/:id/reuniones)
 app.use('/proyectos', reunionRutas);
+// Sprint 7: requisitos finales de la evaluación (ver src/rutas/requisitosFinalesRutas.js)
+app.use('/proyectos', requisitosFinalesRutas);
 
 app.use(
     '/invitaciones',

@@ -22,6 +22,8 @@
     <link rel="stylesheet" href="/css/resumenProyecto.css">
     <!-- CSS DEL BUZÓN DE NOTIFICACIONES -->
     <link rel="stylesheet" href="/css/notificaciones.css">
+    <!-- Sprint 7: estilos de los requisitos finales (épicas, DoD, impedimentos, capacidad, GitHub) -->
+    <link rel="stylesheet" href="/css/requisitosFinales.css">
 
     <script src="/js/proyecto.js" defer></script>
 
@@ -39,6 +41,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" defer></script>
     <script src="/js/reporte.js" defer></script>
+    <!-- PB-65 (Francisco): modo oscuro y diseño para celular -->
+    <link rel="stylesheet" href="/css/tema.css">
+    <script src="/js/tema.js"></script>
 </head>
 <body>
     <div class="aplicacion">
@@ -254,13 +259,21 @@
 
                     <button type="button" role="tab" id="pestana-kanban" data-panel="kanban" aria-controls="panel-kanban" aria-selected="false" tabindex="-1">Tablero Kanban</button>
 
-                    <button type="button" role="tab" id="pestana-tiempos" data-panel="tiempos" aria-controls="panel-tiempos" aria-selected="false" tabindex="-1">Tiempos</button>
+                    <button type="button" role="tab" id="pestana-tiempos" data-panel="tiempos" data-roles="Scrum Master,Desarrollador" aria-controls="panel-tiempos" aria-selected="false" tabindex="-1">Tiempos</button>
 
                     <button type="button" role="tab" id="pestana-avisos" data-panel="avisos" aria-controls="panel-avisos" aria-selected="false" tabindex="-1">
                         Avisos<span id="insignia-avisos" class="insignia-pestana" hidden></span>
                     </button>
 
                     <button type="button" role="tab" id="pestana-reuniones" data-panel="reuniones" aria-controls="panel-reuniones" aria-selected="false" tabindex="-1">Reuniones</button>
+
+                    <!-- Sprint 7 · Bloque 4 (Jesús) · HU-16 -->
+                    <button type="button" role="tab" id="pestana-impedimentos" data-panel="impedimentos" aria-controls="panel-impedimentos" aria-selected="false" tabindex="-1">
+                        Impedimentos<span id="insignia-impedimentos" class="insignia-pestana" hidden></span>
+                    </button>
+
+                    <!-- Sprint 7 · Bloque 6 (Emmanuel) · HU-22 -->
+                    <button type="button" role="tab" id="pestana-github" data-panel="github" aria-controls="panel-github" aria-selected="false" tabindex="-1">GitHub</button>
 
                     <button type="button" role="tab" id="pestana-foro" data-panel="foro" aria-controls="panel-foro" aria-selected="false" tabindex="-1">Foro</button>
                    <button
@@ -459,6 +472,19 @@
 
                         <form id="form-sprint" class="formulario" method="post" novalidate hidden>
 
+                            <!-- Sprint 7 · Bloque 1 (Nino) · HU-12: nombre del Sprint -->
+                            <label for="nombre-sprint">Nombre del Sprint</label>
+                            <input
+                                id="nombre-sprint"
+                                name="nombre"
+                                type="text"
+                                minlength="3"
+                                maxlength="120"
+                                placeholder="Ej. Despliegue en entorno simulado"
+                                autocomplete="off"
+                                required
+                            >
+
                             <label for="objetivo-sprint">Objetivo del Sprint</label>
 
                             <textarea
@@ -485,6 +511,24 @@
 
                             <p class="ayuda-campo">
                                 Duración: <strong id="duracion-sprint">—</strong> (máximo 31 días)
+                            </p>
+
+                            <!-- Sprint 7 · Bloque 5 (Osmar) · HU-13: capacidad del equipo -->
+                            <label for="capacidad-sprint">Capacidad del equipo (horas, opcional)</label>
+                            <input
+                                id="capacidad-sprint"
+                                name="capacidad_horas"
+                                type="number"
+                                min="0.25"
+                                max="9999"
+                                step="0.25"
+                                inputmode="decimal"
+                                placeholder="Ej. 62"
+                            >
+                            <p class="ayuda-campo">
+                                Horas de trabajo disponibles del equipo en este Sprint. Se compara con las horas
+                                estimadas de las historias que agregues. Para crear un Sprint, el equipo debe tener
+                                al menos un Product Owner y un Desarrollador.
                             </p>
 
                             <p id="mensaje-sprint" class="mensaje-error" role="alert" aria-live="polite"></p>
@@ -522,6 +566,20 @@
                                 </select>
 
                             </div>
+
+                            <!-- Sprint 7 · Bloque 3 (Francisco) · HU-10: Definition of Done del Sprint -->
+                            <section id="dod-sprint" class="dod-sprint" aria-labelledby="titulo-dod-sprint" hidden>
+                                <div class="cabecera-dod-sprint">
+                                    <div>
+                                        <h4 id="titulo-dod-sprint">Definition of Done del Sprint</h4>
+                                        <p id="estado-dod-sprint" class="ayuda-campo" role="status" aria-live="polite"></p>
+                                    </div>
+                                    <button id="finalizar-sprint" type="button" hidden>Finalizar Sprint</button>
+                                </div>
+                                <div id="lista-dod-sprint"></div>
+                                <div id="form-dod-sprint"></div>
+                                <p id="mensaje-dod-sprint" class="mensaje-dod" role="alert" aria-live="polite"></p>
+                            </section>
 
                             <!-- ADMINISTRACIÓN DEL SCRUM MASTER -->
                             <form id="form-agregar-historia" class="formulario" hidden>
@@ -755,6 +813,41 @@
                             </div>
                         </div>
 
+                        <!-- Sprint 7 · Bloque 2 (César) · HU-07: épicas del proyecto -->
+                        <section id="bloque-epicas" class="bloque-epicas" aria-labelledby="titulo-epicas">
+                            <div class="cabecera-bloque">
+                                <div>
+                                    <h3 id="titulo-epicas">Épicas</h3>
+                                    <p class="ayuda-campo">Agrupan las historias por funcionalidad grande. Las crea el Scrum Master.</p>
+                                </div>
+                                <button id="nueva-epica" type="button" hidden>+ Nueva épica</button>
+                            </div>
+
+                            <form id="form-epica" class="formulario" method="post" novalidate hidden>
+                                <div class="fila-fechas">
+                                    <div>
+                                        <label for="nombre-epica">Nombre de la épica</label>
+                                        <input id="nombre-epica" type="text" maxlength="100" placeholder="Ej. Login" autocomplete="off" required>
+                                    </div>
+                                    <div>
+                                        <label for="color-epica">Color</label>
+                                        <input id="color-epica" type="color" value="#0052cc" required>
+                                    </div>
+                                </div>
+                                <label for="descripcion-epica">Descripción (opcional)</label>
+                                <input id="descripcion-epica" type="text" maxlength="500" autocomplete="off" placeholder="Qué cubre esta épica">
+                                <p id="error-epica" class="mensaje-error" role="alert" aria-live="polite"></p>
+                                <div class="acciones-formulario">
+                                    <button id="cancelar-epica" type="button" class="boton-secundario">Cancelar</button>
+                                    <button type="submit">Guardar épica</button>
+                                </div>
+                            </form>
+
+                            <p id="confirmacion-epica" class="mensaje-confirmacion" role="status" hidden></p>
+                            <p id="estado-epicas" class="ayuda-campo" role="status" aria-live="polite">Cargando épicas...</p>
+                            <ul id="lista-epicas" class="lista-epicas"></ul>
+                        </section>
+
                         <div id="contenedor-formulario">
 
                             <form
@@ -782,9 +875,15 @@
                                     name="descripcion"
                                     rows="3"
                                     maxlength="1000"
-                                    placeholder="Detalles de la funcionalidad..."
+                                    placeholder="Como [rol], quiero [funcionalidad], para [beneficio]."
                                     required
                                 ></textarea>
+
+                                <!-- Sprint 7 · Bloque 2 (César) · HU-08: la épica es obligatoria -->
+                                <label for="epica-historia">Épica</label>
+                                <select id="epica-historia" name="id_epica" required>
+                                    <option value="">Selecciona una épica</option>
+                                </select>
 
                                 <div class="fila-fechas">
 
@@ -836,6 +935,7 @@
                                 <thead>
                                     <tr style="border-bottom: 2px solid #e1e4e8;">
                                         <th style="padding: 10px;">Título</th>
+                                        <th style="padding: 10px;">Épica</th>
                                         <th style="padding: 10px;">Descripción</th>
                                         <th style="padding: 10px;">Esfuerzo (puntos)</th>
                                         <th style="padding: 10px;">Valor de negocio</th>
@@ -1376,6 +1476,51 @@
             >
                 Por horas
             </button>
+
+            <!-- PB-62 (Nino): velocidad del equipo -->
+            <button
+                type="button"
+                role="tab"
+                id="subpestana-general-velocidad"
+                data-vista="velocidad"
+                data-subtitulo="Puntos planeados contra completados en cada Sprint finalizado. El promedio de los últimos Sprints se sugiere como capacidad para el siguiente."
+                aria-controls="subpanel-general-velocidad"
+                aria-selected="false"
+                tabindex="-1"
+            >
+                Velocidad
+            </button>
+        </div>
+
+        <!-- PB-62 (Nino): Velocidad del equipo -->
+        <div
+            role="tabpanel"
+            id="subpanel-general-velocidad"
+            aria-labelledby="subpestana-general-velocidad"
+            hidden
+        >
+            <p id="estado-velocidad" class="ayuda-campo" role="status" aria-live="polite">Cargando la velocidad del equipo...</p>
+            <div id="contenido-velocidad" hidden>
+                <dl class="resumen-burndown">
+                    <div><dt>Sprints finalizados</dt><dd id="velocidad-total-sprints">0</dd></div>
+                    <div><dt>Promedio (últimos Sprints)</dt><dd id="velocidad-promedio">—</dd></div>
+                    <div><dt>Capacidad sugerida</dt><dd id="velocidad-sugerida">—</dd></div>
+                </dl>
+                <ul class="leyenda-burndown" aria-label="Leyenda de la gráfica de velocidad">
+                    <li><span class="muestra-barra muestra-planeados"></span> Puntos planeados</li>
+                    <li><span class="muestra-barra muestra-completados"></span> Puntos completados</li>
+                    <li><span class="muestra-linea muestra-promedio"></span> Promedio</li>
+                </ul>
+                <div id="grafica-velocidad" class="grafica-velocidad" role="img" aria-label="Gráfica de barras de puntos planeados contra completados por Sprint"></div>
+                <div class="contenedor-tabla-burndown">
+                    <table class="tabla-burndown">
+                        <thead>
+                            <tr><th scope="col">Sprint</th><th scope="col">Planeados</th><th scope="col">Completados</th><th scope="col">Cumplimiento</th></tr>
+                        </thead>
+                        <tbody id="tabla-velocidad-cuerpo"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- PB-61: Burndown General por horas -->
@@ -2185,6 +2330,16 @@
                             <label for="titulo-reunion">Título de la reunión</label>
                             <input id="titulo-reunion" name="titulo" type="text" minlength="3" maxlength="150" autocomplete="off" required>
 
+                            <!-- Sprint 7 · Bloque 6 (Emmanuel) · HU-17: tipo de reunión -->
+                            <label for="tipo-reunion">Tipo de reunión</label>
+                            <select id="tipo-reunion" name="tipo" required>
+                                <option value="Sprint Planning">Sprint Planning</option>
+                                <option value="Daily Scrum">Daily Scrum</option>
+                                <option value="Sprint Review">Sprint Review</option>
+                                <option value="Sprint Retrospective">Sprint Retrospective</option>
+                                <option value="Otra">Otra</option>
+                            </select>
+
                             <label for="descripcion-reunion">Descripción</label>
                             <textarea id="descripcion-reunion" name="descripcion" rows="4" maxlength="2000" required></textarea>
 
@@ -2224,6 +2379,107 @@
                             <h3 id="titulo-pasadas" class="titulo-grupo-reuniones">Pasadas <span id="conteo-pasadas" class="conteo-avisos">0</span></h3>
                             <div id="lista-pasadas" class="lista-reuniones"></div>
                         </section>
+                    </section>
+                </div>
+
+                <!-- Sprint 7 · Bloque 4 (Jesús) · HU-16: IMPEDIMENTOS -->
+                <div class="panel-pestana" role="tabpanel" id="panel-impedimentos" aria-labelledby="pestana-impedimentos" hidden>
+                    <section class="bloque" aria-labelledby="titulo-impedimentos">
+                        <div class="cabecera-bloque">
+                            <div>
+                                <h2 id="titulo-impedimentos">Impedimentos</h2>
+                                <p class="subtitulo">Problemas que frenan al equipo. Cualquier integrante los registra; el Scrum Master les da seguimiento y registra la solución.</p>
+                            </div>
+                            <button id="nuevo-impedimento" type="button">+ Registrar impedimento</button>
+                        </div>
+
+                        <form id="form-impedimento" class="formulario" method="post" novalidate hidden>
+                            <label for="titulo-impedimento">Impedimento</label>
+                            <input id="titulo-impedimento" type="text" maxlength="150" placeholder="Ej. Se cayó el servidor" autocomplete="off" required>
+
+                            <label for="descripcion-impedimento">Descripción</label>
+                            <textarea id="descripcion-impedimento" rows="3" maxlength="2000" placeholder="¿Qué pasó y a quién o qué historia afecta?" required></textarea>
+
+                            <div class="fila-fechas">
+                                <div>
+                                    <label for="impacto-impedimento">Impacto</label>
+                                    <select id="impacto-impedimento">
+                                        <option value="Alto">Alto</option>
+                                        <option value="Medio" selected>Medio</option>
+                                        <option value="Bajo">Bajo</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="sprint-impedimento">Sprint</label>
+                                    <select id="sprint-impedimento">
+                                        <option value="">Sin Sprint</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <p id="error-impedimento" class="mensaje-error" role="alert" aria-live="polite"></p>
+                            <div class="acciones-formulario">
+                                <button id="cancelar-impedimento" type="button" class="boton-secundario">Cancelar</button>
+                                <button type="submit">Registrar impedimento</button>
+                            </div>
+                        </form>
+
+                        <p id="confirmacion-impedimento" class="mensaje-confirmacion" role="status" hidden></p>
+                        <p id="estado-impedimentos" class="ayuda-campo" role="status" aria-live="polite">Cargando impedimentos...</p>
+
+                        <section class="grupo-impedimentos" aria-labelledby="titulo-impedimentos-activos">
+                            <h3 id="titulo-impedimentos-activos">Activos <span id="conteo-impedimentos-activos" class="conteo-avisos">0</span></h3>
+                            <div id="lista-impedimentos-activos" class="lista-impedimentos"></div>
+                        </section>
+                        <section class="grupo-impedimentos" aria-labelledby="titulo-impedimentos-resueltos">
+                            <h3 id="titulo-impedimentos-resueltos">Historial de resueltos <span id="conteo-impedimentos-resueltos" class="conteo-avisos">0</span></h3>
+                            <div id="lista-impedimentos-resueltos" class="lista-impedimentos"></div>
+                        </section>
+                    </section>
+                </div>
+
+                <!-- Sprint 7 · Bloque 6 (Emmanuel) · HU-22: INTEGRACIÓN CON GITHUB -->
+                <div class="panel-pestana" role="tabpanel" id="panel-github" aria-labelledby="pestana-github" hidden>
+                    <section class="bloque" aria-labelledby="titulo-github">
+                        <div class="cabecera-bloque">
+                            <div>
+                                <h2 id="titulo-github">Repositorio en GitHub</h2>
+                                <p class="subtitulo">Historial de commits del repositorio del proyecto y participación de cada integrante.</p>
+                            </div>
+                            <button id="actualizar-github" type="button" class="boton-secundario">Actualizar</button>
+                        </div>
+
+                        <form id="form-github" class="formulario form-github" method="post" novalidate hidden>
+                            <label for="repositorio-github">Repositorio (dueño/repositorio o URL de GitHub)</label>
+                            <div class="fila-github">
+                                <input id="repositorio-github" type="text" maxlength="200" placeholder="Ej. osmarant/scrummanager" autocomplete="off">
+                                <button type="submit">Vincular</button>
+                            </div>
+                            <p id="error-github" class="mensaje-error" role="alert" aria-live="polite"></p>
+                        </form>
+
+                        <p id="repositorio-actual-github" class="texto-dato"></p>
+                        <p id="estado-github" class="ayuda-campo" role="status" aria-live="polite">Cargando...</p>
+
+                        <div id="contenido-github" hidden>
+                            <h3>Participación del equipo</h3>
+                            <div class="contenedor-tabla-burndown">
+                                <table class="tabla-tiempos tabla-github">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Autor</th>
+                                            <th scope="col">Commits</th>
+                                            <th scope="col">Participación</th>
+                                            <th scope="col">Último commit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cuerpo-participacion-github"></tbody>
+                                </table>
+                            </div>
+
+                            <h3>Historial de commits</h3>
+                            <ul id="lista-commits-github" class="lista-commits"></ul>
+                        </div>
                     </section>
                 </div>
 
@@ -2350,6 +2606,8 @@
 
             <p class="objetivo-sprint"></p>
             <p class="fechas-sprint"></p>
+            <!-- Sprint 7 · Bloque 5 (Osmar) · HU-13: capacidad vs. comprometido -->
+            <div class="capacidad-sprint"></div>
 
         </article>
     </template>
@@ -2417,6 +2675,18 @@
     
     <!-- PB-64: PANEL DE RESUMEN DEL PROYECTO -->
     <script src="/js/resumenProyecto.js" defer></script>
+
+    <!-- Sprint 7: requisitos finales de la evaluación -->
+    <!-- Bloque 2 (César): épicas -->
+    <script src="/js/epicas.js" defer></script>
+    <!-- Bloque 3 (Francisco): criterios y Definition of Done -->
+    <script src="/js/calidad.js" defer></script>
+    <!-- Bloque 4 (Jesús): impedimentos -->
+    <script src="/js/impedimentos.js" defer></script>
+    <!-- Bloque 6 (Emmanuel): GitHub -->
+    <script src="/js/github.js" defer></script>
+    <!-- PB-62 (Nino): velocidad del equipo -->
+    <script src="/js/velocidad.js" defer></script>
 
 </body>
 </html>

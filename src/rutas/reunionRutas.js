@@ -19,4 +19,17 @@ router.post(
     reunionControlador.crear
 );
 
+// Sprint 7 · Bloque 6 (Emmanuel) · HU-17: editar y eliminar (solo el Scrum Master).
+router.put(
+    '/:id/reuniones/:idReunion',
+    verificarSesion,
+    reunionControlador.actualizar
+);
+
+router.delete(
+    '/:id/reuniones/:idReunion',
+    verificarSesion,
+    reunionControlador.eliminar
+);
+
 module.exports = router;

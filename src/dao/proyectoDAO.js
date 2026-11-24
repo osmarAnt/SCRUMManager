@@ -78,7 +78,39 @@ const actualizarProyecto = async (idProyecto, nombre, objetivo) => {
     return resultado.affectedRows > 0;
 };
 
+// Sprint 7 · Bloque 5 (Osmar) · HU-05: elimina el proyecto y TODO lo asociado.
+// Las llaves foráneas tienen ON DELETE CASCADE (integrantes, invitaciones, Sprints, historias,
+// criterios, horas, épicas, impedimentos, reuniones, avisos, foro...), así que un solo DELETE
+// borra todo en una operación atómica.
+const eliminarProyecto = async (idProyecto) => {
+    const [resultado] = await conexion.promise().query(
+        'DELETE FROM proyectos WHERE id_proyecto = ?',
+        [idProyecto]
+    );
+    return resultado.affectedRows > 0;
+};
+
+// Sprint 7 · Bloque 6 (Emmanuel) · HU-22: repositorio de GitHub vinculado ("dueño/repositorio").
+const obtenerRepositorio = async (idProyecto) => {
+    const [filas] = await conexion.promise().query(
+        'SELECT repositorio_github FROM proyectos WHERE id_proyecto = ? AND activo = TRUE',
+        [idProyecto]
+    );
+    return filas.length ? filas[0].repositorio_github : null;
+};
+
+const guardarRepositorio = async (idProyecto, repositorio) => {
+    const [resultado] = await conexion.promise().query(
+        'UPDATE proyectos SET repositorio_github = ? WHERE id_proyecto = ? AND activo = TRUE',
+        [repositorio, idProyecto]
+    );
+    return resultado.affectedRows > 0;
+};
+
 module.exports = {
+    eliminarProyecto,
+    obtenerRepositorio,
+    guardarRepositorio,
     listarPorUsuario,
     crearProyecto,
     obtenerRolEnProyecto,

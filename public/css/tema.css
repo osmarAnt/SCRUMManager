@@ -1,0 +1,268 @@
+/* =====================================================================
+   PB-65 (Francisco): modo oscuro y diseño adaptable a celular.
+   Se carga al final de cada vista. El tema oscuro cambia las variables de color de
+   estilos.css; las reglas con :where() tienen especificidad mínima para no pisar
+   los estilos de cada pestaña.
+   ===================================================================== */
+
+/* ---------- Tema oscuro ---------- */
+:root[data-tema="oscuro"] {
+    --azul: #5b9bff;
+    --azul-oscuro: #7cafff;
+    --azul-claro: #1e2f4d;
+    --fondo: #0e1522;
+    --blanco: #18212f;
+    --texto: #e6edf7;
+    --texto-secundario: #a5b3c7;
+    --borde: #2d3a4f;
+    color-scheme: dark;
+}
+
+/* Texto sobre botones azules (antes usaba var(--blanco), que ahora es oscuro). */
+:where(:root[data-tema="oscuro"]) button,
+:root[data-tema="oscuro"] .insignia-pestana,
+:root[data-tema="oscuro"] .subpestanas-burndown [role="tab"][aria-selected="true"],
+:root[data-tema="oscuro"] .planning-carta[aria-pressed="true"]:hover {
+    color: #ffffff;
+}
+
+:root[data-tema="oscuro"] .boton-secundario,
+:root[data-tema="oscuro"] .acciones-notificacion button {
+    color: var(--azul);
+    border-color: var(--borde);
+}
+
+:root[data-tema="oscuro"] .pestanas [role="tab"][aria-selected="true"] {
+    color: var(--azul);
+}
+
+/* Campos de formulario. */
+:where(:root[data-tema="oscuro"]) :is(input, select, textarea) {
+    border-color: var(--borde);
+    background-color: var(--fondo);
+    color: var(--texto);
+}
+
+:where(:root[data-tema="oscuro"]) :is(input, textarea)::placeholder {
+    color: #7d8aa0;
+}
+
+/* Superficies que tenían blanco o tonos claros fijos. */
+:root[data-tema="oscuro"] :is(
+    .cap-tarjeta, .cap-detalle, .cap-contenido, .cap-boton-salir, .controles-kanban select,
+    .kanban-acciones select, .boton-campana, .panel-notificaciones, .acciones-notificacion button,
+    .persona-item, .boton-peligro, .tarjeta-proyecto
+) {
+    background: var(--blanco);
+    color: var(--texto);
+}
+
+:root[data-tema="oscuro"] :is(
+    .espacio-burndown-horas, .cap-espacio, .cap-figura, .panel-evidencias, .mensaje-po-leido,
+    .lista-notificaciones li, .planning-ficha, .planning-mesa, .planning-mini, .planning-carta:disabled,
+    .reunion-pasada, .panel-revision, .bloque-epicas, .dod-sprint, .item-calidad, .epica-item,
+    .impedimento, .solucion-impedimento, .sha-commit
+) {
+    background: #1d2738;
+    color: var(--texto);
+}
+
+:root[data-tema="oscuro"] :is(.aviso-burndown-horas, .estado-historia--curso, .insignia-resumen--alerta, .marca-criterio--no) {
+    background: #3a2f12;
+    color: #f5d27a;
+}
+
+:root[data-tema="oscuro"] :is(.estado-historia--rechazada, .boton-peligro:hover, .cap-boton-salir:hover) {
+    background: #3d1f1c;
+    color: #ff9a8f;
+}
+
+:root[data-tema="oscuro"] :is(.item-calidad[data-cumplido="true"], .impedimento[data-estado="Resuelto"]) {
+    background: #13302a;
+}
+
+:root[data-tema="oscuro"] .item-calidad[data-cumplido="true"] .casilla-calidad span {
+    color: #7ee2b8;
+}
+
+/* Textos con azul marino fijo (Capacitación y encabezados) pasan al color de texto del tema. */
+:root[data-tema="oscuro"] :is(
+    .cap-encabezado h1, #cap-titulo-opciones, .cap-tarjeta, .cap-nombre, .cap-detalle h2,
+    .cap-espacio h3, .cap-progreso, .cap-explicacion h3, .cap-explicacion ul, .cap-tarjeta:hover .cap-nombre
+) {
+    color: var(--texto);
+}
+
+:root[data-tema="oscuro"] :is(.cap-encabezado p, .cap-descripcion, .cap-explicacion p, .cap-espacio p, .cap-figura figcaption) {
+    color: var(--texto-secundario);
+}
+
+:root[data-tema="oscuro"] .cap-tarjeta:hover {
+    background: #22304a;
+    border-color: var(--azul);
+}
+
+/* Rojos, verdes y azules oscuros fijos: versiones más claras para que se lean sobre fondo oscuro. */
+:root[data-tema="oscuro"] :is(
+    .mensaje-error, .boton-quitar-calidad, .tabla-burndown .por-encima, .aviso-capacidad[data-estado="excedido"],
+    .mensaje-dod[data-tipo="error"], .planning-estado[data-tipo="error"], .planning-error,
+    [data-ritmo="Atrasado"], [data-ritmo="Con puntos pendientes"]
+) {
+    color: #ff8f84;
+}
+
+:root[data-tema="oscuro"] .texto-promedio {
+    fill: #ff8f84;
+}
+
+:root[data-tema="oscuro"] :is(
+    .tabla-burndown .en-meta, .mensaje-dod[data-tipo="ok"], .planning-mensaje-horas[data-tipo="ok"],
+    [data-ritmo="En ritmo"], [data-ritmo="Completado"], .panel-calidad[data-completo="true"] > summary
+) {
+    color: #6fdba4;
+}
+
+:root[data-tema="oscuro"] :is(.tabla-tiempos .horas-estimadas, .aviso-capacidad) {
+    color: var(--texto-secundario);
+}
+
+:root[data-tema="oscuro"] .tabla-tiempos .horas-estimadas {
+    color: var(--azul);
+}
+
+:root[data-tema="oscuro"] :is(.controles-kanban label, #planning-conteo) {
+    color: var(--texto);
+}
+
+/* El ritmo del Burndown se colorea con selectores de id: se igualan aquí. */
+:root[data-tema="oscuro"] :is(#resumen-ritmo, #general-ritmo):is([data-ritmo="Atrasado"], [data-ritmo="Con puntos pendientes"]) {
+    color: #ff8f84;
+}
+
+:root[data-tema="oscuro"] :is(#resumen-ritmo, #general-ritmo):is([data-ritmo="En ritmo"], [data-ritmo="Completado"]) {
+    color: #6fdba4;
+}
+
+/* kanban.js pone el color del mensaje en línea; en oscuro se usa el del tema. */
+:root[data-tema="oscuro"] #mensaje-kanban {
+    color: var(--texto-secundario) !important;
+}
+
+/* El Kanban conserva sus columnas de color pastel: su texto sigue oscuro para leerse bien. */
+:root[data-tema="oscuro"] .kanban-tarjeta {
+    color: #172b4d;
+}
+
+/* Las capturas de pantalla se oscurecen un poco para no deslumbrar. */
+:root[data-tema="oscuro"] img {
+    filter: brightness(0.92);
+}
+
+/* ---------- Interruptor de tema ---------- */
+.interruptor-tema {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 40px;
+    margin: 0 0 10px;
+    padding: 8px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    background: var(--blanco);
+    color: var(--texto);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.interruptor-tema:hover {
+    background: var(--azul-claro);
+}
+
+.interruptor-tema svg {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+}
+
+.interruptor-tema--flotante {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 50;
+    width: auto;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+:root[data-tema="oscuro"] .interruptor-tema {
+    color: var(--texto);
+}
+
+/* ---------- Pantallas pequeñas (menos de 600 px) ---------- */
+@media (max-width: 600px) {
+    html,
+    body {
+        overflow-x: hidden;
+    }
+
+    img,
+    svg,
+    video {
+        max-width: 100%;
+    }
+
+    .bloque,
+    .cap-detalle,
+    .cap-contenido {
+        padding: 18px 14px;
+    }
+
+    .cabecera-bloque {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .cabecera-bloque > button,
+    .cabecera-bloque > div > button {
+        width: 100%;
+    }
+
+    /* Las tablas se desplazan dentro de su bloque, nunca la página completa. */
+    .bloque table,
+    .panel-pestana table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+        white-space: normal;
+    }
+
+    .fila-fechas,
+    .fila-reunion {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    :is(input, select, textarea) {
+        max-width: 100%;
+    }
+
+    .acciones-formulario {
+        flex-wrap: wrap;
+    }
+
+    .acciones-formulario > button {
+        flex: 1 1 140px;
+    }
+
+    .resumen-burndown {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .interruptor-tema--flotante {
+        right: 12px;
+        bottom: 12px;
+    }
+}

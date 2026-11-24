@@ -1,0 +1,536 @@
+/* =====================================================================
+   Sprint 7: estilos de los requisitos finales de la evaluación.
+   Usan las variables de color de estilos.css para verse igual que el resto.
+   ===================================================================== */
+
+/* ---------- Bloque 2 (César): épicas ---------- */
+.chip-epica {
+    --color-epica: #6b778c;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    padding: 3px 10px;
+    border: 1px solid color-mix(in srgb, var(--color-epica) 45%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-epica) 14%, var(--blanco));
+    color: var(--texto);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+.chip-epica::before {
+    content: '';
+    flex: 0 0 auto;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-epica);
+}
+
+.chip-epica-kanban {
+    margin-bottom: 8px;
+}
+
+.bloque-epicas {
+    margin: 0 0 26px;
+    padding: 18px 20px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: var(--fondo);
+}
+
+.bloque-epicas h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+}
+
+.lista-epicas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.epica-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    background: var(--blanco);
+}
+
+.epica-total,
+.epica-descripcion,
+.backlog-sin-epica {
+    color: var(--texto-secundario);
+    font-size: 12px;
+}
+
+#color-epica {
+    width: 72px;
+    min-height: 44px;
+    padding: 4px;
+}
+
+/* ---------- Bloque 3 (Francisco): criterios y Definition of Done ---------- */
+.panel-calidad {
+    margin: 12px 0;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    background: var(--blanco);
+}
+
+.panel-calidad > summary {
+    padding: 10px 14px;
+    color: var(--texto);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.panel-calidad[data-completo="true"] > summary {
+    color: #216e4e;
+}
+
+.contenido-calidad {
+    padding: 0 14px 12px;
+}
+
+.seccion-calidad h5 {
+    margin: 10px 0 6px;
+    color: var(--texto-secundario);
+    font-size: 12px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.lista-calidad,
+#lista-criterios {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.item-calidad {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 4px 0;
+    padding: 6px 10px;
+    border-left: 4px solid #c1c7d0;
+    border-radius: 4px;
+    background: var(--fondo);
+}
+
+.item-calidad[data-cumplido="true"] {
+    border-left-color: #22a06b;
+    background: #effbf4;
+}
+
+.casilla-calidad {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.casilla-calidad input {
+    width: 18px;
+    height: 18px;
+    min-height: 0;
+    margin: 0;
+    accent-color: #22a06b;
+}
+
+.item-calidad[data-cumplido="true"] .casilla-calidad span {
+    color: #216e4e;
+}
+
+.boton-quitar-calidad {
+    min-height: 30px;
+    padding: 4px 10px;
+    border: 1px solid #f1c3bd;
+    background: var(--blanco);
+    color: #ae2a19;
+    font-size: 12px;
+}
+
+.form-calidad {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.form-calidad input {
+    flex: 1;
+    min-width: 0;
+}
+
+.dod-sprint {
+    margin: 16px 0;
+    padding: 16px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: var(--fondo);
+}
+
+.cabecera-dod-sprint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.cabecera-dod-sprint h4 {
+    margin: 0 0 4px;
+}
+
+.mensaje-dod[data-tipo="ok"] {
+    color: #216e4e;
+    font-weight: 700;
+}
+
+.mensaje-dod[data-tipo="error"] {
+    color: #ae2a19;
+    font-weight: 700;
+}
+
+/* ---------- Bloque 4 (Jesús): impedimentos ---------- */
+.grupo-impedimentos {
+    margin-top: 24px;
+}
+
+.grupo-impedimentos h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+}
+
+.lista-impedimentos {
+    display: grid;
+    gap: 12px;
+}
+
+.impedimento {
+    padding: 16px;
+    border: 1px solid var(--borde);
+    border-left: 5px solid #e2483d;
+    border-radius: 8px;
+    background: var(--blanco);
+}
+
+.impedimento[data-estado="Resuelto"] {
+    border-left-color: #22a06b;
+    background: #fbfdfc;
+}
+
+.cabecera-impedimento {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.cabecera-impedimento h4 {
+    flex: 1 1 200px;
+    margin: 0;
+    font-size: 15px;
+}
+
+.etiqueta-impacto,
+.etiqueta-estado-impedimento,
+.etiqueta-tipo-reunion {
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.etiqueta-impacto[data-impacto="Alto"] { background: #ffeceb; color: #ae2a19; }
+.etiqueta-impacto[data-impacto="Medio"] { background: #fff7d6; color: #7f5f01; }
+.etiqueta-impacto[data-impacto="Bajo"] { background: #e9f2ff; color: #0055cc; }
+.etiqueta-estado-impedimento[data-estado="Activo"] { background: #ffeceb; color: #ae2a19; }
+.etiqueta-estado-impedimento[data-estado="Resuelto"] { background: #dcfff1; color: #216e4e; }
+
+.descripcion-impedimento,
+.solucion-impedimento {
+    margin: 10px 0 6px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.solucion-impedimento {
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: #effbf4;
+}
+
+.meta-impedimento {
+    margin: 4px 0;
+    color: var(--texto-secundario);
+    font-size: 13px;
+}
+
+.form-solucion {
+    margin-top: 10px;
+}
+
+.form-solucion textarea {
+    width: 100%;
+}
+
+/* ---------- Bloque 5 (Osmar): eliminar proyecto y capacidad ---------- */
+.contenedor-tarjeta-proyecto {
+    position: relative;
+    display: flex;
+    min-width: 0;
+}
+
+.contenedor-tarjeta-proyecto > .tarjeta-proyecto {
+    flex: 1;
+}
+
+.eliminar-proyecto {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    min-height: 34px;
+    padding: 6px 12px;
+    border: 1px solid #f1c3bd;
+    border-radius: 6px;
+    background: var(--blanco);
+    color: #ae2a19;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.eliminar-proyecto:hover {
+    background: #ffeceb;
+}
+
+.eliminar-proyecto:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.capacidad-sprint:empty {
+    display: none;
+}
+
+.capacidad-sprint {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--borde);
+}
+
+.texto-capacidad {
+    margin: 0 0 6px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.barra-capacidad {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--borde);
+}
+
+.barra-capacidad span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #22a06b;
+}
+
+.barra-capacidad[data-estado="justo"] span { background: #e2b203; }
+.barra-capacidad[data-estado="excedido"] span { background: #e2483d; }
+
+.aviso-capacidad {
+    margin: 6px 0 0;
+    color: var(--texto-secundario);
+    font-size: 13px;
+}
+
+.aviso-capacidad[data-estado="excedido"] {
+    color: #ae2a19;
+    font-weight: 700;
+}
+
+.form-capacidad {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.form-capacidad label {
+    margin: 0;
+    font-size: 13px;
+}
+
+.form-capacidad input {
+    width: 110px;
+    min-height: 36px;
+}
+
+.form-capacidad button {
+    min-height: 36px;
+    padding: 6px 12px;
+}
+
+/* ---------- Bloque 6 (Emmanuel): reuniones y GitHub ---------- */
+.etiqueta-tipo-reunion {
+    background: var(--azul-claro);
+    color: var(--azul);
+}
+
+.etiqueta-tipo-reunion[data-tipo="Daily Scrum"] { background: #fff7d6; color: #7f5f01; }
+.etiqueta-tipo-reunion[data-tipo="Sprint Review"] { background: #dcfff1; color: #216e4e; }
+.etiqueta-tipo-reunion[data-tipo="Sprint Retrospective"] { background: #f3f0ff; color: #5e4db2; }
+.etiqueta-tipo-reunion[data-tipo="Otra"] { background: var(--fondo); color: var(--texto-secundario); }
+
+.acciones-reunion {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.acciones-reunion button {
+    min-height: 34px;
+    padding: 6px 12px;
+}
+
+.fila-github {
+    display: flex;
+    gap: 8px;
+}
+
+.fila-github input {
+    flex: 1;
+    min-width: 0;
+}
+
+.lista-commits {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.commit {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--borde);
+}
+
+.cabecera-commit {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+}
+
+.sha-commit {
+    flex: 0 0 auto;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--fondo);
+    color: var(--azul);
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 13px;
+}
+
+.mensaje-commit {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.meta-commit {
+    margin: 4px 0 0;
+    color: var(--texto-secundario);
+    font-size: 13px;
+}
+
+.barra-participacion {
+    display: inline-block;
+    width: 90px;
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--borde);
+    vertical-align: middle;
+}
+
+.barra-participacion span {
+    display: block;
+    height: 100%;
+    background: var(--azul);
+}
+
+@media (max-width: 600px) {
+    .form-calidad,
+    .fila-github {
+        flex-direction: column;
+    }
+
+    .eliminar-proyecto {
+        position: static;
+        align-self: flex-start;
+        margin: -8px 0 0 16px;
+    }
+
+    .contenedor-tarjeta-proyecto {
+        flex-direction: column;
+    }
+}
+
+/* ---------- PB-62 (Nino): velocidad del equipo ---------- */
+.grafica-velocidad {
+    margin: 14px 0 18px;
+    overflow-x: auto;
+}
+
+.svg-velocidad {
+    display: block;
+    width: 100%;
+    min-width: 420px;
+    height: auto;
+}
+
+.guia-velocidad { stroke: var(--borde); stroke-width: 1; }
+.eje-velocidad { fill: var(--texto-secundario); font-size: 12px; }
+.valor-velocidad { fill: var(--texto); font-size: 12px; font-weight: 700; }
+.barra-planeados { fill: #b3c7ee; }
+.barra-completados { fill: var(--azul); }
+.linea-promedio { stroke: #e2483d; stroke-width: 2; stroke-dasharray: 6 4; }
+.texto-promedio { fill: #ae2a19; font-size: 12px; font-weight: 700; }
+
+.muestra-barra {
+    display: inline-block;
+    width: 14px;
+    height: 10px;
+    margin-right: 6px;
+    border-radius: 2px;
+    vertical-align: middle;
+}
+
+.muestra-planeados { background: #b3c7ee; }
+.muestra-completados { background: var(--azul); }
+.muestra-promedio { border-top: 2px dashed #e2483d; }

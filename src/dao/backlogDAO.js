@@ -129,17 +129,27 @@ const BacklogDAO = {
     },
 
     // ===== OSMAR: CREAR HISTORIA =====
+    // Sprint 7 · Bloque 2: se guarda la épica (obligatoria).
     crear: async (datos) => {
-        const { id_proyecto, titulo, descripcion, puntos, prioridad } = datos;
+        const { id_proyecto, titulo, descripcion, puntos, prioridad, id_epica } = datos;
         const query = `
             INSERT INTO product_backlog
-            (id_proyecto, titulo, descripcion, puntos, prioridad)
-            VALUES (?, ?, ?, ?, ?)
+            (id_proyecto, id_epica, titulo, descripcion, puntos, prioridad)
+            VALUES (?, ?, ?, ?, ?, ?)
         `;
         const [resultado] = await pool.promise().query(query, [
-            id_proyecto, titulo, descripcion, puntos || null, prioridad || 'Media'
+            id_proyecto, id_epica, titulo, descripcion, puntos || null, prioridad || 'Media'
         ]);
         return resultado.insertId;
+    },
+
+    // Sprint 7 · Bloque 1: proyecto al que pertenece una historia (para revisar permisos).
+    obtenerProyectoDeHistoria: async (idHistoria) => {
+        const [filas] = await pool.promise().query(
+            'SELECT id_proyecto FROM product_backlog WHERE id_historia = ? LIMIT 1',
+            [idHistoria]
+        );
+        return filas.length ? Number(filas[0].id_proyecto) : null;
     },
 
     // ===== OSMAR: OBTENER HISTORIAS DEL PROYECTO =====
@@ -147,9 +157,13 @@ const BacklogDAO = {
     // ===== OSMAR: OBTENER HISTORIAS DEL PROYECTO =====
     // JESÚS PB-28: identificar historias modificadas
 
+    // Sprint 7: incluye la épica (nombre y color) y ordena por prioridad (TC-08-05):
+    // al cambiar la prioridad de una historia cambia su posición en el backlog.
     obtenerPorProyecto: async (id_proyecto) => {
         const query = `
             SELECT h.*,
+                e.nombre AS epica_nombre,
+                e.color AS epica_color,
                 EXISTS (
                     SELECT 1
                     FROM historial_cambios_historias hc
@@ -159,13 +173,14 @@ const BacklogDAO = {
                 r.observaciones AS ultima_observacion,
                 DATE_FORMAT(r.fecha_revision, '%Y-%m-%d %H:%i') AS ultima_fecha_revision
             FROM product_backlog h
+            LEFT JOIN epicas e ON e.id_epica = h.id_epica
             LEFT JOIN revisiones_historia r ON r.id_revision = (
                 SELECT MAX(id_revision)
                 FROM revisiones_historia
                 WHERE id_historia = h.id_historia
             )
             WHERE h.id_proyecto = ?
-            ORDER BY h.orden ASC
+            ORDER BY FIELD(h.prioridad, 'Alta', 'Media', 'Baja'), h.orden ASC, h.id_historia ASC
         `;
 
         const [rows] = await pool.promise().query(
@@ -178,10 +193,11 @@ const BacklogDAO = {
 
 
     // ===== OSMAR: ELIMINAR HISTORIA =====
-    eliminar: async (id_historia) => {
+    // Sprint 7: el borrado se limita al proyecto ya autorizado.
+    eliminar: async (id_historia, id_proyecto) => {
         const [rows] = await pool.promise().query(
-            'SELECT id_sprint FROM product_backlog WHERE id_historia = ?',
-            [id_historia]
+            'SELECT id_sprint FROM product_backlog WHERE id_historia = ? AND id_proyecto = ?',
+            [id_historia, id_proyecto]
         )
 
         if (rows.length > 0 && rows[0].id_sprint !== null) {
@@ -189,8 +205,8 @@ const BacklogDAO = {
         }
 
         const [resultado] = await pool.promise().query(
-            'DELETE FROM product_backlog WHERE id_historia = ?',
-            [id_historia]
+            'DELETE FROM product_backlog WHERE id_historia = ? AND id_proyecto = ?',
+            [id_historia, id_proyecto]
         );
         return resultado.affectedRows;
     },
@@ -207,10 +223,12 @@ const BacklogDAO = {
 
             // Obtener los datos actuales de la historia
             const [filas] = await conexion.query(
-                `SELECT titulo, descripcion, puntos, prioridad
-                 FROM product_backlog
-                 WHERE id_proyecto = ?
-                 AND id_historia = ?
+                `SELECT h.titulo, h.descripcion, h.puntos, h.prioridad,
+                        h.id_epica, e.nombre AS epica_nombre
+                 FROM product_backlog h
+                 LEFT JOIN epicas e ON e.id_epica = h.id_epica
+                 WHERE h.id_proyecto = ?
+                 AND h.id_historia = ?
                  FOR UPDATE`,
                 [idProyecto, idHistoria]
             );
@@ -251,6 +269,21 @@ const BacklogDAO = {
                 }
             }
 
+            // Sprint 7 · Bloque 2: el cambio de épica también queda en el historial (con su nombre).
+            if (datos.id_epica !== undefined && Number(anterior.id_epica) !== Number(datos.id_epica)) {
+                const [[nueva]] = await conexion.query(
+                    'SELECT nombre FROM epicas WHERE id_epica = ? AND id_proyecto = ?',
+                    [datos.id_epica, idProyecto]
+                );
+                cambios.push({
+                    campo: 'Épica',
+                    antes: anterior.epica_nombre ?? null,
+                    despues: nueva ? nueva.nombre : null
+                });
+            } else {
+                datos = { ...datos, id_epica: anterior.id_epica };
+            }
+
             // Si no hubo cambios, no generar historial
             if (cambios.length === 0) {
                 await conexion.rollback();
@@ -267,7 +300,8 @@ const BacklogDAO = {
                  SET titulo = ?,
                      descripcion = ?,
                      puntos = ?,
-                     prioridad = ?
+                     prioridad = ?,
+                     id_epica = ?
                  WHERE id_proyecto = ?
                  AND id_historia = ?`,
                 [
@@ -275,6 +309,7 @@ const BacklogDAO = {
                     datos.descripcion,
                     datos.puntos,
                     datos.prioridad,
+                    datos.id_epica,
                     idProyecto,
                     idHistoria
                 ]
@@ -364,10 +399,61 @@ const BacklogDAO = {
 
     obtenerCriteriosPorHistoria: async (id_historia) => {
         const [rows] = await pool.promise().query(
-            'SELECT * FROM criterios_aceptacion WHERE id_historia = ?',
+            'SELECT * FROM criterios_aceptacion WHERE id_historia = ? ORDER BY id_criterio ASC',
             [id_historia]
         );
         return rows;
+    },
+
+    // Sprint 7 · Bloque 3 · HU-09: datos del criterio y de su historia (para revisar permisos).
+    obtenerCriterio: async (idCriterio) => {
+        const [filas] = await pool.promise().query(
+            `SELECT c.id_criterio, c.id_historia, c.completado,
+                    h.id_proyecto, h.id_responsable, h.estado_historia
+             FROM criterios_aceptacion c
+             INNER JOIN product_backlog h ON h.id_historia = c.id_historia
+             WHERE c.id_criterio = ?`,
+            [idCriterio]
+        );
+        return filas[0] || null;
+    },
+
+    marcarCriterio: async (idCriterio, completado) => {
+        const [resultado] = await pool.promise().query(
+            'UPDATE criterios_aceptacion SET completado = ? WHERE id_criterio = ?',
+            [completado, idCriterio]
+        );
+        return resultado.affectedRows > 0;
+    },
+
+    // Sprint 7 · Bloque 3 · HU-09 y HU-10: lo que falta para poder terminar una historia
+    // (criterios de aceptación sin cumplir y requisitos de su Definition of Done sin cumplir).
+    obtenerPendientesParaTerminar: async (idHistoria) => {
+        const [[criterios], [dod]] = await Promise.all([
+            pool.promise().query(
+                'SELECT descripcion FROM criterios_aceptacion WHERE id_historia = ? AND completado = FALSE ORDER BY id_criterio',
+                [idHistoria]
+            ),
+            pool.promise().query(
+                'SELECT descripcion FROM dod_requisitos WHERE id_historia = ? AND cumplido = FALSE ORDER BY id_requisito',
+                [idHistoria]
+            )
+        ]);
+        return {
+            criterios: criterios.map((fila) => fila.descripcion),
+            dod: dod.map((fila) => fila.descripcion)
+        };
+    },
+
+    // Sprint 7 · Bloque 1 · TC-14-04: responsable y estado de una historia del Sprint.
+    obtenerHistoriaDeSprint: async (idProyecto, idSprint, idHistoria) => {
+        const [filas] = await pool.promise().query(
+            `SELECT id_historia, id_responsable, estado_historia
+             FROM product_backlog
+             WHERE id_proyecto = ? AND id_sprint = ? AND id_historia = ?`,
+            [idProyecto, idSprint, idHistoria]
+        );
+        return filas[0] || null;
     },
 
     // ===== VALOR Y ESFUERZO POR REQUISITO =====
@@ -406,10 +492,15 @@ const BacklogDAO = {
                 h.prioridad,
                 h.estado_historia,
                 h.id_responsable,
-                u.nombre AS nombre_responsable
+                u.nombre AS nombre_responsable,
+                h.id_epica,
+                e.nombre AS epica_nombre,
+                e.color AS epica_color
             FROM product_backlog h
             LEFT JOIN usuarios u
                 ON u.id_usuario = h.id_responsable
+            LEFT JOIN epicas e
+                ON e.id_epica = h.id_epica
             WHERE h.id_sprint = ?
                 AND h.id_proyecto = ?
             ORDER BY h.orden ASC, h.id_historia ASC

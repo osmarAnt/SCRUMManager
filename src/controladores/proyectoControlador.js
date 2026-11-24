@@ -49,8 +49,28 @@ const leerFecha = (valor) => {
 };
 
 // Valida los datos del Sprint (PB-13). La duración se calcula aquí, nunca se confía en la del cliente.
+// Sprint 7 · Bloque 5 (Osmar) · HU-13: capacidad del equipo en horas (opcional, 0.25 a 9999).
+const leerCapacidad = (valor) => {
+    if (valor === undefined || valor === null || valor === '') return { capacidad: null };
+    const texto = String(valor).trim();
+    const numero = Number(texto);
+    if (!/^\d+(\.\d{1,2})?$/.test(texto) || numero <= 0 || numero > 9999) {
+        return { error: 'La capacidad debe ser un número de horas mayor que 0 (máximo 2 decimales).' };
+    }
+    return { capacidad: numero };
+};
+
 const validarDatosSprint = (cuerpo) => {
-    const { objetivo, fecha_inicio: fechaInicio, fecha_fin: fechaFin } = cuerpo || {};
+    const { objetivo, fecha_inicio: fechaInicio, fecha_fin: fechaFin, nombre } = cuerpo || {};
+    // Sprint 7 · Bloque 1 (Nino) · HU-12: el Sprint tiene nombre.
+    if (typeof nombre !== 'string' || nombre.trim().length < 3 || nombre.trim().length > 120 ||
+        CARACTERES_DE_CONTROL.test(nombre.trim())) {
+        return { error: 'Escribe el nombre del Sprint (entre 3 y 120 caracteres).' };
+    }
+    const capacidad = leerCapacidad(cuerpo.capacidad_horas);
+    if (capacidad.error) {
+        return { error: capacidad.error };
+    }
     if (typeof objetivo !== 'string' || !objetivo.trim()) {
         return { error: 'Escribe el objetivo del Sprint.' };
     }
@@ -70,7 +90,14 @@ const validarDatosSprint = (cuerpo) => {
     if (duracionDias > DURACION_MAXIMA_SPRINT) {
         return { error: `Un Sprint no puede durar más de ${DURACION_MAXIMA_SPRINT} días.` };
     }
-    return { objetivo: objetivoLimpio, fechaInicio, fechaFin, duracionDias };
+    return {
+        nombre: nombre.trim(),
+        objetivo: objetivoLimpio,
+        fechaInicio,
+        fechaFin,
+        duracionDias,
+        capacidad: capacidad.capacidad
+    };
 };
 
 // Comprueba que el usuario pertenezca al proyecto. Si exigirScrumMaster, además debe administrarlo.
@@ -112,13 +139,9 @@ const listarProyectos = (req, res) => {
 };
 
 // PB-04
+// Sprint 7 · Bloque 1 (Nino) · TC-04-01: cualquier usuario registrado crea proyectos y queda
+// como su Scrum Master. El rol es por proyecto: en otros proyectos puede ser PO o Desarrollador.
 const crearProyecto = async (req, res) => {
-    if (req.session.rol !== 'Scrum Master') {
-        return res.status(403).json({
-            mensaje: 'Solo el Scrum Master puede crear proyectos.'
-        });
-
-    }
     const datos = validarDatosProyecto(req.body);
     if (datos.error) {
         return res.status(400).json({ mensaje: datos.error });
@@ -171,9 +194,7 @@ const consultarProyecto = async (req, res) => {
             proyecto,
             rol,
             puedeAdministrar: rol === 'Scrum Master',
-            puedeInvitar:
-                req.session.rol === 'Scrum Master' &&
-                rol === 'Scrum Master',
+            puedeInvitar: rol === 'Scrum Master',
             sprints
         });
     } catch (error) {
@@ -224,9 +245,18 @@ const crearSprint = async (req, res) => {
         if (!rol) {
             return;
         }
-        const resultado = await sprintDAO.crearSprint(
-            idProyecto, datos.objetivo, datos.fechaInicio, datos.fechaFin, datos.duracionDias
-        );
+        // Sprint 7 · Bloque 5 (Osmar) · TC-06-04: no se configura un Sprint sin el equipo mínimo
+        // (Scrum Master, al menos un Product Owner y al menos un Desarrollador que ya aceptaron).
+        const equipo = await sprintDAO.contarRolesDelEquipo(idProyecto);
+        const faltan = [];
+        if (!equipo['Product Owner']) faltan.push('un Product Owner');
+        if (!equipo.Desarrollador) faltan.push('al menos un Desarrollador');
+        if (faltan.length) {
+            return res.status(409).json({
+                mensaje: `El equipo está incompleto: falta ${faltan.join(' y ')}. Invítalos (y espera a que acepten) antes de configurar un Sprint.`
+            });
+        }
+        const resultado = await sprintDAO.crearSprint(idProyecto, datos);
         if (resultado.traslape) {
             return res.status(409).json({
                 mensaje: `Las fechas se traslapan con el Sprint ${resultado.traslape} de este proyecto.`
@@ -476,6 +506,38 @@ const cambiarEstadoHistoria = async (req, res) => {
 
         if (!rol) return;
 
+        // Sprint 7 · Bloque 1 (Nino) · TC-14-03/04: solo el desarrollador RESPONSABLE mueve su historia.
+        const historia = await backlogDAO.obtenerHistoriaDeSprint(
+            idProyecto, Number(idSprint), Number(idHistoria)
+        );
+        if (!historia) {
+            return res.status(404).json({ mensaje: 'No se encontró la historia en este Sprint.' });
+        }
+        if (rol !== 'Desarrollador' || Number(historia.id_responsable) !== Number(req.session.idUsuario)) {
+            return res.status(403).json({
+                mensaje: 'Solo el desarrollador responsable de la historia puede cambiar su estado.'
+            });
+        }
+
+        // Sprint 7 · Bloque 3 (Francisco) · HU-09 y HU-10: para terminarla deben cumplirse
+        // todos sus criterios de aceptación y su Definition of Done.
+        if (estado_historia === 'Terminada' && historia.estado_historia !== 'Terminada') {
+            const pendientes = await backlogDAO.obtenerPendientesParaTerminar(Number(idHistoria));
+            if (pendientes.criterios.length || pendientes.dod.length) {
+                const partes = [];
+                if (pendientes.criterios.length) {
+                    partes.push(`${pendientes.criterios.length} criterio(s) de aceptación sin cumplir`);
+                }
+                if (pendientes.dod.length) {
+                    partes.push(`${pendientes.dod.length} requisito(s) de la Definition of Done sin cumplir`);
+                }
+                return res.status(409).json({
+                    mensaje: `No puedes terminar la historia: tiene ${partes.join(' y ')}.`,
+                    pendientes
+                });
+            }
+        }
+
         const actualizado = await backlogDAO.actualizarEstadoSprint(
             idProyecto,
             Number(idSprint),
@@ -525,7 +587,96 @@ const cambiarEstadoHistoria = async (req, res) => {
 
 
 
+// ===== Sprint 7 · Bloque 5 (Osmar) · HU-13: capacidad del Sprint =====
+const actualizarCapacidadSprint = async (req, res) => {
+    const idProyecto = leerIdProyecto(req);
+    const idSprint = /^\d{1,10}$/.test(req.params.idSprint) ? Number(req.params.idSprint) : null;
+    if (idProyecto === null || !idSprint) {
+        return res.status(404).json({ mensaje: 'No encontramos ese Sprint.' });
+    }
+    const capacidad = leerCapacidad(req.body?.capacidad_horas);
+    if (capacidad.error) {
+        return res.status(400).json({ mensaje: capacidad.error });
+    }
+    try {
+        if (!await autorizarAcceso(req, res, idProyecto, true)) {
+            return;
+        }
+        const sprint = await sprintDAO.actualizarCapacidad(idProyecto, idSprint, capacidad.capacidad);
+        if (!sprint) {
+            return res.status(404).json({ mensaje: 'No encontramos ese Sprint.' });
+        }
+        res.json({
+            mensaje: capacidad.capacidad === null
+                ? 'Se quitó la capacidad del Sprint.'
+                : `Capacidad del Sprint ${sprint.numero}: ${capacidad.capacidad} h.`,
+            sprint
+        });
+    } catch (error) {
+        errorServidor(res, 'Error al guardar la capacidad', error);
+    }
+};
+
+// ===== Sprint 7 · Bloque 3 (Francisco) · HU-10 (TC-10-03): finalizar Sprint validando su DoD =====
+// El Sprint solo se finaliza si TODOS los requisitos de su Definition of Done están cumplidos.
+const finalizarSprint = async (req, res) => {
+    const idProyecto = leerIdProyecto(req);
+    const idSprint = /^\d{1,10}$/.test(req.params.idSprint) ? Number(req.params.idSprint) : null;
+    if (idProyecto === null || !idSprint) {
+        return res.status(404).json({ mensaje: 'No encontramos ese Sprint.' });
+    }
+    try {
+        if (!await autorizarAcceso(req, res, idProyecto, true)) {
+            return;
+        }
+        const resultado = await sprintDAO.finalizar(idProyecto, idSprint);
+        if (resultado.noEncontrado) {
+            return res.status(404).json({ mensaje: 'No encontramos ese Sprint.' });
+        }
+        if (resultado.yaFinalizado) {
+            return res.status(409).json({ mensaje: 'Este Sprint ya está finalizado.' });
+        }
+        if (resultado.dodPendiente) {
+            return res.status(409).json({
+                mensaje: `No se puede finalizar: faltan ${resultado.dodPendiente.length} requisito(s) de la Definition of Done del Sprint.`,
+                pendientes: resultado.dodPendiente
+            });
+        }
+        res.json({ mensaje: `Sprint ${resultado.numero} finalizado. Su Definition of Done se cumplió completa.` });
+    } catch (error) {
+        errorServidor(res, 'Error al finalizar el Sprint', error);
+    }
+};
+
+// ===== Sprint 7 · Bloque 5 (Osmar) · HU-05: eliminar proyecto =====
+// Solo el Scrum Master del proyecto (quien lo creó). El Product Owner y los desarrolladores
+// no ven la opción y el servidor también se los niega (TC-05-01 y TC-05-03).
+const eliminarProyecto = async (req, res) => {
+    const idProyecto = leerIdProyecto(req);
+    if (idProyecto === null) {
+        return res.status(404).json({ mensaje: 'No encontramos ese proyecto.' });
+    }
+    try {
+        const rol = await proyectoDAO.obtenerRolEnProyecto(idProyecto, req.session.idUsuario);
+        if (!rol) {
+            return res.status(404).json({ mensaje: 'No encontramos ese proyecto.' });
+        }
+        if (rol !== 'Scrum Master') {
+            return res.status(403).json({ mensaje: 'Solo el Scrum Master que creó el proyecto puede eliminarlo.' });
+        }
+        if (!await proyectoDAO.eliminarProyecto(idProyecto)) {
+            return res.status(404).json({ mensaje: 'No encontramos ese proyecto.' });
+        }
+        res.json({ mensaje: 'Proyecto eliminado junto con sus Sprints, historias y demás datos.' });
+    } catch (error) {
+        errorServidor(res, 'Error al eliminar el proyecto', error);
+    }
+};
+
 module.exports = {
+    eliminarProyecto,
+    actualizarCapacidadSprint,
+    finalizarSprint,
     mostrarProyectos,
     listarProyectos,
     crearProyecto,

@@ -2,6 +2,8 @@ const proyectoDAO = require('../dao/proyectoDAO');
 const reunionDAO = require('../dao/reunionDAO');
 
 const MODALIDADES = ['Presencial', 'En linea'];
+// Sprint 7 · Bloque 6 (Emmanuel) · HU-17 (TC-17-04): los 4 eventos de Scrum (y "Otra").
+const TIPOS = ['Sprint Planning', 'Daily Scrum', 'Sprint Review', 'Sprint Retrospective', 'Otra'];
 
 const responderError = (res, error) => {
     console.error('Error en las reuniones del proyecto:', error.code || error.message);
@@ -48,6 +50,11 @@ const validarReunion = (cuerpo) => {
         return { error: 'El título debe tener entre 3 y 150 caracteres.' };
     }
 
+    const tipo = typeof cuerpo.tipo === 'string' ? cuerpo.tipo.trim() : '';
+    if (!TIPOS.includes(tipo)) {
+        return { error: 'Selecciona el tipo de reunión: Sprint Planning, Daily Scrum, Sprint Review, Sprint Retrospective u Otra.' };
+    }
+
     const descripcionLimpia = descripcion.trim();
     if (!descripcionLimpia || descripcionLimpia.length > 2000 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(descripcionLimpia)) {
         return { error: 'La descripción debe tener entre 1 y 2000 caracteres.' };
@@ -84,6 +91,7 @@ const validarReunion = (cuerpo) => {
 
     return {
         titulo: tituloLimpio,
+        tipo,
         descripcion: descripcionLimpia,
         fecha: fechaNormalizada,
         modalidad: modalidadNormalizada,
@@ -129,7 +137,61 @@ const crear = async (req, res) => {
     }
 };
 
+// Sprint 7 · Bloque 6 (Emmanuel) · TC-17-03: solo el Scrum Master edita o elimina reuniones.
+// Revisa permisos y que la reunión sea del proyecto; responde y devuelve null si no procede.
+const autorizarCambioReunion = async (req, res) => {
+    const acceso = await autorizarProyecto(req, res);
+    if (!acceso) {
+        return null;
+    }
+    if (acceso.rol !== 'Scrum Master') {
+        res.status(403).json({ mensaje: 'Solo el Scrum Master de este proyecto puede editar o eliminar reuniones.' });
+        return null;
+    }
+    const valor = req.params.idReunion;
+    const idReunion = /^[1-9]\d{0,9}$/.test(valor) ? Number(valor) : null;
+    if (!idReunion || !await reunionDAO.existe(acceso.idProyecto, idReunion)) {
+        res.status(404).json({ mensaje: 'No encontramos esa reunión.' });
+        return null;
+    }
+    return { ...acceso, idReunion };
+};
+
+// PUT /proyectos/:id/reuniones/:idReunion
+const actualizar = async (req, res) => {
+    try {
+        const acceso = await autorizarCambioReunion(req, res);
+        if (!acceso) {
+            return;
+        }
+        const datos = validarReunion(req.body);
+        if (datos.error) {
+            return res.status(400).json({ mensaje: datos.error });
+        }
+        await reunionDAO.actualizar(acceso.idProyecto, acceso.idReunion, datos);
+        res.json({ mensaje: 'Reunión actualizada.' });
+    } catch (error) {
+        responderError(res, error);
+    }
+};
+
+// DELETE /proyectos/:id/reuniones/:idReunion
+const eliminar = async (req, res) => {
+    try {
+        const acceso = await autorizarCambioReunion(req, res);
+        if (!acceso) {
+            return;
+        }
+        await reunionDAO.eliminar(acceso.idProyecto, acceso.idReunion);
+        res.json({ mensaje: 'Reunión eliminada.' });
+    } catch (error) {
+        responderError(res, error);
+    }
+};
+
 module.exports = {
     listar,
-    crear
+    crear,
+    actualizar,
+    eliminar
 };

@@ -1,20 +1,74 @@
 // controllers/backlog.controller.js
 const BacklogDAO = require('../dao/backlogDAO');
 const proyectoDAO = require('../dao/proyectoDAO');
+// Sprint 7 · Bloque 2 (César): épicas
+const epicaDAO = require('../dao/epicaDAO');
+
+const PRIORIDADES = ['Alta', 'Media', 'Baja'];
+
+// Sprint 7 · Bloque 1 (Nino): los permisos se revisan con el ROL DENTRO DEL PROYECTO,
+// nunca con el rol de la cuenta (req.session.rol). Así un Product Owner de otro proyecto
+// no puede crear ni borrar historias aquí, ni ver backlogs de proyectos donde no participa.
+const idValido = (valor) => {
+    const numero = Number(valor);
+    return Number.isSafeInteger(numero) && numero > 0 && numero <= 2147483647 ? numero : null;
+};
+
+const rolEn = (idProyecto, req) => proyectoDAO.obtenerRolEnProyecto(idProyecto, req.session.idUsuario);
+
+// Valida los datos de una historia (crear y editar). Devuelve { error } o los datos limpios.
+const validarHistoria = (cuerpo, { exigirPuntos } = {}) => {
+    const { titulo, descripcion, puntos, prioridad, id_epica: idEpica } = cuerpo || {};
+    if (typeof titulo !== 'string' || !titulo.trim() || titulo.trim().length > 150) {
+        return { error: 'Escribe un título de hasta 150 caracteres.' };
+    }
+    if (typeof descripcion !== 'string' || !descripcion.trim() || descripcion.trim().length > 1000) {
+        return { error: 'Escribe una descripción de hasta 1000 caracteres (formato Como / Quiero / Para).' };
+    }
+    if (!PRIORIDADES.includes(prioridad)) {
+        return { error: 'Selecciona una prioridad válida (Alta, Media o Baja).' };
+    }
+    const sinPuntos = puntos === undefined || puntos === null || puntos === '';
+    if (!sinPuntos && !(Number.isSafeInteger(Number(puntos)) && Number(puntos) > 0 && Number(puntos) <= 100000)) {
+        return { error: 'Los puntos de historia deben ser un número entero mayor que 0.' };
+    }
+    // HU-08: la épica es obligatoria.
+    const epica = idValido(idEpica);
+    if (!epica) {
+        return { error: 'Selecciona la épica a la que pertenece la historia.' };
+    }
+    return {
+        titulo: titulo.trim(),
+        descripcion: descripcion.trim(),
+        prioridad,
+        // Al editar, si no llegan puntos se conservan los actuales (undefined); null los borra.
+        puntos: puntos === undefined && exigirPuntos ? undefined : (sinPuntos ? null : Number(puntos)),
+        id_epica: epica
+    };
+};
+
 exports.crearHistoria = async (req, res) => {
-    // BLOQUEO: Solo Product Owner
-    if (!req.session || req.session.rol !== 'Product Owner') {
-        return res.status(403).json({ error: 'Acceso denegado: Solo el Product Owner puede crear historias.' });
+    const idProyecto = idValido(req.body?.id_proyecto);
+    if (!idProyecto) {
+        return res.status(400).json({ error: 'El id_proyecto es obligatorio.' });
     }
-
-    const { id_proyecto, titulo, descripcion, puntos, prioridad } = req.body;
-
-    if (!id_proyecto) {
-        return res.status(400).json({ error: 'El id_proyecto es obligatorio' });
-    }
-
     try {
-        const idInsertado = await BacklogDAO.crear({ id_proyecto, titulo, descripcion, puntos, prioridad });
+        // Solo el Product Owner DE ESTE PROYECTO crea historias (TC-08-06, TC-03-03).
+        const rol = await rolEn(idProyecto, req);
+        if (!rol) {
+            return res.status(404).json({ error: 'No encontramos ese proyecto.' });
+        }
+        if (rol !== 'Product Owner') {
+            return res.status(403).json({ error: 'Acceso denegado: solo el Product Owner del proyecto puede crear historias.' });
+        }
+        const datos = validarHistoria(req.body);
+        if (datos.error) {
+            return res.status(400).json({ error: datos.error });
+        }
+        if (!await epicaDAO.existeEnProyecto(idProyecto, datos.id_epica)) {
+            return res.status(400).json({ error: 'La épica seleccionada no pertenece a este proyecto.' });
+        }
+        const idInsertado = await BacklogDAO.crear({ id_proyecto: idProyecto, ...datos });
         res.status(201).json({ mensaje: 'Historia creada con éxito', id: idInsertado });
     } catch (error) {
         console.error('Error al guardar:', error);
@@ -23,9 +77,16 @@ exports.crearHistoria = async (req, res) => {
 };
 
 exports.obtenerBacklogPorProyecto = async (req, res) => {
-    const { id_proyecto } = req.params;
+    const idProyecto = idValido(req.params.id_proyecto);
+    if (!idProyecto) {
+        return res.status(404).json({ error: 'No encontramos ese proyecto.' });
+    }
     try {
-        const historias = await BacklogDAO.obtenerPorProyecto(id_proyecto);
+        // TC-03-02: solo los integrantes del proyecto ven su backlog.
+        if (!await rolEn(idProyecto, req)) {
+            return res.status(404).json({ error: 'No encontramos ese proyecto.' });
+        }
+        const historias = await BacklogDAO.obtenerPorProyecto(idProyecto);
         res.json(historias);
     } catch (error) {
         console.error('Error al obtener el backlog:', error);
@@ -34,15 +95,20 @@ exports.obtenerBacklogPorProyecto = async (req, res) => {
 };
 
 exports.eliminarHistoria = async (req, res) => {
-    // BLOQUEO: Solo Product Owner
-    if (!req.session || req.session.rol !== 'Product Owner') {
-        return res.status(403).json({ error: 'Acceso denegado: Solo el Product Owner puede eliminar historias.' });
+    const idHistoria = idValido(req.params.id);
+    if (!idHistoria) {
+        return res.status(404).json({ error: 'No encontramos esa historia.' });
     }
-
-    const { id } = req.params;
-
     try {
-        await BacklogDAO.eliminar(id);
+        const idProyecto = await BacklogDAO.obtenerProyectoDeHistoria(idHistoria);
+        const rol = idProyecto ? await rolEn(idProyecto, req) : null;
+        if (!rol) {
+            return res.status(404).json({ error: 'No encontramos esa historia.' });
+        }
+        if (rol !== 'Product Owner') {
+            return res.status(403).json({ error: 'Acceso denegado: solo el Product Owner del proyecto puede eliminar historias.' });
+        }
+        await BacklogDAO.eliminar(idHistoria, idProyecto);
         res.json({ mensaje: 'Historia eliminada con éxito' });
     } catch (error) {
         console.error('Error al eliminar:', error);
@@ -55,68 +121,35 @@ exports.eliminarHistoria = async (req, res) => {
 
 
 // ===== JESÚS: PB-28 - ACTUALIZAR Y REGISTRAR CAMBIOS =====
+// Sprint 7: también se puede cambiar la épica (queda en el historial).
 
 exports.actualizarHistoria = async (req, res) => {
 
-    const idHistoria = Number(req.params.id);
-    const idProyecto = Number(req.body?.id_proyecto);
+    const idHistoria = idValido(req.params.id);
+    const idProyecto = idValido(req.body?.id_proyecto);
 
-    const {
-        titulo,
-        descripcion,
-        puntos,
-        prioridad
-    } = req.body || {};
-
-    // Comprobar que sea Product Owner
-    if (
-        !req.session?.idUsuario ||
-        req.session.rol !== 'Product Owner'
-    ) {
-        return res.status(403).json({
-            error: 'Solo el Product Owner puede editar historias.'
-        });
+    if (!idHistoria || !idProyecto) {
+        return res.status(400).json({ error: 'Revisa los datos de la historia.' });
     }
 
-    // Validar la información
-    if (
-        !Number.isSafeInteger(idHistoria) ||
-        idHistoria < 1 ||
-        !Number.isSafeInteger(idProyecto) ||
-        idProyecto < 1 ||
-        typeof titulo !== 'string' ||
-        !titulo.trim() ||
-        titulo.trim().length > 150 ||
-        typeof descripcion !== 'string' ||
-        !descripcion.trim() ||
-        descripcion.length > 1000 ||
-        !['Alta', 'Media', 'Baja'].includes(prioridad) ||
-        !(
-            puntos === undefined || puntos === null ||
-            (
-                Number.isSafeInteger(puntos) &&
-                puntos > 0 &&
-                puntos <= 100000
-            )
-        )
-    ) {
-        return res.status(400).json({
-            error: 'Revisa los datos de la historia.'
-        });
+    const datos = validarHistoria(req.body, { exigirPuntos: true });
+    if (datos.error) {
+        return res.status(400).json({ error: datos.error });
     }
 
     try {
 
         // Comprobar que sea Product Owner de este proyecto
-        const rol = await proyectoDAO.obtenerRolEnProyecto(
-            idProyecto,
-            req.session.idUsuario
-        );
+        const rol = await rolEn(idProyecto, req);
 
         if (rol !== 'Product Owner') {
             return res.status(403).json({
-                error: 'No eres Product Owner de este proyecto.'
+                error: 'Solo el Product Owner del proyecto puede editar historias.'
             });
+        }
+
+        if (!await epicaDAO.existeEnProyecto(idProyecto, datos.id_epica)) {
+            return res.status(400).json({ error: 'La épica seleccionada no pertenece a este proyecto.' });
         }
 
         // Actualizar y registrar cambios
@@ -124,12 +157,7 @@ exports.actualizarHistoria = async (req, res) => {
             idProyecto,
             idHistoria,
             req.session.idUsuario,
-            {
-                titulo: titulo.trim(),
-                descripcion: descripcion.trim(),
-                puntos,
-                prioridad
-            }
+            datos
         );
 
         if (!resultado.encontrada) {
@@ -159,15 +187,10 @@ exports.actualizarHistoria = async (req, res) => {
 
 exports.consultarHistorial = async (req, res) => {
 
-    const idProyecto = Number(req.params.id_proyecto);
-    const idHistoria = Number(req.params.id_historia);
+    const idProyecto = idValido(req.params.id_proyecto);
+    const idHistoria = idValido(req.params.id_historia);
 
-    if (
-        !Number.isSafeInteger(idProyecto) ||
-        idProyecto < 1 ||
-        !Number.isSafeInteger(idHistoria) ||
-        idHistoria < 1
-    ) {
+    if (!idProyecto || !idHistoria) {
         return res.status(400).json({
             mensaje: 'Identificadores no válidos.'
         });
@@ -176,25 +199,14 @@ exports.consultarHistorial = async (req, res) => {
     try {
 
         // Verificar que el usuario pertenezca al proyecto
-        const rol = await proyectoDAO.obtenerRolEnProyecto(
-            idProyecto,
-            req.session.idUsuario
-        );
-
-        if (!rol) {
+        if (!await rolEn(idProyecto, req)) {
             return res.status(403).json({
                 mensaje: 'No perteneces a este proyecto.'
             });
         }
 
-        // Comprobar que la historia exista
-        const historias = await BacklogDAO.obtenerPorProyecto(
-            idProyecto
-        );
-
-        if (!historias.some(
-            h => Number(h.id_historia) === idHistoria
-        )) {
+        // Comprobar que la historia exista en el proyecto
+        if (await BacklogDAO.obtenerProyectoDeHistoria(idHistoria) !== idProyecto) {
             return res.status(404).json({
                 mensaje: 'Historia no encontrada.'
             });
@@ -221,10 +233,19 @@ exports.consultarHistorial = async (req, res) => {
 // ===== FIN PB-28 Y PB-29 =====
 
 
+// ===== CRITERIOS DE ACEPTACIÓN =====
+
 exports.obtenerCriterios = async (req, res) => {
-    const { id_historia } = req.params;
+    const idHistoria = idValido(req.params.id_historia);
+    if (!idHistoria) {
+        return res.status(404).json({ error: 'No encontramos esa historia.' });
+    }
     try {
-        const criterios = await BacklogDAO.obtenerCriteriosPorHistoria(id_historia);
+        const idProyecto = await BacklogDAO.obtenerProyectoDeHistoria(idHistoria);
+        if (!idProyecto || !await rolEn(idProyecto, req)) {
+            return res.status(404).json({ error: 'No encontramos esa historia.' });
+        }
+        const criterios = await BacklogDAO.obtenerCriteriosPorHistoria(idHistoria);
         res.json(criterios);
     } catch (error) {
         console.error('Error al obtener criterios:', error);
@@ -233,38 +254,74 @@ exports.obtenerCriterios = async (req, res) => {
 };
 
 exports.crearCriterio = async (req, res) => {
-    if (!req.session || req.session.rol !== 'Product Owner') {
-        return res.status(403).json({ error: 'Acceso denegado: Solo el Product Owner puede gestionar criterios.' });
+    const idHistoria = idValido(req.body?.id_historia);
+    const descripcion = typeof req.body?.descripcion === 'string' ? req.body.descripcion.trim() : '';
+
+    if (!idHistoria) {
+        return res.status(400).json({ error: 'Selecciona una historia.' });
     }
-
-    const { id_historia, descripcion } = req.body;
-
-    if (!descripcion) {
-        return res.status(400).json({ error: 'La descripción del criterio es obligatoria' });
+    if (!descripcion || descripcion.length > 1000) {
+        return res.status(400).json({ error: 'La descripción del criterio es obligatoria (hasta 1000 caracteres).' });
     }
 
     try {
-        const idInsertado = await BacklogDAO.crearCriterio(id_historia, descripcion);
+        const idProyecto = await BacklogDAO.obtenerProyectoDeHistoria(idHistoria);
+        const rol = idProyecto ? await rolEn(idProyecto, req) : null;
+        if (!rol) {
+            return res.status(404).json({ error: 'No encontramos esa historia.' });
+        }
+        if (rol !== 'Product Owner') {
+            return res.status(403).json({ error: 'Acceso denegado: solo el Product Owner del proyecto puede gestionar criterios.' });
+        }
+        const idInsertado = await BacklogDAO.crearCriterio(idHistoria, descripcion);
         res.status(201).json({ mensaje: 'Criterio creado con éxito', id: idInsertado });
     } catch (error) {
         console.error('Error al guardar criterio:', error);
         res.status(500).json({ error: 'Error interno en el servidor' });
     }
 };
-exports.actualizarValorNegocio = async (req, res) => {
-    const idProyecto = Number(req.params.id_proyecto);
-    const idHistoria = Number(req.params.id_historia);
-    const valorNegocio = req.body?.valor_negocio;
-    
-    if (
-        !Number.isSafeInteger(idProyecto) ||
-        idProyecto < 1 ||
-        idProyecto > 2147483647 ||
 
-        !Number.isSafeInteger(idHistoria) ||
-        idHistoria < 1 ||
-        idHistoria > 2147483647
-    ) {
+// Sprint 7 · Bloque 3 (Francisco) · HU-09: marcar un criterio como cumplido o pendiente.
+// Lo hace el desarrollador responsable de la historia (o el Product Owner al revisar).
+exports.marcarCriterio = async (req, res) => {
+    const idCriterio = idValido(req.params.id_criterio);
+    const { completado } = req.body || {};
+    if (!idCriterio) {
+        return res.status(404).json({ mensaje: 'No encontramos ese criterio.' });
+    }
+    if (typeof completado !== 'boolean') {
+        return res.status(400).json({ mensaje: 'Indica si el criterio está cumplido (true o false).' });
+    }
+    try {
+        const criterio = await BacklogDAO.obtenerCriterio(idCriterio);
+        const rol = criterio ? await rolEn(criterio.id_proyecto, req) : null;
+        if (!rol) {
+            return res.status(404).json({ mensaje: 'No encontramos ese criterio.' });
+        }
+        const esResponsable = rol === 'Desarrollador' &&
+            Number(criterio.id_responsable) === Number(req.session.idUsuario);
+        if (!esResponsable && rol !== 'Product Owner') {
+            return res.status(403).json({
+                mensaje: 'Solo el desarrollador responsable de la historia o el Product Owner pueden marcar criterios.'
+            });
+        }
+        if (['En revision', 'Aprobada'].includes(criterio.estado_historia)) {
+            return res.status(409).json({ mensaje: 'La historia ya está en revisión o aprobada; sus criterios ya no cambian.' });
+        }
+        await BacklogDAO.marcarCriterio(idCriterio, completado);
+        res.json({ mensaje: completado ? 'Criterio marcado como cumplido.' : 'Criterio marcado como pendiente.', completado });
+    } catch (error) {
+        console.error('Error al marcar criterio:', error);
+        res.status(500).json({ mensaje: 'No se pudo actualizar el criterio.' });
+    }
+};
+
+exports.actualizarValorNegocio = async (req, res) => {
+    const idProyecto = idValido(req.params.id_proyecto);
+    const idHistoria = idValido(req.params.id_historia);
+    const valorNegocio = req.body?.valor_negocio;
+
+    if (!idProyecto || !idHistoria) {
         return res.status(400).json({
             mensaje: 'Identificadores no válidos.'
         });
@@ -279,13 +336,8 @@ exports.actualizarValorNegocio = async (req, res) => {
         });
     }
     try {
-        const rolProyecto =
-            await proyectoDAO.obtenerRolEnProyecto(
-                idProyecto,
-                req.session.idUsuario
-            );
         // Solo Product Owner puede asignar valor
-        if (rolProyecto !== 'Product Owner') {
+        if (await rolEn(idProyecto, req) !== 'Product Owner') {
             return res.status(403).json({
                 mensaje: 'Solo el Product Owner del proyecto puede asignar valor de negocio.'
             });
@@ -317,9 +369,9 @@ exports.actualizarValorNegocio = async (req, res) => {
 
 // ===== OSMAR: PB-24 - KANBAN =====
 exports.obtenerKanban = async (req, res) => {
-    const idSprint = Number(req.params.id_sprint);
+    const idSprint = idValido(req.params.id_sprint);
 
-    if (!Number.isSafeInteger(idSprint) || idSprint <= 0 || idSprint > 2147483647) {
+    if (!idSprint) {
         return res.status(400).json({ mensaje: 'Sprint no válido.' });
     }
 
@@ -330,12 +382,7 @@ exports.obtenerKanban = async (req, res) => {
             return res.status(404).json({ mensaje: 'No se encontró el Sprint.' });
         }
 
-        const rol = await proyectoDAO.obtenerRolEnProyecto(
-            idProyecto,
-            req.session.idUsuario
-        );
-
-        if (!rol) {
+        if (!await rolEn(idProyecto, req)) {
             return res.status(403).json({
                 mensaje: 'No tienes permiso para consultar este Sprint.'
             });

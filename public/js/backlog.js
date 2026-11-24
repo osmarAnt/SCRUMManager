@@ -135,7 +135,7 @@ function mostrarEnTabla(historias) {
     if (historias.length === 0) {
         const fila = document.createElement('tr');
         const celda = document.createElement('td');
-        celda.colSpan = 7;
+        celda.colSpan = 8;
         celda.className = 'backlog-sin-resultados';
         celda.textContent = listaHistorias.length === 0
             ? 'Todavía no hay historias registradas.'
@@ -158,6 +158,16 @@ function mostrarEnTabla(historias) {
         fila.appendChild(
             crearCelda(historia.titulo)
         );
+
+        // Sprint 7 · Bloque 2 (César): épica de la historia
+        const celdaEpica = document.createElement('td');
+        if (historia.epica_nombre && typeof window.crearChipEpica === 'function') {
+            celdaEpica.appendChild(window.crearChipEpica(historia.epica_nombre, historia.epica_color));
+        } else {
+            celdaEpica.textContent = 'Sin épica';
+            celdaEpica.className = 'backlog-sin-epica';
+        }
+        fila.appendChild(celdaEpica);
 
         fila.appendChild(
             crearCelda(historia.descripcion)
@@ -340,6 +350,9 @@ function prepararEdicion(idHistoria) {
     puntosAlEditar = historia.puntos ?? null;
     document.getElementById('puntos').value = puntosAlEditar ?? '';
     document.getElementById('prioridad').value = historia.prioridad;
+    // Sprint 7 · Bloque 2: épica actual de la historia
+    const selectorEpica = document.getElementById('epica-historia');
+    if (selectorEpica) selectorEpica.value = historia.id_epica ? String(historia.id_epica) : '';
 
     idHistoriaEditando = idHistoria;
     
@@ -360,12 +373,25 @@ async function guardarHistoria(evento, idProyecto) {
     const valorPuntos = document.getElementById('puntos').value;
     const puntos = valorPuntos === '' ? null : Number(valorPuntos);
     const prioridad = document.getElementById('prioridad').value;
+    // Sprint 7 · Bloque 2 (César) · TC-08-02: la épica es obligatoria.
+    const idEpica = Number(document.getElementById('epica-historia')?.value);
+
+    if (!titulo.trim() || !descripcion.trim()) {
+        alert('Escribe el título y la descripción de la historia.');
+        return;
+    }
+    if (!idEpica) {
+        alert('Selecciona la épica a la que pertenece la historia. Si no hay, pide al Scrum Master que cree una.');
+        document.getElementById('epica-historia')?.focus();
+        return;
+    }
 
     const datosHistoria = {
         id_proyecto: idProyecto,
         titulo,
         descripcion,
-        prioridad
+        prioridad,
+        id_epica: idEpica
     };
 
     if (idHistoriaEditando === null || puntos !== puntosAlEditar) {
@@ -474,14 +500,40 @@ async function cargarCriterios(idHistoria) {
             return;
         }
 
+        // Sprint 7 · Bloque 3 (Francisco) · HU-09: cada criterio con su casilla de "cumplido".
+        // Aquí la marca el Product Owner; el desarrollador responsable la marca en el Sprint Backlog.
         criterios.forEach(c => {
             const li = document.createElement('li');
-            li.style.padding = '8px 12px';
-            li.style.margin = '5px 0';
-            li.style.background = '#f6f8fa';
-            li.style.borderLeft = '4px solid #0366d6';
-            li.style.borderRadius = '3px';
-            li.textContent = c.descripcion;
+            li.className = 'item-calidad';
+            li.dataset.cumplido = String(Boolean(c.completado));
+            const etiqueta = document.createElement('label');
+            etiqueta.className = 'casilla-calidad';
+            const casilla = document.createElement('input');
+            casilla.type = 'checkbox';
+            casilla.checked = Boolean(c.completado);
+            casilla.disabled = rolActual !== 'Product Owner';
+            const texto = document.createElement('span');
+            texto.textContent = c.descripcion;
+            etiqueta.append(casilla, texto);
+            casilla.addEventListener('change', async () => {
+                casilla.disabled = true;
+                try {
+                    const respuesta = await fetch(`/backlog/criterios/${c.id_criterio}/completado`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                        body: JSON.stringify({ completado: casilla.checked })
+                    });
+                    const datos = await respuesta.json().catch(() => ({}));
+                    if (!respuesta.ok) throw new Error(datos.mensaje || 'No se pudo actualizar el criterio.');
+                    li.dataset.cumplido = String(casilla.checked);
+                } catch (error) {
+                    casilla.checked = !casilla.checked;
+                    alert(error.message);
+                } finally {
+                    casilla.disabled = rolActual !== 'Product Owner';
+                }
+            });
+            li.appendChild(etiqueta);
             lista.appendChild(li);
         });
     } catch (error) {

@@ -39,11 +39,8 @@ const responderError = (res, codigo) => {
     });
 };
 
+// Sprint 7 · Bloque 1 (Nino): se revisa el rol DENTRO del proyecto, no el de la cuenta.
 const puedeGestionar = async (req, idProyecto) => {
-    if (req.session.rol !== 'Scrum Master') {
-        return false;
-    }
-
     const rol = await proyectoDAO.obtenerRolEnProyecto(
         idProyecto,
         req.session.idUsuario
