@@ -270,6 +270,86 @@ const crearSprint = async (req, res) => {
         errorServidor(res, 'Error al registrar el Sprint', error);
     }
 };
+const obtenerResumenCierreSprint = async (req, res) => {
+    const idProyecto = leerIdProyecto(req);
+    const idSprint = /^\d{1,10}$/.test(String(req.params.idSprint))
+        ? Number(req.params.idSprint)
+        : null;
+
+    if (idProyecto === null || !idSprint || !Number.isSafeInteger(idSprint) || idSprint > 2147483647) {
+        return res.status(400).json({ mensaje: 'Identificadores no válidos.' });
+    }
+
+    try {
+        const rol = await autorizarAcceso(req, res, idProyecto, true);
+        if (!rol) return;
+
+        const resumen = await sprintDAO.obtenerResumenCierre(idProyecto, idSprint);
+
+        if (!resumen) {
+            return res.status(404).json({ mensaje: 'No encontramos ese Sprint.' });
+        }
+
+        if (resumen.yaFinalizado) {
+            return res.status(409).json({ mensaje: 'Este Sprint ya está finalizado.' });
+        }
+
+        if (resumen.noIniciado) {
+            return res.status(409).json({ mensaje: 'Solo puedes cerrar un Sprint que ya esté en curso.' });
+        }
+
+        return res.json({ resumen });
+
+    } catch (error) {
+        return errorServidor(res, 'Error al consultar el resumen de cierre', error);
+    }
+};
+
+const cerrarSprint = async (req, res) => {
+    const idProyecto = leerIdProyecto(req);
+    const idSprint = /^\d{1,10}$/.test(String(req.params.idSprint))
+        ? Number(req.params.idSprint)
+        : null;
+
+    if (idProyecto === null || !idSprint || !Number.isSafeInteger(idSprint) || idSprint > 2147483647) {
+        return res.status(400).json({ mensaje: 'Identificadores no válidos.' });
+    }
+
+    try {
+        const rol = await autorizarAcceso(req, res, idProyecto, true);
+        if (!rol) return;
+
+        const resultado = await sprintDAO.cerrarSprint(idProyecto, idSprint);
+
+        if (resultado.noEncontrado) {
+            return res.status(404).json({ mensaje: 'No encontramos ese Sprint.' });
+        }
+
+        if (resultado.yaFinalizado) {
+            return res.status(409).json({ mensaje: 'Este Sprint ya está finalizado.' });
+        }
+
+        if (resultado.noIniciado) {
+            return res.status(409).json({ mensaje: 'No puedes cerrar un Sprint que todavía no inicia.' });
+        }
+
+        // Sprint 7 · Bloque 3 (Francisco) · TC-10-03: la DoD del Sprint debe estar completa.
+        if (resultado.dodPendiente) {
+            return res.status(409).json({
+                mensaje: `No se puede cerrar: faltan ${resultado.dodPendiente.length} requisito(s) de la Definition of Done del Sprint.`,
+                pendientes: resultado.dodPendiente
+            });
+        }
+
+        return res.json({
+            mensaje: resultado.mensaje,
+            resumen: resultado
+        });
+
+    } catch (error) {
+        return errorServidor(res, 'Error al cerrar el Sprint', error);
+    }
+};
 
 
 
@@ -617,37 +697,6 @@ const actualizarCapacidadSprint = async (req, res) => {
     }
 };
 
-// ===== Sprint 7 · Bloque 3 (Francisco) · HU-10 (TC-10-03): finalizar Sprint validando su DoD =====
-// El Sprint solo se finaliza si TODOS los requisitos de su Definition of Done están cumplidos.
-const finalizarSprint = async (req, res) => {
-    const idProyecto = leerIdProyecto(req);
-    const idSprint = /^\d{1,10}$/.test(req.params.idSprint) ? Number(req.params.idSprint) : null;
-    if (idProyecto === null || !idSprint) {
-        return res.status(404).json({ mensaje: 'No encontramos ese Sprint.' });
-    }
-    try {
-        if (!await autorizarAcceso(req, res, idProyecto, true)) {
-            return;
-        }
-        const resultado = await sprintDAO.finalizar(idProyecto, idSprint);
-        if (resultado.noEncontrado) {
-            return res.status(404).json({ mensaje: 'No encontramos ese Sprint.' });
-        }
-        if (resultado.yaFinalizado) {
-            return res.status(409).json({ mensaje: 'Este Sprint ya está finalizado.' });
-        }
-        if (resultado.dodPendiente) {
-            return res.status(409).json({
-                mensaje: `No se puede finalizar: faltan ${resultado.dodPendiente.length} requisito(s) de la Definition of Done del Sprint.`,
-                pendientes: resultado.dodPendiente
-            });
-        }
-        res.json({ mensaje: `Sprint ${resultado.numero} finalizado. Su Definition of Done se cumplió completa.` });
-    } catch (error) {
-        errorServidor(res, 'Error al finalizar el Sprint', error);
-    }
-};
-
 // ===== Sprint 7 · Bloque 5 (Osmar) · HU-05: eliminar proyecto =====
 // Solo el Scrum Master del proyecto (quien lo creó). El Product Owner y los desarrolladores
 // no ven la opción y el servidor también se los niega (TC-05-01 y TC-05-03).
@@ -676,7 +725,6 @@ const eliminarProyecto = async (req, res) => {
 module.exports = {
     eliminarProyecto,
     actualizarCapacidadSprint,
-    finalizarSprint,
     mostrarProyectos,
     listarProyectos,
     crearProyecto,
@@ -684,8 +732,10 @@ module.exports = {
     consultarProyecto,
     actualizarProyecto,
     crearSprint,
-        agregarHistoriaAlSprint,
+    obtenerResumenCierreSprint,
+    cerrarSprint,
+    agregarHistoriaAlSprint,
     quitarHistoriaDelSprint,
     asignarResponsableHistoria,
     cambiarEstadoHistoria
-}
+};

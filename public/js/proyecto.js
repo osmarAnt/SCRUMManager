@@ -26,6 +26,10 @@ const duracionSprint = document.getElementById('duracion-sprint');
 const listaSprints = document.getElementById('lista-sprints');
 const sinSprints = document.getElementById('sin-sprints');
 const plantillaSprint = document.getElementById('plantilla-sprint');
+const dialogoCierreSprint = document.getElementById('dialogo-cerrar-sprint');
+const botonConfirmarCierre = document.getElementById('confirmar-cierre-sprint');
+const mensajeCierreSprint = document.getElementById('mensaje-cierre-sprint');
+let idSprintCierre = null;
 
 const SIN_OBJETIVO = 'Este proyecto todavía no tiene un objetivo registrado.';
 let proyectoActual = null;
@@ -172,18 +176,32 @@ const pintarCapacidad = (contenedor, sprint) => {
     }
 };
 
-const pintarSprints = (sprints) => {
+const pintarSprints = (sprints, puedeAdministrar = false) => {
     listaSprints.replaceChildren();
     sinSprints.hidden = sprints.length > 0;
+
     sprints.forEach((sprint) => {
         const tarjeta = plantillaSprint.content.cloneNode(true);
+        const articulo = tarjeta.querySelector('.tarjeta-sprint');
         tarjeta.querySelector('.nombre-sprint').textContent = nombreDeSprint(sprint);
         tarjeta.querySelector('.estado-sprint').textContent = sprint.estado;
         tarjeta.querySelector('.objetivo-sprint').textContent = sprint.objetivo;
         tarjeta.querySelector('.fechas-sprint').textContent =
-            `${formatearFecha(sprint.fecha_inicio)} – ${formatearFecha(sprint.fecha_fin)} · ${sprint.duracion_dias} ${sprint.duracion_dias === 1 ? 'día' : 'días'}`;
+            `${formatearFecha(sprint.fecha_inicio)} – ${formatearFecha(sprint.fecha_fin)} · ${sprint.duracion_dias} ${sprint.duracion_dias === 1 ? 'día' : 'días'}${sprint.fecha_cierre ? ` · Cerrado: ${formatearFecha(sprint.fecha_cierre)}` : ''}`;
+        // Sprint 7 · Bloque 5 (Osmar): capacidad contra horas comprometidas.
         const capacidad = tarjeta.querySelector('.capacidad-sprint');
         if (capacidad) pintarCapacidad(capacidad, sprint);
+
+        // PB-63 (Emmanuel): el Scrum Master cierra el Sprint en curso.
+        if (puedeAdministrar && sprint.estado === 'En curso') {
+            const botonCerrar = document.createElement('button');
+            botonCerrar.type = 'button';
+            botonCerrar.className = 'boton-secundario boton-cerrar-sprint';
+            botonCerrar.textContent = 'Cerrar Sprint';
+            botonCerrar.addEventListener('click', () => abrirDialogoCierreSprint(sprint));
+            articulo.appendChild(botonCerrar);
+        }
+
         listaSprints.appendChild(tarjeta);
     });
 };
@@ -221,7 +239,7 @@ const cargarProyecto = async () => {
         formEditar.hidden = true;
         formSprint.hidden = true;
         pintarProyecto(datos.proyecto);
-        pintarSprints(datos.sprints);
+        pintarSprints(datos.sprints, datos.puedeAdministrar);
         await prepararSprintBacklog(datos.sprints, datos.puedeAdministrar);
         estadoDetalle.hidden = true;
         contenido.hidden = false;
@@ -261,6 +279,110 @@ const avisar = (elemento, texto) => {
     elemento.textContent = texto;
     elemento.hidden = false;
 };
+
+const abrirDialogoCierreSprint = async (sprint) => {
+    idSprintCierre = Number(sprint.id_sprint);
+    document.getElementById('titulo-cierre-sprint').textContent = `Cerrar Sprint ${sprint.numero}`;
+    document.getElementById('cierre-historias-completadas').textContent = 'Calculando...';
+    document.getElementById('cierre-historias-pendientes').textContent = 'Calculando...';
+    document.getElementById('cierre-puntos-completados').textContent = 'Calculando...';
+    document.getElementById('cierre-puntos-pendientes').textContent = 'Calculando...';
+    mensajeCierreSprint.textContent = '';
+    botonConfirmarCierre.disabled = true;
+    dialogoCierreSprint.showModal();
+
+    try {
+        const respuesta = await peticionJson(
+            `/proyectos/${idProyecto}/sprints/${idSprintCierre}/resumen-cierre`,
+            'GET'
+        );
+
+        if (!respuesta) return;
+
+        if (!respuesta.ok) {
+            mensajeCierreSprint.textContent = respuesta.resultado.mensaje || 'No se pudo consultar el resumen.';
+            return;
+        }
+
+        const resumen = respuesta.resultado.resumen;
+        document.getElementById('cierre-historias-completadas').textContent =
+            `${resumen.historias_completadas} de ${resumen.historias_totales}`;
+        document.getElementById('cierre-historias-pendientes').textContent =
+            `${resumen.historias_pendientes} de ${resumen.historias_totales}`;
+        document.getElementById('cierre-puntos-completados').textContent =
+            `${resumen.puntos_completados} de ${resumen.puntos_totales}`;
+        document.getElementById('cierre-puntos-pendientes').textContent =
+            `${resumen.puntos_pendientes} de ${resumen.puntos_totales}`;
+        // Sprint 7 · Bloque 3 (Francisco) · TC-10-03: no se cierra con la DoD del Sprint incompleta.
+        if (resumen.dod_pendientes?.length) {
+            mensajeCierreSprint.textContent =
+                `Falta cumplir la Definition of Done del Sprint: ${resumen.dod_pendientes.join(', ')}.`;
+            botonConfirmarCierre.disabled = true;
+            return;
+        }
+        botonConfirmarCierre.disabled = false;
+    } catch (error) {
+        console.error(error);
+        mensajeCierreSprint.textContent = 'No se pudo conectar con el servidor.';
+    }
+};
+
+const confirmarCierreSprint = async () => {
+    if (!idSprintCierre) return;
+
+    botonConfirmarCierre.disabled = true;
+    mensajeCierreSprint.textContent = '';
+
+    try {
+        const respuesta = await peticionJson(
+            `/proyectos/${idProyecto}/sprints/${idSprintCierre}/cerrar`,
+            'POST'
+        );
+
+        if (!respuesta) return;
+
+        if (!respuesta.ok) {
+            const pendientes = respuesta.resultado.pendientes;
+            mensajeCierreSprint.textContent = (respuesta.resultado.mensaje || 'No se pudo cerrar el Sprint.') +
+                (pendientes?.length ? ` Pendientes: ${pendientes.join(', ')}.` : '');
+            return;
+        }
+
+        dialogoCierreSprint.close();
+        idSprintCierre = null;
+        avisar(confirmacionSprint, respuesta.resultado.mensaje);
+
+        const actualizado = await peticionJson(`/proyectos/${idProyecto}/datos`, 'GET');
+        if (actualizado && actualizado.ok) {
+            pintarSprints(actualizado.resultado.sprints, actualizado.resultado.puedeAdministrar);
+            await prepararSprintBacklog(
+                actualizado.resultado.sprints,
+                actualizado.resultado.puedeAdministrar
+            );
+        }
+
+        document.dispatchEvent(new CustomEvent('sprint-cerrado'));
+    } catch (error) {
+        console.error(error);
+        mensajeCierreSprint.textContent = 'No se pudo conectar con el servidor.';
+    } finally {
+        botonConfirmarCierre.disabled = false;
+    }
+};
+
+document.getElementById('cancelar-cierre-sprint').addEventListener('click', () => {
+    dialogoCierreSprint.close();
+    idSprintCierre = null;
+});
+
+dialogoCierreSprint.addEventListener('cancel', () => {
+    idSprintCierre = null;
+});
+
+botonConfirmarCierre.addEventListener('click', confirmarCierreSprint);
+
+// Sprint 7 · Bloque 3: el panel de la DoD del Sprint (calidad.js) abre este mismo diálogo de cierre.
+window.abrirCierreSprint = (sprint) => abrirDialogoCierreSprint(sprint);
 
 // ---- PB-05: editar proyecto ----
 botonEditar.addEventListener('click', () => {
@@ -379,7 +501,7 @@ formSprint.addEventListener('submit', async (evento) => {
         avisar(confirmacionSprint, respuesta.resultado.mensaje);
         const actualizado = await peticionJson(`/proyectos/${idProyecto}/datos`, 'GET');
         if (actualizado && actualizado.ok) {
-            pintarSprints(actualizado.resultado.sprints);
+            pintarSprints(actualizado.resultado.sprints, actualizado.resultado.puedeAdministrar);
 
             await prepararSprintBacklog(
             actualizado.resultado.sprints,
@@ -926,16 +1048,17 @@ async function cargarSprintBacklog() {
             sprint => Number(sprint.id_sprint) === idSprint
         );
 
-        const planificado =
-            sprint?.estado === 'Planificado';
+        const sprintFinalizado =
+            sprint?.estado === 'Finalizado';
 
         const botonAgregar =
             formAgregarHistoria.querySelector(
                 'button[type="submit"]'
             );
 
+        // Se pueden agregar historias mientras el Sprint no esté cerrado (PB-63).
         botonAgregar.disabled =
-        !planificado || !puedeAdministrarBacklog;
+        sprintFinalizado || !puedeAdministrarBacklog;
 
 
         // ===== PB-14 =====
@@ -967,10 +1090,10 @@ async function cargarSprintBacklog() {
             );
         }
 
-        if (!planificado) {
+        if (sprintFinalizado) {
 
             mensajeAgregarHistoria.textContent =
-                'Solo puedes agregar historias a un Sprint planificado.';
+                'Este Sprint ya está cerrado: no se le pueden agregar historias.';
         }
 
 
@@ -1132,12 +1255,13 @@ async function cargarSprintBacklog() {
                 valorEstado === 'En revision' || valorEstado === 'Aprobada';
 
             // Sprint 7 · Bloque 1 (Nino) · TC-14-04: solo el desarrollador responsable mueve su historia.
+            // PB-63 (Emmanuel): en un Sprint cerrado ya no cambia nada.
             const esMiHistoria =
                 rolEnElProyecto === 'Desarrollador' &&
                 idUsuarioActual !== null &&
                 Number(historia.id_responsable) === idUsuarioActual;
 
-            selectorEstado.disabled = estadoBloqueado || !esMiHistoria;
+            selectorEstado.disabled = estadoBloqueado || sprintFinalizado || !esMiHistoria;
             if (!esMiHistoria) {
                 selectorEstado.title = 'Solo el desarrollador responsable puede cambiar el estado.';
             }
@@ -1178,7 +1302,7 @@ async function cargarSprintBacklog() {
                         error.message || 'Error al guardar el estado.';
                     mensajeEstadoHistoria.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 } finally {
-                    selectorEstado.disabled = !esMiHistoria;
+                    selectorEstado.disabled = estadoBloqueado || sprintFinalizado || !esMiHistoria;
                 }
             });
 
@@ -1227,6 +1351,7 @@ async function cargarSprintBacklog() {
                 );
                 selector.disabled = true;
             }
+            selector.disabled = selector.disabled || sprintFinalizado;
             campo.append(etiqueta, selector);
 
 
@@ -1235,7 +1360,7 @@ async function cargarSprintBacklog() {
             botonAsignar.type = 'button';
             botonAsignar.textContent = 'Guardar responsable';
             botonAsignar.disabled =
-                !desarrolladoresBacklog.length;
+                !desarrolladoresBacklog.length || sprintFinalizado;
             botonAsignar.addEventListener('click', async () => {
                 const id_responsable = Number(selector.value);
 
@@ -1257,7 +1382,7 @@ async function cargarSprintBacklog() {
             // ===== PB-15 =====
             // Quitar una historia pendiente
 
-            if (historia.estado_historia === 'Pendiente') {
+            if (historia.estado_historia === 'Pendiente' && !sprintFinalizado) {
 
                 const botonQuitar =
                     document.createElement('button');
@@ -1293,7 +1418,7 @@ async function cargarSprintBacklog() {
                 tarjeta.appendChild(revisionPO);
             }
             tarjeta.appendChild(controlEstado);
-            if (!esMiHistoria && !estadoBloqueado) {
+            if (!esMiHistoria && !estadoBloqueado && !sprintFinalizado) {
                 const ayudaEstado = document.createElement('p');
                 ayudaEstado.className = 'ayuda-campo';
                 ayudaEstado.textContent = 'Solo el desarrollador responsable puede cambiar el estado de esta historia.';
@@ -1307,6 +1432,7 @@ async function cargarSprintBacklog() {
 
             // PB-18: evidencias y envío a revisión (solo el desarrollador responsable de esta historia)
             if (
+                !sprintFinalizado &&
                 rolEnElProyecto === 'Desarrollador' &&
                 idUsuarioActual !== null &&
                 Number(historia.id_responsable) === idUsuarioActual &&
@@ -1314,7 +1440,7 @@ async function cargarSprintBacklog() {
             ) {
                 tarjeta.appendChild(window.crearPanelEvidencias(historia));
             }
-            if (puedeAdministrarBacklog) {
+            if (puedeAdministrarBacklog && !sprintFinalizado) {
                 tarjeta.appendChild(acciones);
             }
             listaHistoriasSprint.appendChild(tarjeta);

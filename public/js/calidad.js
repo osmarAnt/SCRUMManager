@@ -189,6 +189,7 @@
     const botonFinalizar = document.getElementById('finalizar-sprint');
     const mensaje = document.getElementById('mensaje-dod-sprint');
     let idSprintActual = null;
+    let numeroSprintActual = null;
 
     const cargarSprint = async (idSprint) => {
         idSprintActual = idSprint;
@@ -200,6 +201,7 @@
         try {
             const datos = await pedir(`/proyectos/${idProyecto}/sprints/${idSprint}/dod`);
             if (idSprint !== idSprintActual) return;
+            numeroSprintActual = datos.sprint.numero;
             const cumplidos = datos.dod.filter((d) => d.cumplido).length;
             estadoSprint.textContent = datos.finalizado
                 ? `Sprint finalizado. Definition of Done: ${cumplidos}/${datos.dod.length} cumplidos.`
@@ -237,29 +239,19 @@
         }
     };
 
-    botonFinalizar.addEventListener('click', async () => {
-        if (!idSprintActual) return;
-        if (!window.confirm('¿Finalizar este Sprint? Se valida que toda su Definition of Done esté cumplida.')) return;
-        botonFinalizar.disabled = true;
-        mensaje.textContent = '';
-        try {
-            const datos = await pedir(`/proyectos/${idProyecto}/sprints/${idSprintActual}/finalizar`, 'POST');
-            mensaje.dataset.tipo = 'ok';
-            mensaje.textContent = datos.mensaje;
-            // Recarga los datos del proyecto (el estado del Sprint cambió a Finalizado).
-            window.setTimeout(() => window.location.reload(), 1200);
-        } catch (error) {
-            mensaje.dataset.tipo = 'error';
-            const pendientes = error.datos?.pendientes;
-            mensaje.textContent = pendientes?.length
-                ? `${error.message} Pendientes: ${pendientes.join(', ')}.`
-                : error.message;
-        } finally {
-            botonFinalizar.disabled = false;
-        }
+    // El cierre es el de PB-63 (Emmanuel): abre su diálogo con el resumen. El servidor no deja cerrar
+    // el Sprint mientras falte algún requisito de esta Definition of Done.
+    botonFinalizar.addEventListener('click', () => {
+        if (!idSprintActual || typeof window.abrirCierreSprint !== 'function') return;
+        window.abrirCierreSprint({ id_sprint: idSprintActual, numero: numeroSprintActual });
     });
 
     document.addEventListener('sprint-backlog-seleccionado', (evento) => {
         cargarSprint(Number(evento.detail.idSprint) || null);
+    });
+
+    // Al cerrar el Sprint se vuelve a pintar su DoD (queda congelada).
+    document.addEventListener('sprint-cerrado', () => {
+        if (idSprintActual) cargarSprint(idSprintActual);
     });
 })();

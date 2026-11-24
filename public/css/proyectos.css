@@ -683,3 +683,56 @@ a.tarjeta-proyecto:hover {
     text-align: center;
     color: var(--texto-secundario);
 }
+
+.boton-cerrar-sprint {
+    margin-top: 16px;
+    align-self: flex-start;
+}
+
+.dialogo-cierre-sprint {
+    width: min(600px, calc(100% - 32px));
+}
+
+.subtitulo-cierre-sprint {
+    margin: 10px 0 0;
+    color: var(--texto-secundario);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.resumen-cierre-sprint {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 22px 0 16px;
+}
+
+.dato-cierre-sprint {
+    display: grid;
+    gap: 7px;
+    padding: 15px;
+    border: 1px solid var(--borde);
+    border-radius: 9px;
+    background: #f8faff;
+}
+
+.dato-cierre-sprint span {
+    color: var(--texto-secundario);
+    font-size: 12px;
+}
+
+.dato-cierre-sprint strong {
+    color: var(--texto);
+    font-size: 20px;
+}
+
+@media (max-width: 520px) {
+    .resumen-cierre-sprint {
+        grid-template-columns: 1fr;
+    }
+
+    .dialogo-cierre-sprint {
+        padding: 22px 18px;
+    }
+}
+

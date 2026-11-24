@@ -794,7 +794,6 @@ CREATE TABLE IF NOT EXISTS planning_votos (
         REFERENCES usuarios (id_usuario) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- =====================================================================
 -- Sprint 7: requisitos finales de la evaluación (casos de prueba del profesor)
 -- Se puede ejecutar más de una vez: cada cambio revisa primero si ya existe.
 -- =====================================================================
@@ -839,6 +838,8 @@ DELIMITER ;
 -- ---------------------------------------------------------------------
 CALL scrument_agregar_columna('sprints', 'nombre', 'VARCHAR(120) NULL AFTER numero');
 CALL scrument_agregar_columna('sprints', 'capacidad_horas', 'DECIMAL(7,2) NULL AFTER duracion_dias');
+-- PB-63 (Emmanuel): fecha de cierre del Sprint (por si la base todavía no la tiene).
+CALL scrument_agregar_columna('sprints', 'fecha_cierre', 'DATE NULL');
 
 -- ---------------------------------------------------------------------
 -- BLOQUE 2 (César) · HU-07 y HU-08: épicas y épica obligatoria en historias
@@ -935,3 +936,9 @@ CALL scrument_agregar_columna('proyectos', 'repositorio_github', 'VARCHAR(140) N
 
 DROP PROCEDURE IF EXISTS scrument_agregar_columna;
 DROP PROCEDURE IF EXISTS scrument_agregar_llave;
+=======
+#emanuel
+ALTER TABLE sprints
+ADD COLUMN fecha_cierre DATE NULL;
+
+-- ==============================================================

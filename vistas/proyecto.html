@@ -566,6 +566,7 @@
                                 </select>
 
                             </div>
+                            
 
                             <!-- Sprint 7 · Bloque 3 (Francisco) · HU-10: Definition of Done del Sprint -->
                             <section id="dod-sprint" class="dod-sprint" aria-labelledby="titulo-dod-sprint" hidden>
@@ -574,7 +575,7 @@
                                         <h4 id="titulo-dod-sprint">Definition of Done del Sprint</h4>
                                         <p id="estado-dod-sprint" class="ayuda-campo" role="status" aria-live="polite"></p>
                                     </div>
-                                    <button id="finalizar-sprint" type="button" hidden>Finalizar Sprint</button>
+                                    <button id="finalizar-sprint" type="button" hidden>Cerrar Sprint</button>
                                 </div>
                                 <div id="lista-dod-sprint"></div>
                                 <div id="form-dod-sprint"></div>
@@ -2594,6 +2595,43 @@
 
         </main>
     </div>
+
+    <dialog id="dialogo-cerrar-sprint" class="dialogo dialogo-cierre-sprint" aria-labelledby="titulo-cierre-sprint">
+        <h2 id="titulo-cierre-sprint">Cerrar Sprint</h2>
+        <p class="subtitulo-cierre-sprint">
+            Revisa el avance antes de confirmar el cierre. Las historias no completadas volverán al Product Backlog sin responsable.
+        </p>
+
+        <div class="resumen-cierre-sprint">
+            <div class="dato-cierre-sprint">
+                <span>Historias completadas</span>
+                <strong id="cierre-historias-completadas">—</strong>
+            </div>
+            <div class="dato-cierre-sprint">
+                <span>Historias pendientes</span>
+                <strong id="cierre-historias-pendientes">—</strong>
+            </div>
+            <div class="dato-cierre-sprint">
+                <span>Puntos completados</span>
+                <strong id="cierre-puntos-completados">—</strong>
+            </div>
+            <div class="dato-cierre-sprint">
+                <span>Puntos pendientes</span>
+                <strong id="cierre-puntos-pendientes">—</strong>
+            </div>
+        </div>
+
+        <p class="ayuda-campo">
+            Las historias terminadas conservarán su Sprint. El Burndown quedará congelado con los datos registrados al cierre.
+        </p>
+
+        <p id="mensaje-cierre-sprint" class="mensaje-error" role="alert" aria-live="polite"></p>
+
+        <div class="acciones-formulario">
+            <button id="cancelar-cierre-sprint" type="button" class="boton-secundario">Cancelar</button>
+            <button id="confirmar-cierre-sprint" type="button" disabled>Cerrar Sprint</button>
+        </div>
+    </dialog>
 
     <!-- PLANTILLA DE SPRINT -->
     <template id="plantilla-sprint">

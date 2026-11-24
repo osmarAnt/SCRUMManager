@@ -21,7 +21,7 @@ router.get('/:id/sprints/:idSprint/dod', verificarSesion, dodControlador.consult
 router.post('/:id/sprints/:idSprint/dod', verificarSesion, dodControlador.agregarASprint);
 router.put('/:id/dod/:idRequisito', verificarSesion, dodControlador.marcar);
 router.delete('/:id/dod/:idRequisito', verificarSesion, dodControlador.eliminar);
-router.post('/:id/sprints/:idSprint/finalizar', verificarSesion, proyectoControlador.finalizarSprint);
+// (El cierre del Sprint es el de PB-63: POST /:id/sprints/:idSprint/cerrar, que también valida esta DoD.)
 
 // ---------- Bloque 4 (Jesús) · HU-16: impedimentos ----------
 router.get('/:id/impedimentos', verificarSesion, impedimentoControlador.listar);

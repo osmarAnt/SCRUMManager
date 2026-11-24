@@ -18,16 +18,28 @@ const consultarVelocidad = async (req, res) => {
         if (!await proyectoDAO.obtenerRolEnProyecto(idProyecto, req.session.idUsuario)) {
             return res.status(404).json({ mensaje: 'No encontramos ese proyecto.' });
         }
+        // Al cerrar un Sprint (PB-63) las historias sin terminar regresan al backlog, así que los puntos
+        // planeados se toman de la "foto" que el cierre guarda en burndown_historial (la más reciente).
+        // Si un Sprint no tiene foto, se calculan con las historias que siguen en él.
         const marcas = ESTADOS_COMPLETADOS.map(() => '?').join(', ');
         const [filas] = await conexion.promise().query(
             `SELECT s.id_sprint, s.numero, s.nombre,
                     DATE_FORMAT(s.fecha_fin, '%Y-%m-%d') AS fecha_fin,
-                    COALESCE(SUM(h.puntos), 0) AS planeados,
-                    COALESCE(SUM(CASE WHEN h.estado_historia IN (${marcas}) THEN h.puntos ELSE 0 END), 0) AS completados
+                    COALESCE(foto.puntos_totales, vivo.planeados, 0) AS planeados,
+                    COALESCE(foto.puntos_completados, vivo.completados, 0) AS completados
              FROM sprints s
-             LEFT JOIN product_backlog h ON h.id_sprint = s.id_sprint
-             WHERE s.id_proyecto = ? AND s.estado = 'Finalizado'
-             GROUP BY s.id_sprint, s.numero, s.nombre, s.fecha_fin
+             LEFT JOIN burndown_historial foto
+                ON foto.id_sprint = s.id_sprint
+                AND foto.fecha = (SELECT MAX(b.fecha) FROM burndown_historial b WHERE b.id_sprint = s.id_sprint)
+             LEFT JOIN (
+                SELECT h.id_sprint,
+                       SUM(h.puntos) AS planeados,
+                       SUM(CASE WHEN h.estado_historia IN (${marcas}) THEN h.puntos ELSE 0 END) AS completados
+                FROM product_backlog h
+                WHERE h.id_sprint IS NOT NULL
+                GROUP BY h.id_sprint
+             ) vivo ON vivo.id_sprint = s.id_sprint
+             WHERE s.id_proyecto = ? AND (s.estado = 'Finalizado' OR s.fecha_cierre IS NOT NULL)
              ORDER BY s.fecha_inicio ASC, s.numero ASC`,
             [...ESTADOS_COMPLETADOS, idProyecto]
         );

@@ -100,6 +100,18 @@ router.post(
     proyectoControlador.crearSprint
 );
 
+router.get(
+    '/:id/sprints/:idSprint/resumen-cierre',
+    verificarSesion,
+    proyectoControlador.obtenerResumenCierreSprint
+);
+
+router.post(
+    '/:id/sprints/:idSprint/cerrar',
+    verificarSesion,
+    proyectoControlador.cerrarSprint
+);
+
 
 // =======================================
 // JESÚS: PB-14

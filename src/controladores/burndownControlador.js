@@ -12,11 +12,9 @@ const {
 // Sprint que se muestra por defecto: el que está en curso hoy; si no hay, el último que ya empezó;
 // y si todos son futuros, el más próximo.
 const elegirSprint = (sprints, hoy) => {
-    const enCurso = sprints.find((s) => s.fecha_inicio <= hoy && hoy <= s.fecha_fin);
-    if (enCurso) {
-        return enCurso;
-    }
-    const iniciados = sprints.filter((s) => s.fecha_inicio <= hoy);
+    const enCurso = sprints.find((sprint) => estadoSprint(sprint, hoy) === 'En curso');
+    if (enCurso) return enCurso;
+    const iniciados = sprints.filter((sprint) => sprint.fecha_inicio <= hoy);
     return iniciados.length ? iniciados[iniciados.length - 1] : sprints[0];
 };
 
@@ -51,31 +49,43 @@ const consultar = async (req, res) => {
         // inicio (planificación); si no existe, la primera foto del Sprint.
         const previa = historial.filter((fila) => fila.fecha < sprint.fecha_inicio).pop();
         const primera = historial.find((fila) => fila.fecha >= sprint.fecha_inicio);
-        const lineaBase = (previa || primera || actuales).puntos_totales;
+        const lineaBase = Number((previa || primera || actuales).puntos_totales) || 0;
+
+        const cerrado = Boolean(sprint.fecha_cierre) || sprint.estado === 'Finalizado';
+        const fechaCorte = sprint.fecha_cierre || hoy;
+        const fechaFinSerie = cerrado
+            ? (fechaCorte > sprint.fecha_fin ? fechaCorte : sprint.fecha_fin)
+            : (hoy > sprint.fecha_fin ? hoy : sprint.fecha_fin);
+        const hoyGrafica = cerrado ? fechaCorte : hoy;
 
         const dias = construirSerie({
             fechaInicio: sprint.fecha_inicio,
-            fechaFin: sprint.fecha_fin,
-            hoy,
+            fechaFin: fechaFinSerie,
+            fechaFinIdeal: sprint.fecha_fin,
+            hoy: hoyGrafica,
             lineaBase,
             historial
         });
         const avance = resumirAvance({
             dias,
-            hoy,
+            hoy: hoyGrafica,
             fechaInicio: sprint.fecha_inicio,
             fechaFin: sprint.fecha_fin
         });
 
-        // Totales vigentes: los del último día registrado dentro del Sprint (o los actuales si aún no empieza).
         const dentro = historial.filter(
-            (fila) => fila.fecha >= sprint.fecha_inicio && fila.fecha <= sprint.fecha_fin && fila.fecha <= hoy
+            (fila) => fila.fecha >= sprint.fecha_inicio && fila.fecha <= fechaCorte
         );
         const vigente = dentro.length ? dentro[dentro.length - 1] : actuales;
+        const puntosTotalesVigentes = Number(vigente.puntos_totales) || 0;
+        const puntosCompletadosVigentes = Number(vigente.puntos_completados) || 0;
 
-        // Sin historias con puntos no hay nada que graficar: se avisa en lugar de marcarlo como completado.
-        if (vigente.puntos_totales === 0 && avance.ritmo !== 'Sin iniciar') {
+        if (puntosTotalesVigentes === 0 && avance.ritmo !== 'Sin iniciar') {
             avance.ritmo = 'Sin puntos asignados';
+        } else if (cerrado) {
+            avance.ritmo = avance.restantes === 0
+                ? 'Completado'
+                : 'Finalizado con puntos pendientes';
         }
 
         res.json({
@@ -84,7 +94,9 @@ const consultar = async (req, res) => {
                 id_sprint: s.id_sprint,
                 numero: s.numero,
                 fecha_inicio: s.fecha_inicio,
-                fecha_fin: s.fecha_fin
+                fecha_fin: s.fecha_fin,
+                fecha_cierre: s.fecha_cierre,
+                estado: estadoSprint(s, hoy)
             })),
             sprint: {
                 id_sprint: sprint.id_sprint,
@@ -92,13 +104,15 @@ const consultar = async (req, res) => {
                 objetivo: sprint.objetivo,
                 fecha_inicio: sprint.fecha_inicio,
                 fecha_fin: sprint.fecha_fin,
+                fecha_cierre: sprint.fecha_cierre,
+                estado: estadoSprint(sprint, hoy),
                 duracion_dias: sprint.duracion_dias
             },
             linea_base: lineaBase,
             dias,
             resumen: {
-                puntos_totales: vigente.puntos_totales,
-                puntos_completados: vigente.puntos_completados,
+                puntos_totales: puntosTotalesVigentes,
+                puntos_completados: puntosCompletadosVigentes,
                 puntos_restantes: avance.restantes,
                 ideal_hoy: avance.idealHoy,
                 ritmo: avance.ritmo
@@ -135,8 +149,9 @@ const consultarGeneral = async (req, res) => {
         for (const sprint of sprints) {
             // Deja al día el historial de cada Sprint y toma el último día registrado dentro del Sprint.
             const { historial, actuales } = await burndownDAO.sincronizarSprint(sprint, hoy);
+            const fechaCorte = sprint.fecha_cierre || hoy;
             const dentro = historial.filter(
-                (fila) => fila.fecha >= sprint.fecha_inicio && fila.fecha <= sprint.fecha_fin && fila.fecha <= hoy
+                (fila) => fila.fecha >= sprint.fecha_inicio && fila.fecha <= fechaCorte
             );
             const cierre = dentro.length ? dentro[dentro.length - 1] : null;
             detalle.push({
@@ -145,9 +160,10 @@ const consultarGeneral = async (req, res) => {
                 objetivo: sprint.objetivo,
                 fecha_inicio: sprint.fecha_inicio,
                 fecha_fin: sprint.fecha_fin,
+                fecha_cierre: sprint.fecha_cierre,
                 duracion_dias: sprint.duracion_dias,
-                planeados: cierre ? cierre.puntos_totales : actuales.puntos_totales,
-                completados: cierre ? cierre.puntos_completados : 0
+                planeados: cierre ? Number(cierre.puntos_totales) : actuales.puntos_totales,
+                completados: cierre ? Number(cierre.puntos_completados) : 0
             });
         }
 
@@ -161,6 +177,7 @@ const consultarGeneral = async (req, res) => {
                 numero: sprint.numero,
                 fecha_inicio: sprint.fecha_inicio,
                 fecha_fin: sprint.fecha_fin,
+                fecha_cierre: sprint.fecha_cierre,
                 estado: estadoSprint(sprint, hoy),
                 planeados: sprint.planeados,
                 completados: sprint.completados

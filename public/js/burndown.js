@@ -149,7 +149,7 @@
         selectorSprint.replaceChildren();
         sprints.forEach((sprint) => {
             selectorSprint.add(new Option(
-                `Sprint ${sprint.numero} (${formatearFecha(sprint.fecha_inicio)} – ${formatearFecha(sprint.fecha_fin)})`,
+                `Sprint ${sprint.numero} (${formatearFecha(sprint.fecha_inicio)} – ${formatearFecha(sprint.fecha_fin)})${sprint.estado ? ` · ${sprint.estado}` : ''}`,
                 sprint.id_sprint
             ));
         });
@@ -161,7 +161,7 @@
         const { sprint, dias } = datos;
         llenarSelector(datos.sprints, sprint.id_sprint);
         objetivo.textContent = sprint.objetivo;
-        fechas.textContent = `Sprint ${sprint.numero} · ${formatearFecha(sprint.fecha_inicio)} – ${formatearFecha(sprint.fecha_fin)} · ${sprint.duracion_dias} ${sprint.duracion_dias === 1 ? 'día' : 'días'}`;
+        fechas.textContent = `Sprint ${sprint.numero} · ${formatearFecha(sprint.fecha_inicio)} – ${formatearFecha(sprint.fecha_fin)} · ${sprint.duracion_dias} ${sprint.duracion_dias === 1 ? 'día' : 'días'}${sprint.fecha_cierre ? ` · Cerrado el ${formatearFecha(sprint.fecha_cierre)}` : ''}`;
         resumen.totales.textContent = String(datos.resumen.puntos_totales);
         resumen.completados.textContent = String(datos.resumen.puntos_completados);
         resumen.restantes.textContent = String(datos.resumen.puntos_restantes);
