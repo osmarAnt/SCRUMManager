@@ -926,7 +926,7 @@ CREATE TABLE IF NOT EXISTS impedimentos (
         FOREIGN KEY (id_resolutor) REFERENCES usuarios(id_usuario)
         ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
+-- a
 -- ---------------------------------------------------------------------
 -- BLOQUE 6 (Emmanuel) · HU-17: tipo de reunión · HU-22: repositorio de GitHub
 -- ---------------------------------------------------------------------
