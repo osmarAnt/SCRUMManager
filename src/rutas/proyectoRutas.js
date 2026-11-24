@@ -371,7 +371,15 @@ router.get(
     burndownHorasControlador.consultar
 );
 
+// PB-61: BURNDOWN GENERAL POR HORAS
+const burndownGeneralHorasControlador = require('../controladores/burndownGeneralHorasControlador');
 
+// PB-61: BURNDOWN GENERAL POR HORAS
+router.get(
+    '/:id/burndown-general-horas',
+    verificarSesion,
+    burndownGeneralHorasControlador.consultar
+);
 
 
 // Burndown General: suma de todos los Sprints del proyecto

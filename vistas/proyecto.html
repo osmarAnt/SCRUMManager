@@ -1237,172 +1237,305 @@
                     </section>
                 </div>
 
-                <!-- BURNDOWN GENERAL -->
+                
+<!-- BURNDOWN GENERAL -->
+<div
+    class="panel-pestana"
+    role="tabpanel"
+    id="panel-burndown-general"
+    aria-labelledby="pestana-burndown-general"
+    hidden
+>
+
+    <section class="bloque" aria-labelledby="titulo-burndown-general">
+
+        <div class="cabecera-bloque">
+            <div>
+                <h2 id="titulo-burndown-general">Burndown General</h2>
+
+                <p class="subtitulo" id="subtitulo-burndown-general">
+                    Avance de todo el proyecto, Sprint por Sprint.
+                    Suma los puntos de cada Sprint y se actualiza solo
+                    cuando se crean Sprints o cambian sus historias.
+                </p>
+            </div>
+        </div>
+
+        <!-- PB-59: sub-pestañas del Burndown General -->
+        <div
+            class="subpestanas-burndown"
+            id="subpestanas-burndown-general"
+            role="tablist"
+            aria-label="Tipo de Burndown General"
+            data-panel="burndown-general"
+            data-subtitulo-id="subtitulo-burndown-general"
+        >
+            <button
+                type="button"
+                role="tab"
+                id="subpestana-general-puntos"
+                data-vista="puntos"
+                data-subtitulo="Avance de todo el proyecto, Sprint por Sprint. Suma los puntos de cada Sprint y se actualiza solo cuando se crean Sprints o cambian sus historias."
+                aria-controls="subpanel-general-puntos"
+                aria-selected="true"
+            >
+                Por puntos
+            </button>
+
+            <button
+                type="button"
+                role="tab"
+                id="subpestana-general-horas"
+                data-vista="horas"
+                data-subtitulo="Compara las horas estimadas y reales acumuladas de todos los Sprints, Sprint por Sprint."
+                aria-controls="subpanel-general-horas"
+                aria-selected="false"
+                tabindex="-1"
+            >
+                Por horas
+            </button>
+        </div>
+
+        <!-- PB-61: Burndown General por horas -->
+        <div
+            role="tabpanel"
+            id="subpanel-general-horas"
+            aria-labelledby="subpestana-general-horas"
+            hidden
+        >
+
+            <p
+                id="estado-general-horas"
+                class="ayuda-campo"
+                role="status"
+                aria-live="polite"
+            >
+                Cargando el Burndown General por horas...
+            </p>
+
+            <p
+                id="error-general-horas"
+                class="mensaje-error"
+                role="alert"
+                aria-live="polite"
+            ></p>
+
+            <div id="contenido-general-horas" hidden>
+
+                <!-- Resumen general de horas -->
+                <dl class="resumen-burndown">
+
+                    <div>
+                        <dt>Horas estimadas</dt>
+                        <dd id="general-horas-estimadas">0</dd>
+                    </div>
+
+                    <div>
+                        <dt>Horas reales</dt>
+                        <dd id="general-horas-reales">0</dd>
+                    </div>
+
+                    <div>
+                        <dt>Diferencia</dt>
+                        <dd id="general-horas-diferencia">0</dd>
+                    </div>
+
+                    <div>
+                        <dt>Horas sin estimación</dt>
+                        <dd id="general-horas-sin-estimar">0</dd>
+                    </div>
+
+                </dl>
+
+                <!-- Leyenda de la gráfica -->
+                <ul class="leyenda-burndown">
+
+                    <li>
+                        <span class="muestra-linea muestra-ideal"></span>
+                        Horas estimadas acumuladas
+                    </li>
+
+                    <li>
+                        <span class="muestra-linea muestra-real"></span>
+                        Horas reales acumuladas
+                    </li>
+
+                </ul>
+
+                <!-- Gráfica acumulada -->
                 <div
-                    class="panel-pestana"
-                    role="tabpanel"
-                    id="panel-burndown-general"
-                    aria-labelledby="pestana-burndown-general"
-                    hidden
+                    class="grafica-burndown"
+                    id="grafica-general-horas"
+                    role="img"
+                    aria-label="Gráfica de horas estimadas y reales acumuladas por Sprint"
+                ></div>
+
+                <!-- Tabla de resultados por Sprint -->
+                <h3 class="titulo-tabla-burndown">
+                    Detalle de horas por Sprint
+                </h3>
+
+                <p
+                    id="tabla-general-horas-descripcion"
+                    class="ayuda-campo"
                 >
+                    Comparación de horas estimadas y reales de cada Sprint,
+                    junto con sus valores acumulados. Las horas de historias
+                    sin estimación se muestran por separado.
+                </p>
 
-                    <section class="bloque" aria-labelledby="titulo-burndown-general">
+                <div class="contenedor-tabla-burndown">
 
-                        <div class="cabecera-bloque">
-                            <div>
-                                <h2 id="titulo-burndown-general">Burndown General</h2>
+                    <table class="tabla-burndown">
 
-                                <p class="subtitulo" id="subtitulo-burndown-general">
-                                    Avance de todo el proyecto, Sprint por Sprint.
-                                    Suma los puntos de cada Sprint y se actualiza solo
-                                    cuando se crean Sprints o cambian sus historias.
-                                </p>
-                            </div>
-                        </div>
+                        <thead>
+                            <tr>
+                                <th scope="col">Sprint</th>
+                                <th scope="col">Estado</th>
+                                <th scope="col">Estimadas</th>
+                                <th scope="col">Reales</th>
+                                <th scope="col">Diferencia</th>
+                                <th scope="col">Estimadas acumuladas</th>
+                                <th scope="col">Reales acumuladas</th>
+                                <th scope="col">Diferencia acumulada</th>
+                                <th scope="col">Sin estimación</th>
+                            </tr>
+                        </thead>
 
-                        <!-- PB-59 (Nino): sub-pestañas del Burndown General, por puntos y por horas -->
-                        <div
-                            class="subpestanas-burndown"
-                            id="subpestanas-burndown-general"
-                            role="tablist"
-                            aria-label="Tipo de Burndown General"
-                            data-panel="burndown-general"
-                            data-subtitulo-id="subtitulo-burndown-general"
-                        >
-                            <button
-                                type="button"
-                                role="tab"
-                                id="subpestana-general-puntos"
-                                data-vista="puntos"
-                                data-subtitulo="Avance de todo el proyecto, Sprint por Sprint. Suma los puntos de cada Sprint y se actualiza solo cuando se crean Sprints o cambian sus historias."
-                                aria-controls="subpanel-general-puntos"
-                                aria-selected="true"
-                            >
-                                Por puntos
-                            </button>
+                        <tbody id="tabla-general-horas-cuerpo"></tbody>
 
-                            <button
-                                type="button"
-                                role="tab"
-                                id="subpestana-general-horas"
-                                data-vista="horas"
-                                data-subtitulo="Horas de todos los Sprints: suma las estimadas en Planning Poker y descuenta las registradas en Tiempos, Sprint por Sprint."
-                                aria-controls="subpanel-general-horas"
-                                aria-selected="false"
-                                tabindex="-1"
-                            >
-                                Por horas
-                            </button>
-                        </div>
-
-                        <!-- Burndown General por horas: aquí se dibuja la gráfica de PB-61 -->
-                        <div
-                            role="tabpanel"
-                            id="subpanel-general-horas"
-                            aria-labelledby="subpestana-general-horas"
-                            hidden
-                        >
-                            <div class="espacio-burndown-horas" id="espacio-general-horas">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-                                <h3>Burndown General por horas</h3>
-                                <p>Aquí se mostrarán las horas estimadas y reales de todos los Sprints del proyecto, comparando la línea ideal contra la real.</p>
-                            </div>
-                        </div>
-
-                        <div
-                            role="tabpanel"
-                            id="subpanel-general-puntos"
-                            aria-labelledby="subpestana-general-puntos"
-                        >
-
-                        <p
-                            id="estado-general"
-                            class="ayuda-campo"
-                            role="status"
-                            aria-live="polite"
-                        >
-                            Cargando el Burndown General...
-                        </p>
-
-                        <p id="error-general" class="mensaje-error" role="alert" aria-live="polite"></p>
-
-                        <div id="contenido-general" hidden>
-
-                            <dl class="resumen-burndown">
-                                <div><dt>Puntos del proyecto</dt><dd id="general-totales">0</dd></div>
-                                <div><dt>Completados</dt><dd id="general-completados">0</dd></div>
-                                <div><dt>Pendientes</dt><dd id="general-pendientes">0</dd></div>
-                                <div><dt>Avance</dt><dd id="general-ritmo" class="valor-ritmo">—</dd></div>
-                            </dl>
-
-                            <div
-                                class="barra-avance"
-                                role="progressbar"
-                                aria-label="Porcentaje de puntos completados"
-                                aria-valuemin="0"
-                                aria-valuemax="100"
-                                aria-valuenow="0"
-                                id="barra-general"
-                            >
-                                <span id="relleno-general"></span>
-                            </div>
-
-                            <p id="texto-porcentaje-general" class="ayuda-campo"></p>
-
-                            <ul class="leyenda-burndown">
-                                <li>
-                                    <span class="muestra-linea muestra-ideal"></span>
-                                    Línea ideal
-                                </li>
-
-                                <li>
-                                    <span class="muestra-linea muestra-real"></span>
-                                    Línea real
-                                </li>
-                            </ul>
-
-                            <div
-                                class="grafica-burndown"
-                                id="grafica-general"
-                                role="img"
-                                aria-labelledby="titulo-burndown-general"
-                                aria-describedby="tabla-general-descripcion"
-                            ></div>
-
-                            <h3 class="titulo-tabla-burndown">Detalle por Sprint</h3>
-
-                            <p id="tabla-general-descripcion" class="ayuda-campo">
-                                Puntos que cada Sprint tiene planeados, los que se completaron
-                                y los que quedan pendientes en el proyecto después de cada Sprint.
-                            </p>
-
-                            <div class="contenedor-tabla-burndown">
-
-                                <table class="tabla-burndown">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">Sprint</th>
-                                            <th scope="col">Estado</th>
-                                            <th scope="col">Planeados</th>
-                                            <th scope="col">Completados</th>
-                                            <th scope="col">Ideal</th>
-                                            <th scope="col">Real</th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody id="tabla-general-cuerpo"></tbody>
-                                </table>
-
-                            </div>
-
-                        </div>
-
-                        </div>
-                        <!-- Fin del Burndown General por puntos -->
-
-                    </section>
+                    </table>
 
                 </div>
+
+            </div>
+
+        </div>
+
+        <!-- Burndown General por puntos -->
+        <div
+            role="tabpanel"
+            id="subpanel-general-puntos"
+            aria-labelledby="subpestana-general-puntos"
+        >
+
+            <p
+                id="estado-general"
+                class="ayuda-campo"
+                role="status"
+                aria-live="polite"
+            >
+                Cargando el Burndown General...
+            </p>
+
+            <p
+                id="error-general"
+                class="mensaje-error"
+                role="alert"
+                aria-live="polite"
+            ></p>
+
+            <div id="contenido-general" hidden>
+
+                <dl class="resumen-burndown">
+
+                    <div>
+                        <dt>Puntos del proyecto</dt>
+                        <dd id="general-totales">0</dd>
+                    </div>
+
+                    <div>
+                        <dt>Completados</dt>
+                        <dd id="general-completados">0</dd>
+                    </div>
+
+                    <div>
+                        <dt>Pendientes</dt>
+                        <dd id="general-pendientes">0</dd>
+                    </div>
+
+                    <div>
+                        <dt>Avance</dt>
+                        <dd id="general-ritmo" class="valor-ritmo">—</dd>
+                    </div>
+
+                </dl>
+
+                <div
+                    class="barra-avance"
+                    role="progressbar"
+                    aria-label="Porcentaje de puntos completados"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    aria-valuenow="0"
+                    id="barra-general"
+                >
+                    <span id="relleno-general"></span>
+                </div>
+
+                <p id="texto-porcentaje-general" class="ayuda-campo"></p>
+
+                <ul class="leyenda-burndown">
+
+                    <li>
+                        <span class="muestra-linea muestra-ideal"></span>
+                        Línea ideal
+                    </li>
+
+                    <li>
+                        <span class="muestra-linea muestra-real"></span>
+                        Línea real
+                    </li>
+
+                </ul>
+
+                <div
+                    class="grafica-burndown"
+                    id="grafica-general"
+                    role="img"
+                    aria-labelledby="titulo-burndown-general"
+                    aria-describedby="tabla-general-descripcion"
+                ></div>
+
+                <h3 class="titulo-tabla-burndown">
+                    Detalle por Sprint
+                </h3>
+
+                <p id="tabla-general-descripcion" class="ayuda-campo">
+                    Puntos que cada Sprint tiene planeados, los que se completaron
+                    y los que quedan pendientes en el proyecto después de cada Sprint.
+                </p>
+
+                <div class="contenedor-tabla-burndown">
+
+                    <table class="tabla-burndown">
+
+                        <thead>
+                            <tr>
+                                <th scope="col">Sprint</th>
+                                <th scope="col">Estado</th>
+                                <th scope="col">Planeados</th>
+                                <th scope="col">Completados</th>
+                                <th scope="col">Ideal</th>
+                                <th scope="col">Real</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="tabla-general-cuerpo"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+<!-- FIN DEL BURNDOWN GENERAL -->
+
 
                 <!-- TABLERO KANBAN -->
                 <div
@@ -2194,6 +2327,8 @@
     <script src="/js/burndownVistas.js" defer></script>
 
     <script src="/js/burndownHoras.js" defer></script>
+
+    <script src="/js/burndownGeneralHoras.js" defer></script>
 
     <!-- REUNIONES (PB-42) -->
     <script src="/js/reuniones.js" defer></script>

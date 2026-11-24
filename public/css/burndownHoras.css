@@ -53,3 +53,28 @@
 }
 
 /* FIN PB-60 */
+
+
+/* =====================================================
+   PB-61: BURNDOWN GENERAL POR HORAS
+   ===================================================== */
+
+#grafica-general-horas {
+    width: 100%;
+    min-height: 380px;
+    margin: 20px 0;
+    padding: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    box-sizing: border-box;
+}
+
+#grafica-general-horas svg {
+    display: block;
+    width: 100%;
+    min-width: 600px;
+    height: auto;
+    aspect-ratio: 900 / 380;
+}
+
+/* FIN PB-61 */
